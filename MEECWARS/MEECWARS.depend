@@ -1,0 +1,13 @@
+# depslib dependency file v1.0
+1616954525 source:/media/sf_Programacao/treino/MEECWARS/main.c
+	<stdio.h>
+	<stdlib.h>
+	<unistd.h>
+	<time.h>
+
+1616964589 source:c:\users\tomas\google drive (tomasmartins77@tecnico.ulisboa.pt)\drive tomi\1ano semestre 2\programacao\treino\meecwars\main.c
+	<stdio.h>
+	<stdlib.h>
+	<unistd.h>
+	<time.h>
+
