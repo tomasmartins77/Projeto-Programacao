@@ -3,21 +3,25 @@
 #include <unistd.h>
 #include <time.h>
 
+struct peca{
+    char pecas[3][3];
+};
 void utilizacao();
 void modos_jogo(int linhas, int colunas, int j, int p, int d, int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8);
 int random_number(int m, int M);
 void mostra_peca(char peca[9][3][3]);
-void tipo0(char tabuleiro[15][24], int i, int j);
-void tipo1(char tabuleiro[15][24], int i, int j);
-char tipo2(char tabuleiro[15][24], int i, int j);
-char tipo3(char tabuleiro[15][24], int i, int j);
-char tipo4(char tabuleiro[15][24], int i, int j);
-char tipo5(char tabuleiro[15][24], int i, int j);
-char tipo6(char tabuleiro[15][24], int i, int j);
-char tipo7(char tabuleiro[15][24], int i, int j);
-char tipo8(char tabuleiro[15][24], int i, int j);
+struct peca tipo0(int variante);
+struct peca tipo1(int variante);
+struct peca tipo2(int variante);
+struct peca tipo3(int variante);
+struct peca tipo4(int variante);
+struct peca tipo5(int variante);
+struct peca tipo6(int variante);
+struct peca tipo7(int variante);
+struct peca tipo8(int variante);
 void init_boardgame(int linhas, int colunas);
-void peca_random(char tabuleiro[15][24], int i, int j);
+struct peca peca_random();
+int verificarColisao (char tabuleiro [15][24], int i, int j, struct peca peca);
 
 int main(int argc, char *argv[]){
      srand(time(NULL));
@@ -79,149 +83,108 @@ void mostra_peca(char peca[9][3][3]){
     }
 }
 
-void tipo0(char tabuleiro[15][24], int i, int j){
-     int x,y;
-     char variante0[3][3]={{'-','-','-'},{'-','-','-'},{'-','-','-'}};
-     for (x=0; x<3; x++) {
-        for (y=0; y<3; y++) {
-            tabuleiro[x+i][y+j]=variante0[x][y];
-        }
-     }
+struct peca tipo0(int variante){
+     struct peca variante0={{{'-','-','-'},{'-','-','-'},{'-','-','-'}}};
+     return variante0;
+}
+
+struct peca tipo1(int variante){
+    struct peca variante1[9]={{{{'1','-','-'},{'-','-','-'},{'-','-','-'}}},
+                             {{{'-','1','-'},{'-','-','-'},{'-','-','-'}}},
+                             {{{'-','-','1'},{'-','-','-'},{'-','-','-'}}},
+                             {{{'-','-','-'},{'1','-','-'},{'-','-','-'}}},
+                             {{{'-','-','-'},{'-','1','-'},{'-','-','-'}}},
+                             {{{'-','-','-'},{'-','-','1'},{'-','-','-'}}},
+                             {{{'-','-','-'},{'-','-','-'},{'1','-','-'}}},
+                             {{{'-','-','-'},{'-','-','-'},{'-','1','-'}}},
+                             {{{'-','-','-'},{'-','-','-'},{'-','-','1'}}}};
+    int k = variante <0? random_number(0, 8):variante;
+    return variante1[k];
+}
+
+struct peca tipo2(int variante){
+
+    struct peca variante2[12] = {{{{'2','2','-'},{'-','-','-'},{'-','-','-'}}},
+                                {{{'-','2','2'},{'-','-','-'},{'-','-','-'}}},
+                                {{{'-','-','-'},{'2','2','-'},{'-','-','-'}}},
+                                {{{'-','-','-'},{'-','2','2'},{'-','-','-'}}},
+                                {{{'-','-','-'},{'-','-','-'},{'2','2','-'}}},
+                                {{{'-','-','-'},{'-','-','-'},{'-','2','2'}}},
+                                {{{'2','-','-'},{'2','-','-'},{'-','-','-'}}},
+                                {{{'-','-','-'},{'2','-','-'},{'2','-','-'}}},
+                                {{{'-','2','-'},{'-','2','-'},{'-','-','-'}}},
+                                {{{'-','-','-'},{'-','2','-'},{'-','2','-'}}},
+                                {{{'-','-','2'},{'-','-','2'},{'-','-','-'}}},
+                                {{{'-','-','-'},{'-','-','2'},{'-','-','2'}}}};
+
+    int k = variante <0? random_number(0, 11):variante;
+    return variante2[k];
 
 }
 
-void tipo1(char tabuleiro[15][24], int i, int j){
-    int x,y;
-    char variante1[9][3][3]={{{'1','-','-'},{'-','-','-'},{'-','-','-'}},
-                             {{'-','1','-'},{'-','-','-'},{'-','-','-'}},
-                             {{'-','-','1'},{'-','-','-'},{'-','-','-'}},
-                             {{'-','-','-'},{'1','-','-'},{'-','-','-'}},
-                             {{'-','-','-'},{'-','1','-'},{'-','-','-'}},
-                             {{'-','-','-'},{'-','-','1'},{'-','-','-'}},
-                             {{'-','-','-'},{'-','-','-'},{'1','-','-'}},
-                             {{'-','-','-'},{'-','-','-'},{'-','1','-'}},
-                             {{'-','-','-'},{'-','-','-'},{'-','-','1'}}};
-    int k = random_number(0, 8);
+struct peca tipo3(int variante){
 
-    for (x=0; x<3; x++) {
-        for (y=0; y<3; y++) {
-            tabuleiro[x+i][y+j]=variante1[k][x][y];
+    struct peca variante3[6] =  {{{{'3','3','3'},{'-','-','-'},{'-','-','-'}}},
+                                {{{'-','-','-'},{'3','3','3'},{'-','-','-'}}},
+                                {{{'-','-','-'},{'-','-','-'},{'3','3','3'}}},
+                                {{{'3','-','-'},{'3','-','-'},{'3','-','-'}}},
+                                {{{'-','3','-'},{'-','3','-'},{'-','3','-'}}},
+                                {{{'-','-','3'},{'-','-','3'},{'-','-','3'}}}};
 
-        }
-    }
-
+    int k = variante <0? random_number(0, 5):variante;
+    return variante3[k];
 
 }
 
-char tipo2(char tabuleiro[15][24],int i, int j){
-      int x,y;
-    char variante2[12][3][3] = {{{'2','2','-'},{'-','-','-'},{'-','-','-'}},
-                                {{'-','2','2'},{'-','-','-'},{'-','-','-'}},
-                                {{'-','-','-'},{'2','2','-'},{'-','-','-'}},
-                                {{'-','-','-'},{'-','2','2'},{'-','-','-'}},
-                                {{'-','-','-'},{'-','-','-'},{'2','2','-'}},
-                                {{'-','-','-'},{'-','-','-'},{'-','2','2'}},
-                                {{'2','-','-'},{'2','-','-'},{'-','-','-'}},
-                                {{'-','-','-'},{'2','-','-'},{'2','-','-'}},
-                                {{'-','2','-'},{'-','2','-'},{'-','-','-'}},
-                                {{'-','-','-'},{'-','2','-'},{'-','2','-'}},
-                                {{'-','-','2'},{'-','-','2'},{'-','-','-'}},
-                                {{'-','-','-'},{'-','-','2'},{'-','-','2'}}};
-    int k = random_number(0, 11);
-    for (x=0; x<3; x++) {
-        for (y=0; y<3; y++) {
-            tabuleiro[x+i][y+j]=variante2[k][x][y];
+struct peca tipo4(int variante){
 
-        }
-    }
+    struct peca variante4[4]=  {{{{'4','4','-'},{'4','4','-'},{'-','-','-'}}},
+                                {{{'-','4','4'},{'-','4','4'},{'-','-','-'}}},
+                                {{{'-','-','-'},{'4','4','-'},{'4','4','-'}}},
+                                {{{'-','-','-'},{'-','4','4'},{'-','4','4'}}}};
+
+    int k = variante <0? random_number(0, 3):variante;
+    return variante4[k];
+
 }
 
-char tipo3(char tabuleiro[15][24],int i, int j){
-    int x,y;
-    char variante3[6][3][3] =  {{{'3','3','3'},{'-','-','-'},{'-','-','-'}},
-                                {{'-','-','-'},{'3','3','3'},{'-','-','-'}},
-                                {{'-','-','-'},{'-','-','-'},{'3','3','3'}},
-                                {{'3','-','-'},{'3','-','-'},{'3','-','-'}},
-                                {{'-','3','-'},{'-','3','-'},{'-','3','-'}},
-                                {{'-','-','3'},{'-','-','3'},{'-','-','3'}}};
-    int k = random_number(0, 5);
+struct peca tipo5(int variante){
 
-     for (x=0; x<3; x++) {
-        for (y=0; y<3; y++) {
-            tabuleiro[x+i][y+j]=variante3[k][x][y];
+    struct peca variante5[4]=   {{{{'5','5','5'},{'-','5','-'},{'-','5','-'}}},
+                                {{{'5','-','-'},{'5','5','5'},{'5','-','-'}}},
+                                {{{'-','5','-'},{'-','5','-'},{'5','5','5'}}},
+                                {{{'-','-','5'},{'5','5','5'},{'-','-','5'}}}};
 
-        }
+    int k = variante <0? random_number(0, 3):variante;
+    return variante5[k];
+
     }
+
+
+struct peca tipo6(int variante){
+
+    struct peca variante6[4]=   {{{{'-','6','-'},{'6','-','6'},{'6','6','6'}}},
+                               {{{'-','6','6'},{'6','-','6'},{'-','6','6'}}},
+                                {{{'6','6','6'},{'6','-','6'},{'-','6','-'}}},
+                                {{{'6','6','-'},{'6','-','6'},{'6','6','-'}}}};
+
+   int k = variante <0? random_number(0, 3):variante;
+    return variante6[k];
 }
 
-char tipo4(char tabuleiro[15][24],int i, int j){
-      int x,y;
-    char variante4[4][3][3]=   {{{'4','4','-'},{'4','4','-'},{'-','-','-'}},
-                                {{'-','4','4'},{'-','4','4'},{'-','-','-'}},
-                                {{'-','-','-'},{'4','4','-'},{'4','4','-'}},
-                                {{'-','-','-'},{'-','4','4'},{'-','4','4'}}};
-    int k = random_number(0, 3);
-     for (x=0; x<3; x++) {
-        for (y=0; y<3; y++) {
-            tabuleiro[x+i][y+j]=variante4[k][x][y];
+struct peca tipo7(int variante){
 
-        }
-    }
+    struct peca variante7[2]=   {{{{'7','-','7'},{'7','7','7'},{'7','-','7'}}},
+                                {{{'7','7','7'},{'-','7','-'},{'7','7','7'}}}};
+
+   int k = variante <0? random_number(0, 2):variante;
+    return variante7[k];
 }
 
-char tipo5(char tabuleiro[15][24],int i, int j){
-    int x,y;
-    char variante5[4][3][3]=   {{{'5','5','5'},{'-','5','-'},{'-','5','-'}},
-                                {{'5','-','-'},{'5','5','5'},{'5','-','-'}},
-                                {{'-','5','-'},{'-','5','-'},{'5','5','5'}},
-                                {{'-','-','5'},{'5','5','5'},{'-','-','5'}}};
-    int k = random_number(0, 3);
-      for (x=0; x<3; x++) {
-        for (y=0; y<3; y++) {
-            tabuleiro[x+i][y+j]=variante5[k][x][y];
+struct peca tipo8(int variante){
 
-        }
-    }
-    }
-
-
-char tipo6(char tabuleiro[15][24],int i, int j){
-    int x,y;
-    char variante6[4][3][3]=   {{{'-','6','-'},{'6','-','6'},{'6','6','6'}},
-                                {{'-','6','6'},{'6','-','6'},{'-','6','6'}},
-                                {{'6','6','6'},{'6','-','6'},{'-','6','-'}},
-                                {{'6','6','-'},{'6','-','6'},{'6','6','-'}}};
-    int k = random_number(0, 3);
-      for (x=0; x<3; x++) {
-        for (y=0; y<3; y++) {
-            tabuleiro[x+i][y+j]=variante6[k][x][y];
-
-        }
-    }
-}
-
-char tipo7(char tabuleiro[15][24],int i, int j){
-    int x,y;
-    char variante7[2][3][3]=   {{{'7','-','7'},{'7','7','7'},{'7','-','7'}},
-                                {{'7','7','7'},{'-','7','-'},{'7','7','7'}}};
-    int k = random_number(0, 1);
-    for (x=0; x<3; x++) {
-        for (y=0; y<3; y++) {
-            tabuleiro[x+i][y+j]=variante7[k][x][y];
-
-        }
-    }
-}
-
-char tipo8(char tabuleiro[15][24],int i, int j){
-    int x,y;
-    char variante8[3][3]={{'8','8','8'},{'8','-','8'},{'8','8','8'}};
-    for (x=0; x<3; x++) {
-        for (y=0; y<3; y++) {
-            tabuleiro[x+i][y+j]=variante8[x][y];
-
-        }
-    }
+    struct peca variante8={{{'8','8','8'},{'8','-','8'},{'8','8','8'}}};
+   return variante8;
 }
 
 
@@ -230,6 +193,7 @@ void init_boardgame(int linhas, int colunas){
     int nums[16]= {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
     char tabuleiro[15][24];
     int i, j, max, a, b, c, d, k;
+    struct peca peca;
 
     do{
         printf("Insira as dimensoes (linhas)(colunas): "); //escolher as dimensoes do tabuleiro
@@ -240,13 +204,35 @@ void init_boardgame(int linhas, int colunas){
 
     }while(linhas % 3 !=0 && colunas % 3 !=0 && linhas < 9 && linhas > 15 && colunas < 9 && colunas > 24);
 
+    for(a = 0; a < 15; a++){
+        for(b = 0; b < 24; b++){
+                tabuleiro[a][b]='-';
+        }
+    }
+
+
     max = linhas;
     printf("\n");
     for(a = 0; a < linhas; a+=3){
         for(b = 0; b < colunas; b+=3){
-            peca_random(tabuleiro,a,b);
 
+          for (k=0; k<=3; k++) {
+            if (k==3) {
+                peca = tipo1(4);
+            }
+            else {
+                peca = peca_random();
+                if (!verificarColisao(tabuleiro, a, b, peca)) {
+                    break;
+                }
+            }
+          }
 
+          for (i=0; i<3; i++) {
+            for (j=0; j<3; j++) {
+                tabuleiro[a+i][b+j]=peca.pecas[i][j];
+            }
+          }
         }
     }
 
@@ -271,42 +257,64 @@ void init_boardgame(int linhas, int colunas){
   uma aleatoria entre entre todas as pecas.
 
 */
-void peca_random(char tabuleiro[15][24], int i, int j){
+struct peca peca_random(){
 
   /* char peca_ran[3][3];
   /*  char pecas [10][3][3]; */
 
     switch(random_number(0, 8)){
     case 0:
-        tipo0(tabuleiro,i,j);
+        return tipo0(-1);
         break;
     case 1:
-        tipo1(tabuleiro,i,j);
+        return tipo1(-1);
         break;
     case 2:
-        tipo2(tabuleiro,i,j);
+        return tipo2(-1);
         break;
     case 3:
-        tipo3(tabuleiro,i,j);
+        return tipo3(-1);
         break;
     case 4:
-        tipo4(tabuleiro,i,j);
+        return tipo4(-1);
         break;
     case 5:
-        tipo5(tabuleiro,i,j);
+        return tipo5(-1);
         break;
     case 6:
-        tipo6(tabuleiro,i,j);
+        return tipo6(-1);
         break;
     case 7:
-        tipo7(tabuleiro,i,j);
+        return tipo7(-1);
         break;
     case 8:
-        tipo8(tabuleiro,i,j);
+        return tipo8(-1);
    }
 
 
 
+}
+
+int verificarColisao (char tabuleiro [15][24], int i, int j, struct peca peca) {
+    int x,y,a,b, offset_x, offset_y;
+    for (x=0; x<3; x++) {
+        for (y=0; y<3; y++) {
+            if (peca.pecas[x][y]!='-') {
+                for (a=-1; a<2; a++) {
+                        for (b=-1; b<2; b++) {
+                            offset_x= i + x + a;
+                            offset_y= j + y + b;
+                            if (offset_x>=0 && offset_x<15 && offset_y>=0 && offset_y<24) {
+                                if (tabuleiro[offset_x][offset_y]!='-') {
+                                    return 1;
+                                }
+                            }
+                        }
+
+                }
+            }
+        }
+    } return 0;
 }
 
 /*int random_number(int m, int M, int count) {
