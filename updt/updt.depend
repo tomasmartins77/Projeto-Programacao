@@ -1,0 +1,7 @@
+# depslib dependency file v1.0
+1617294813 source:/home/student/Programacao/updt/main.c
+	<stdio.h>
+	<stdlib.h>
+	<unistd.h>
+	<time.h>
+
