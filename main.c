@@ -13,7 +13,7 @@ struct peca
     char pecas[3][3];
 };
 void utilizacao();
-void modos_jogo(int linhas, int colunas, int j, int p, int d, int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8);
+void modos_jogo(int linhas, int colunas, int j, int p, int d, int quantidadeTipo[9]);
 int random_number(int m, int M);
 struct peca tipo0();
 struct peca tipo1(int variante);
@@ -25,12 +25,16 @@ struct peca tipo6(int variante);
 struct peca tipo7(int variante);
 struct peca tipo8();
 void modo0_p1(int linhas, int colunas);
-void modo0_p2(int linhas, int colunas, int n1, int count);
+void modo0_p2(int linhas, int colunas, int quantidadeTipo[9]);
 void modo1_p1(int linhas, int colunas);
-struct peca peca_random();
+void preencher_tabuleiro_p2(char tabuleiro[15][24], int pecas[9], int linhas, int colunas);
+struct peca peca_random(int t, int v);
+int max_variantes(int tipo);
+void meter_peca(char tabuleiro[15][24], int a, int b, struct peca peca);
+int selecionar_peca(int pecas[9],int tipos_usados[9]);
 int verificarColisao (char tabuleiro [15][24], int i, int j, struct peca peca);
 int restricao2(int count, int linhas, int colunas);
-int restricao3(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8);
+int restricao3(int quantidadeTipo[9]);
 int restricao4(int linhas, int colunas, int count);
 
 int main(int argc, char *argv[])
@@ -38,9 +42,10 @@ int main(int argc, char *argv[])
     int opt = 'h';
     opterr= 0;
     int linhas = DEFAULT_DIMENSOES, colunas = DEFAULT_DIMENSOES, j = DEFAULT_JOGO_PECA,\
-                 p = DEFAULT_PECAS_TIRO, d = DEFAULT_PECAS_TIRO, n1 = DEFAULT_JOGO_PECA, n2 = DEFAULT_JOGO_PECA, \
-                         n3 = DEFAULT_JOGO_PECA, n4 = DEFAULT_JOGO_PECA, n5 = DEFAULT_JOGO_PECA, n6 = DEFAULT_JOGO_PECA, \
-                                 n7 = DEFAULT_JOGO_PECA, n8 = DEFAULT_JOGO_PECA;
+                 p = DEFAULT_PECAS_TIRO, d = DEFAULT_PECAS_TIRO;
+
+    int quantidadeTipo[9] = {0};
+
     srand(time(NULL));
 
     while ((opt= getopt(argc, argv, "ht:j:p:d:1:2:3:4:5:6:7:8:")) != -1)
@@ -94,29 +99,32 @@ int main(int argc, char *argv[])
                 return EXIT_FAILURE;
             }
             break;
+
         case '1':
-            sscanf(optarg, "%d", &n1);
+            sscanf(optarg, "%d", &quantidadeTipo[1]);
             break;
         case '2':
-            sscanf(optarg, "%d", &n2);
+            sscanf(optarg, "%d", &quantidadeTipo[2]);
             break;
         case '3':
-            sscanf(optarg, "%d", &n3);
+            sscanf(optarg, "%d", &quantidadeTipo[3]);
             break;
         case '4':
-            sscanf(optarg, "%d", &n4);
+            sscanf(optarg, "%d", &quantidadeTipo[4]);
             break;
         case '5':
-            sscanf(optarg, "%d", &n5);
+            sscanf(optarg, "%d", &quantidadeTipo[5]);
             break;
         case '6':
-            sscanf(optarg, "%d", &n6);
+            sscanf(optarg, "%d", &quantidadeTipo[6]);
             break;
         case '7':
-            sscanf(optarg, "%d", &n7);
+            sscanf(optarg, "%d", &quantidadeTipo[7]);
             break;
         case '8':
-            sscanf(optarg, "%d", &n8);
+            sscanf(optarg, "%d", &quantidadeTipo[8]);
+
+
             break;
         case 'h': /* help */
         default: /* opcoes invalidas */
@@ -125,7 +133,7 @@ int main(int argc, char *argv[])
             break;
         }
     }
-    modos_jogo(linhas, colunas, j, p, d, n1, n2, n3, n4, n5, n6, n7, n8);
+    modos_jogo(linhas, colunas, j, p, d, quantidadeTipo);
     return 0;
 }
 
@@ -148,12 +156,21 @@ void utilizacao()
     printf("[-8]\t\t\t  numero de pecas do tipo 8\n");
 }
 
-void modos_jogo(int linhas, int colunas, int j, int p, int d, int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8)
+void modos_jogo(int linhas, int colunas, int j, int p, int d, int quantidadeTipo[9])
 {
-    int count = n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8;
-    int r2 = restricao2(count, linhas, colunas);
-    int r3 = restricao3(n1, n2, n3, n4, n5, n6, n7, n8);
-    int r4 = restricao4(linhas, colunas, count);
+    int i, count, r2, r3, r4;
+
+    for (i=0, count=0 ; i < 8; i++)
+    {
+        count+=quantidadeTipo[i];
+    }
+    quantidadeTipo[0]=linhas*colunas/9-count; /* da a quantidade de '-' ou seja, pecas tipo 0*/
+    r2 = restricao2(count, linhas, colunas);
+    r3 = restricao3(quantidadeTipo);
+    r4 = restricao4(linhas, colunas, count);
+
+    printf("%d %d %d\n", r2, r3, r4);
+
     if(j == 0 && r2 == 1)                                    // modo de jogo 0
     {
         if(p == 1)                                           // modo de posicionamento 1
@@ -162,7 +179,7 @@ void modos_jogo(int linhas, int colunas, int j, int p, int d, int n1, int n2, in
         }
         else if(p == 2 && r3 == 1 && r4 == 1)                // modo de posicionamento 2
         {
-            modo0_p2(linhas, colunas, n1, count);
+            modo0_p2(linhas, colunas, quantidadeTipo);
         }
         exit(0);
     }
@@ -339,20 +356,14 @@ void modo0_p1(int linhas, int colunas)
                 }
                 else
                 {
-                    peca = peca_random();
+                    peca = peca_random(-1,-1);
                     if (!verificarColisao(tabuleiro, a, b, peca))
                     {
                         break;
                     }
                 }
             }
-            for (i=0; i<3; i++)
-            {
-                for (j=0; j<3; j++)
-                {
-                    tabuleiro[a+i][b+j]=peca.pecas[i][j];
-                }
-            }
+            meter_peca(tabuleiro,a,b,peca);
         }
     }
 
@@ -380,41 +391,158 @@ void modo0_p1(int linhas, int colunas)
  * uma aleatoria entre entre todas as pecas.
 */
 
-struct peca peca_random()
+struct peca peca_random(int t, int v)
 {
 
-    switch(random_number(0, 8))
+    switch(t<0?random_number(0, 8):t)
     {
     case 0:
-        return tipo0(-1);
+        return tipo0();
         break;
     case 1:
-        return tipo1(-1);
+        return tipo1(v);
         break;
     case 2:
-        return tipo2(-1);
+        return tipo2(v);
         break;
     case 3:
-        return tipo3(-1);
+        return tipo3(v);
         break;
     case 4:
-        return tipo4(-1);
+        return tipo4(v);
         break;
     case 5:
-        return tipo5(-1);
+        return tipo5(v);
         break;
     case 6:
-        return tipo6(-1);
+        return tipo6(v);
         break;
     case 7:
-        return tipo7(-1);
+        return tipo7(v);
         break;
     case 8:
-        return tipo8(-1);
+        return tipo8(v);
     }
 }
 
-void modo0_p2(int linhas, int colunas, int n1, int count)
+void preencher_tabuleiro_p2(char tabuleiro[15][24], int pecas[9], int linhas, int colunas)
+{
+    int pecas_duplicado[9];
+    int i,j,k,a,b;
+
+
+    for (i=0; i<1000; i++)
+    {
+        int sem_erros=1;
+
+        for (j=0; j<9; j++)
+        {
+            pecas_duplicado[j]=pecas[j];
+        }
+
+        for(a = 0; a < 15; a++)  /*reiniciar o tabuleiro a zeros*/
+        {
+            for(b = 0; b < 24; b++)
+            {
+                tabuleiro[a][b] = '-';
+            }
+        }
+
+        for (a=0; a<linhas &&sem_erros; a+=3)
+        {
+            for (b=0; b<colunas &&sem_erros; b+=3)
+            {
+                int success_peca=0;
+                int tipos_usados[9]= {0};
+                for (j=0; j<8; j++)
+                {
+                    int tipo_peca=selecionar_peca(pecas_duplicado, tipos_usados);
+                    int max;
+                    if (tipo_peca<0)
+                    {
+                        break;
+                    }
+                    max=max_variantes(tipo_peca);
+
+                    for (k=-1; k<max; k++)
+                    {
+                        struct peca tentativa_peca=peca_random(tipo_peca, k); /*peca que vamos tentar por no tabuleiro*/
+                        if (!verificarColisao(tabuleiro, a, b, tentativa_peca))
+                        {
+                            success_peca=1;
+                            meter_peca(tabuleiro,a,b,tentativa_peca);
+                            pecas_duplicado[tipo_peca]--;
+                            break;
+                        }
+                    }
+
+                    tipos_usados[tipo_peca]=1;
+
+                    if (success_peca==1)
+                    {
+                        break;
+                    }
+                }
+                if (success_peca==0)
+                {
+                    sem_erros=0; /*deu erro , nao foi possivel colocar a peca*/
+                }
+            }
+        }
+        if (sem_erros==1)
+        {
+            return;
+        }
+    }
+    exit(-1);
+}
+
+void meter_peca(char tabuleiro[15][24], int a, int b, struct peca peca)
+{
+    int i, j;
+
+    for(i=0; i<3; i++)
+    {
+        for(j=0; j<3; j++)
+        {
+            tabuleiro[a+i][b+j]=peca.pecas[i][j];
+        }
+    }
+}
+
+int max_variantes(int tipo)
+{
+    int numero_variantes[]= {1,9,12,6,4,4,4,2,1};
+    return numero_variantes[tipo];
+}
+
+
+int selecionar_peca(int pecas[9],int tipos_usados[9])
+{
+    int possibilidades[40]= {0};
+    int count=0,i,j;
+
+    for (i=0; i<9; i++)
+    {
+        if(pecas[i]>0 && !tipos_usados[i])
+        {
+            for (j=0;j<pecas[i];j++){
+            possibilidades[count++]=i;
+            }
+        }
+    }
+    if (count==0)
+    {
+        return -1;
+    }
+    return possibilidades[random_number(0,count-1)];
+
+}
+
+
+
+
+void modo0_p2(int linhas, int colunas, int quantidadeTipo[9])
 {
     char alfa[24]="ABCDEFGHIJKLMNOPQRSTUVWX";
     int nums[16]= {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
@@ -422,50 +550,12 @@ void modo0_p2(int linhas, int colunas, int n1, int count)
     int i, j, max, a, b, k=0;
     max = linhas;
 
-    int p = 0, g;
-    struct peca pecas[40];
+    int g,t, m;
+    m = (linhas*colunas)/9;
+    int pecas[m];
     struct peca peca;
 
-    for(g=0; g<40; g++)
-    {
-        if(g>count)
-        {
-            pecas[g+p] = tipo0();
-        }
-        else
-        {
-            for(j = 0; j<n1; j++)
-                pecas[p] = tipo1(-1);
-            p++;
-        }
-    }
-
-    for(a = 0; a < 15; a++)
-    {
-        for(b = 0; b < 24; b++)
-        {
-            tabuleiro[a][b] = '-';
-        }
-    }
-
-    for(g=0; g < 40; g++)
-    {
-        for(a = 0; a < linhas; a+=3)
-        {
-            for(b = 0; b < colunas; b+=3)
-            {
-                peca = pecas[g];
-                for (i=0; i<3; i++)
-                {
-                    for (j=0; j<3; j++)
-                    {
-                        tabuleiro[a+i][b+j]=peca.pecas[i][j];
-                    }
-                }
-                k++;
-            }
-        }
-    }
+    preencher_tabuleiro_p2(tabuleiro,quantidadeTipo,linhas,colunas);
 
 
     for(i = 0; i < max; i++)
@@ -521,20 +611,14 @@ void modo1_p1(int linhas, int colunas)
                 }
                 else
                 {
-                    peca = peca_random();
+                    peca = peca_random(-1,-1);
                     if (!verificarColisao(tabuleiro, a, b, peca))
                     {
                         break;
                     }
                 }
             }
-            for (i=0; i<3; i++)
-            {
-                for (j=0; j<3; j++)
-                {
-                    tabuleiro[a+i][b+j]=peca.pecas[i][j];
-                }
-            }
+            meter_peca(tabuleiro,a,b,peca);
         }
     }
 //-------------------------------------------------------------------------------------
@@ -617,31 +701,18 @@ int restricao2(int count, int linhas, int colunas)
  *
 */
 
-int restricao3(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8)
+int restricao3(int quantidadeTipo[9])
 {
-    if(n1 >= n2)
+    int i;
+
+    for (i=2; i<9; i++)
     {
-        if(n2>=n3)
+        if (quantidadeTipo[i]>quantidadeTipo[i-1])
         {
-            if(n3 >= n4)
-            {
-                if(n4>=n5)
-                {
-                    if(n5>=n6)
-                    {
-                        if(n6>=n7)
-                        {
-                            if (n7>=n8)
-                            {
-                                return 1;
-                            }
-                        }
-                    }
-                }
-            }
+            return 0;
         }
     }
-    return 0;
+    return 1;
 }
 
 /*

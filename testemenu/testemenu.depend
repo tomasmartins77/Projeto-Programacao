@@ -1,6 +1,0 @@
-# depslib dependency file v1.0
-1616848955 source:/media/sf_Programacao/treino/testemenu/main.c
-	<stdio.h>
-	<stdlib.h>
-	<unistd.h>
-
