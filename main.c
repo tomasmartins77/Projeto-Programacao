@@ -12,8 +12,12 @@ struct peca
     char pecas[3][3];
     int tipo;
 };
+typedef struct{
+    char tabuleiro[15][24];
+    int linhas, colunas;
+}TABULEIRO;
 void utilizacao();
-void modos_jogo(int linhas, int colunas, int j, int p, int d, int quantidadeTipo[9]);
+void modos_jogo(TABULEIRO tabuleiro, int j, int p, int d, int quantidadeTipo[9]);
 int random_number(int m, int M);
 struct peca tipo0();
 struct peca tipo1(int variante);
@@ -24,26 +28,30 @@ struct peca tipo5(int variante);
 struct peca tipo6(int variante);
 struct peca tipo7(int variante);
 struct peca tipo8();
-void modo0_p1(int linhas, int colunas);
-void modo0_p2(int linhas, int colunas, int quantidadeTipo[9]);
-void modo1_p1(int linhas, int colunas);
-void preencher_tabuleiro_p2(char tabuleiro[15][24], int pecas[9], int linhas, int colunas);
+void modo0_p1(TABULEIRO tabuleiro);
+void modo0_p2(TABULEIRO tabuleiro, int quantidadeTipo[9]);
+void modo1_p1(TABULEIRO tabuleiro);
+void preencher_tabuleiro_p2(TABULEIRO* tabuleiro, int pecas[9]);
 struct peca peca_random(int t, int v);
 int max_variantes(int tipo);
 void meter_peca(char tabuleiro[15][24], int a, int b, struct peca peca);
 int selecionar_peca(int pecas[9], int tipos_usados[9]);
-/*void print_inicial(int* quantidadeTipo[9],int linhas,int colunas);*/
+void imprimir_tabuleiro(TABULEIRO tabuleiro);
 int verificarColisao(char tabuleiro[15][24], int i, int j, struct peca peca);
 int restricao2(int count, int linhas, int colunas);
 int restricao3(int quantidadeTipo[9]);
 int restricao4(int linhas, int colunas, int count);
 
+
 int main(int argc, char *argv[])
 {
+    TABULEIRO tabuleiro;
     int opt = 'h';
     opterr = 0;
-    int linhas = DEFAULT_DIMENSOES, colunas = DEFAULT_DIMENSOES, j = DEFAULT_JOGO_PECA,
+    int j = DEFAULT_JOGO_PECA,
         p = DEFAULT_PECAS_TIRO, d = DEFAULT_PECAS_TIRO;
+    tabuleiro.linhas = DEFAULT_DIMENSOES;
+    tabuleiro.colunas = DEFAULT_DIMENSOES;
 
     int quantidadeTipo[9] = {0};
 
@@ -54,8 +62,8 @@ int main(int argc, char *argv[])
         switch (opt)
         {
         case 't':                                       /* tamanho do tabuleiro*/
-            sscanf(optarg, "%dX%d", &linhas, &colunas); //predefinicao 9x9??
-            if (linhas % 3 != 0 || colunas % 3 != 0 || linhas < 9 || linhas > 15 || colunas < 9 || colunas > 24)
+            sscanf(optarg, "%dX%d", &tabuleiro.linhas, &tabuleiro.colunas); //predefinicao 9x9??
+            if (tabuleiro.linhas % 3 != 0 || tabuleiro.colunas % 3 != 0 || tabuleiro.linhas < 9 || tabuleiro.linhas > 15 || tabuleiro.colunas < 9 || tabuleiro.colunas > 24)
             {
                 utilizacao(argv[0]);
                 return EXIT_FAILURE;
@@ -133,7 +141,7 @@ int main(int argc, char *argv[])
             break;
         }
     }
-    modos_jogo(linhas, colunas, j, p, d, quantidadeTipo);
+    modos_jogo(tabuleiro, j, p, d, quantidadeTipo);
     return 0;
 }
 
@@ -156,7 +164,7 @@ void utilizacao()
     printf("[-8]\t\t\t  numero de pecas do tipo 8\n");
 }
 
-void modos_jogo(int linhas, int colunas, int j, int p, int d, int quantidadeTipo[9])
+void modos_jogo(TABULEIRO tabuleiro, int j, int p, int d, int quantidadeTipo[9])
 {
     int i, count, r2, r3, r4;
 
@@ -164,20 +172,20 @@ void modos_jogo(int linhas, int colunas, int j, int p, int d, int quantidadeTipo
     {
         count += quantidadeTipo[i];
     }
-    quantidadeTipo[0] = linhas * colunas / 9 - count; /* da a quantidade de '-' ou seja, pecas tipo 0*/
-    r2 = restricao2(count, linhas, colunas);
+    quantidadeTipo[0] = tabuleiro.linhas * tabuleiro.colunas / 9 - count; /* da a quantidade de '-' ou seja, pecas tipo 0*/
+    r2 = restricao2(count, tabuleiro.linhas, tabuleiro.colunas);
     r3 = restricao3(quantidadeTipo);
-    r4 = restricao4(linhas, colunas, count);
+    r4 = restricao4(tabuleiro.linhas, tabuleiro.colunas, count);
 
     if (j == 0 && r2 == 1) // modo de jogo 0
     {
         if (p == 1) // modo de posicionamento 1
         {
-            modo0_p1(linhas, colunas);
+            modo0_p1(tabuleiro);
         }
         else if (p == 2 && r3 == 1 && r4 == 1) // modo de posicionamento 2
         {
-            modo0_p2(linhas, colunas, quantidadeTipo);
+           modo0_p2(tabuleiro, quantidadeTipo);
         }
         exit(0);
     }
@@ -185,7 +193,7 @@ void modos_jogo(int linhas, int colunas, int j, int p, int d, int quantidadeTipo
     {
         if (p == 1) // modo de posicionamento 1
         {
-            modo1_p1(linhas, colunas);
+          modo1_p1(tabuleiro);
         }
         else if (p == 2 && r3 == 1 && r4 == 1) // modo de posicionamento 2
         {
@@ -315,26 +323,24 @@ struct peca tipo8()
     return variante8;
 }
 
-void modo0_p1(int linhas, int colunas)
+void modo0_p1(TABULEIRO tabuleiro)
 {
-    char alfa[24] = "ABCDEFGHIJKLMNOPQRSTUVWX";
-    int nums[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-    char tabuleiro[15][24];
-    int i, j, max, a, b, k;
+
+    int  a, b, k;
     struct peca peca;
-    max = linhas;
+
 
     for (a = 0; a < 15; a++)
     {
         for (b = 0; b < 24; b++)
         {
-            tabuleiro[a][b] = '-';
+            tabuleiro.tabuleiro[a][b] = '-';
         }
     }
 
-    for (a = 0; a < linhas; a += 3)
+    for (a = 0; a < tabuleiro.linhas; a += 3)
     {
-        for (b = 0; b < colunas; b += 3)
+        for (b = 0; b < tabuleiro.colunas; b += 3)
         {
             for (k = 0; k <= 3; k++)
             {
@@ -345,33 +351,20 @@ void modo0_p1(int linhas, int colunas)
                 else
                 {
                     peca = peca_random(-1, -1);
-                    if (!verificarColisao(tabuleiro, a, b, peca))
+                    if (!verificarColisao(tabuleiro.tabuleiro, a, b, peca))
                     {
                         break;
                     }
                 }
             }
 
-            meter_peca(tabuleiro, a, b, peca);
+            meter_peca(tabuleiro.tabuleiro, a, b, peca);
         }
     }
 
-    printf("%dX%d\n", linhas, colunas);
+    printf("%dX%d\n", tabuleiro.linhas, tabuleiro.colunas);
+    imprimir_tabuleiro(tabuleiro);
 
-    for (i = 0; i < max; i++)
-    {
-        printf("%2d ", nums[linhas--]); //imprime as linhas do tabuleiro
-        for (j = 0; j < colunas; j++)   //imprime as colunas do tabuleiro
-        {
-            printf("%c ", tabuleiro[i][j]);
-        }
-        printf("\n");
-    }
-    printf("  ");
-    for (j = 0; j < colunas; j++)
-    {
-        printf(" %c", alfa[j]);
-    }
 }
 
 /*
@@ -414,7 +407,7 @@ struct peca peca_random(int t, int v)
     }
 }
 
-void preencher_tabuleiro_p2(char tabuleiro[15][24], int pecas[9], int linhas, int colunas)
+void preencher_tabuleiro_p2(TABULEIRO* tabuleiro, int pecas[9])
 {
     int pecas_duplicado[9];
     int i, j, k, a, b;
@@ -432,13 +425,13 @@ void preencher_tabuleiro_p2(char tabuleiro[15][24], int pecas[9], int linhas, in
         {
             for (b = 0; b < 24; b++)
             {
-                tabuleiro[a][b] = '-';
+                tabuleiro->tabuleiro[a][b] = '-';
             }
         }
 
-        for (a = 0; a < linhas && sem_erros; a += 3)
+        for (a = 0; a < tabuleiro->linhas && sem_erros; a += 3)
         {
-            for (b = 0; b < colunas && sem_erros; b += 3)
+            for (b = 0; b < tabuleiro->colunas && sem_erros; b += 3)
             {
                 int success_peca = 0;
                 int tipos_usados[9] = {0};
@@ -455,10 +448,10 @@ void preencher_tabuleiro_p2(char tabuleiro[15][24], int pecas[9], int linhas, in
                     for (k = -1; k < max; k++)
                     {
                         struct peca tentativa_peca = peca_random(tipo_peca, k); /*peca que vamos tentar por no tabuleiro*/
-                        if (!verificarColisao(tabuleiro, a, b, tentativa_peca))
+                        if (!verificarColisao(tabuleiro->tabuleiro, a, b, tentativa_peca))
                         {
                             success_peca = 1;
-                            meter_peca(tabuleiro, a, b, tentativa_peca);
+                            meter_peca(tabuleiro->tabuleiro, a, b, tentativa_peca);
                             pecas_duplicado[tipo_peca]--;
                             break;
                         }
@@ -530,47 +523,23 @@ int selecionar_peca(int pecas[9], int tipos_usados[9])
     printf("%dx%d %d %d %d %d %d %d %d %d",linhas,colunas,quantidadeTipo[1],quantidadeTipo[2],quantidadeTipo[3],quantidadeTipo[4],quantidadeTipo[5],quantidadeTipo[6],quantidadeTipo[7],quantidadeTipo[8]);
 }*/
 
-void modo0_p2(int linhas, int colunas, int quantidadeTipo[9])
+void modo0_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
 {
-    char alfa[24] = "ABCDEFGHIJKLMNOPQRSTUVWX";
-    int nums[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-    char tabuleiro[15][24];
-    int i, j, max, a, b, k = 0;
-    max = linhas;
 
-    int g, t, m;
-    m = (linhas * colunas) / 9;
-    int pecas[m];
-    struct peca peca;
-
-    preencher_tabuleiro_p2(tabuleiro, quantidadeTipo, linhas, colunas);
-    printf("%dx%d %d %d %d %d %d %d %d %d\n", linhas, colunas, quantidadeTipo[1], quantidadeTipo[2], quantidadeTipo[3], quantidadeTipo[4], quantidadeTipo[5], quantidadeTipo[6], quantidadeTipo[7], quantidadeTipo[8]);
-
-    for (i = 0; i < max; i++)
-    {
-        printf("%2d ", nums[linhas--]); //imprime as linhas do tabuleiro
-        for (j = 0; j < colunas; j++)   //imprime as colunas do tabuleiro
-        {
-            printf("%c ", tabuleiro[i][j]);
-        }
-        printf("\n");
-    }
-    printf("  ");
-    for (j = 0; j < colunas; j++)
-    {
-        printf(" %c", alfa[j]);
-    }
+    preencher_tabuleiro_p2(&tabuleiro, quantidadeTipo);
+    printf("%dx%d %d %d %d %d %d %d %d %d\n", tabuleiro.linhas, tabuleiro.colunas, quantidadeTipo[1], quantidadeTipo[2], quantidadeTipo[3], quantidadeTipo[4], quantidadeTipo[5], quantidadeTipo[6], quantidadeTipo[7], quantidadeTipo[8]);
+    imprimir_tabuleiro(tabuleiro);
 }
 
-void modo1_p1(int linhas, int colunas)
+void modo1_p1(TABULEIRO tabuleiro)
 {
-    char alfa[24] = "ABCDEFGHIJKLMNOPQRSTUVWX";
-    int nums[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-    char tabuleiro[15][24], tabuleiroinvi[15][24], c;
-    int i, j, max, a, b, k, t, l, pecas_em_jogo = 0, pecas_matriz[5][8] = {0};
+    char c;
+    TABULEIRO tabuleiroinvi;
+    tabuleiroinvi.linhas = tabuleiro.linhas;
+    tabuleiroinvi.colunas = tabuleiro.colunas;
+    int a, b, k, t, l, pecas_em_jogo = 0, pecas_matriz[5][8] = {{0}};
     struct peca peca;
-    max = linhas;
-    int max_jogadas = linhas * colunas;
+    int max_jogadas = tabuleiro.linhas * tabuleiro.colunas;
 
     time_t inicio, fim;
     double tempo_jogo;
@@ -579,7 +548,7 @@ void modo1_p1(int linhas, int colunas)
     {
         for (b = 0; b < 24; b++)
         {
-            tabuleiro[a][b] = '-';
+            tabuleiro.tabuleiro[a][b] = '-';
         }
     }
 
@@ -587,13 +556,13 @@ void modo1_p1(int linhas, int colunas)
     {
         for (b = 0; b < 24; b++)
         {
-            tabuleiroinvi[a][b] = ' ';
+            tabuleiroinvi.tabuleiro[a][b] = ' ';
         }
     }
 
-    for (a = 0; a < linhas; a += 3)
+    for (a = 0; a < tabuleiro.linhas; a += 3)
     {
-        for (b = 0; b < colunas; b += 3)
+        for (b = 0; b < tabuleiro.colunas; b += 3)
         {
             for (k = 0; k <= 3; k++)
             {
@@ -604,7 +573,7 @@ void modo1_p1(int linhas, int colunas)
                 else
                 {
                     peca = peca_random(-1, -1);
-                    if (!verificarColisao(tabuleiro, a, b, peca))
+                    if (!verificarColisao(tabuleiro.tabuleiro, a, b, peca))
                     {
                         break;
                     }
@@ -612,34 +581,20 @@ void modo1_p1(int linhas, int colunas)
             }
             pecas_matriz[a / 3][b / 3] = peca.tipo;
             pecas_em_jogo += peca.tipo;
-            meter_peca(tabuleiro, a, b, peca);
+            meter_peca(tabuleiro.tabuleiro, a, b, peca);
         }
     }
 
-    printf("%dX%d\n", linhas, colunas);
+    printf("%dx%d\n", tabuleiro.linhas, tabuleiro.colunas);
     time(&inicio);
     for (t = 0; t < max_jogadas; t++)
     {
-
-        for (i = 0, max = 9; i < linhas; i++)
-        {
-            printf("%2d ", nums[max--]);  //imprime as linhas do tabuleiro
-            for (j = 0; j < colunas; j++) //imprime as colunas do tabuleiro
-            {
-                printf("%c ", tabuleiroinvi[i][j]);
-            }
-            printf("\n");
-        }
-        printf("  ");
-        for (j = 0; j < colunas; j++)
-        {
-            printf(" %c", alfa[j]);
-        }
+        imprimir_tabuleiro(tabuleiroinvi);
         printf("\n");
 
         scanf(" %c %d", &c, &l);
 
-        if (l <= 0 || l > linhas || c - 'A' < 0 || c - 'A' >= colunas || tabuleiroinvi[linhas - l][c - 'A'] != ' ')
+        if (l <= 0 || l > tabuleiro.linhas || c - 'A' < 0 || c - 'A' >= tabuleiro.colunas || tabuleiroinvi.tabuleiro[tabuleiro.linhas - l][c - 'A'] != ' ')
         {
             t--;
         }
@@ -647,10 +602,10 @@ void modo1_p1(int linhas, int colunas)
         else
         {
             int num = c - 'A';
-            int num2 = linhas - l;
-            tabuleiroinvi[num2][num] = tabuleiro[num2][num];
+            int num2 = tabuleiro.linhas - l;
+            tabuleiroinvi.tabuleiro[num2][num] = tabuleiro.tabuleiro[num2][num];
 
-            if (tabuleiro[num2][num] != '-')
+            if (tabuleiro.tabuleiro[num2][num] != '-')
             {
                 pecas_em_jogo--;
                 pecas_matriz[num2 / 3][num / 3]--;
@@ -661,28 +616,36 @@ void modo1_p1(int linhas, int colunas)
                 }
             }
         }
-        printf("\n%d\n", t);
+
     }
-    for (i = 0, max = 9; i < linhas; i++)
+    imprimir_tabuleiro(tabuleiro);
+
+    time(&fim);
+    tempo_jogo = difftime(fim, inicio);
+    printf("\nNumero de tentativas: %d\n", t);
+    printf("Tempo de Jogo: %.2lf segundos", tempo_jogo);
+}
+
+void imprimir_tabuleiro(TABULEIRO tabuleiro)
+{
+    char h;
+    int i, j;
+    int max = tabuleiro.linhas;
+     for (i = 0; i < max; i++)
     {
-        printf("%2d ", nums[max--]);  //imprime as linhas do tabuleiro
-        for (j = 0; j < colunas; j++) //imprime as colunas do tabuleiro
+        printf("%2d ", tabuleiro.linhas--); //imprime as linhas do tabuleiro
+        for (j = 0; j < tabuleiro.colunas; j++)   //imprime as colunas do tabuleiro
         {
-            printf("%c ", tabuleiroinvi[i][j]);
+            printf("%c ", tabuleiro.tabuleiro[i][j]);
         }
         printf("\n");
     }
     printf("  ");
-    for (j = 0; j < colunas; j++)
+    for (h = 'A'; h < 'A' + tabuleiro.colunas; h++)
     {
-        printf(" %c", alfa[j]);
+        printf(" %c", h);
     }
-    printf("\n");
 
-    time(&fim);
-    tempo_jogo = difftime(fim, inicio);
-    printf("Numero de tentativas: %d\n", t);
-    printf("Tempo de Jogo: %.2lf segundos", tempo_jogo);
 }
 
 /*
