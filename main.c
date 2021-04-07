@@ -17,6 +17,11 @@ typedef struct
     char tabuleiro[15][24];
     int linhas, colunas;
 } TABULEIRO;
+typedef struct
+{
+    int x;
+    int y;
+} Celula;
 void utilizacao();
 void modos_jogo(TABULEIRO tabuleiro, int j, int p, int d, int quantidadeTipo[9]);
 int random_number(int m, int M);
@@ -33,12 +38,16 @@ void modo0_p1(TABULEIRO tabuleiro);
 void modo0_p2(TABULEIRO tabuleiro, int quantidadeTipo[9]);
 void modo1_p1(TABULEIRO tabuleiro);
 void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9]);
+void modo_j2(TABULEIRO tabuleiro, int quantidadeTipo[9], int modo_disparo);
 void preencher_tabuleiro_p2(TABULEIRO *tabuleiro, int pecas[9]);
 struct peca peca_random(int t, int v);
 int max_variantes(int tipo);
 void meter_peca(char tabuleiro[15][24], int a, int b, struct peca peca);
 int selecionar_peca(int pecas[9], int tipos_usados[9]);
 void imprimir_tabuleiro(TABULEIRO tabuleiro);
+void inicializar_tabuleiro(TABULEIRO *tabuleiro, char peca);
+int verificar_final(int quantidadeTipo[9]);
+Celula disparar_j2(TABULEIRO *tabuleiro, int modo_disparo);
 int verificarColisao(char tabuleiro[15][24], int i, int j, struct peca peca);
 int restricao2(int count, int linhas, int colunas);
 int restricao3(int quantidadeTipo[9]);
@@ -205,15 +214,7 @@ void modos_jogo(TABULEIRO tabuleiro, int j, int p, int d, int quantidadeTipo[9])
     }
     else if (j == 2 && r2 == 1 && r3 == 1 && r4 == 1) // modo de jogo 2
     {
-        if (d == 1) // modo de disparo 1
-        {
-        }
-        else if (d == 2) // modo de disparo 2
-        {
-        }
-        else if (d == 3) // modo de disparo 3
-        {
-        }
+        modo_j2(tabuleiro, quantidadeTipo, d);
     }
     exit(0);
 }
@@ -492,6 +493,18 @@ void meter_peca(char tabuleiro[15][24], int a, int b, struct peca peca)
     }
 }
 
+void inicializar_tabuleiro(TABULEIRO *tabuleiro, char peca)
+{
+    int a, b;
+    for (a = 0; a < 15; a++)
+    {
+        for (b = 0; b < 24; b++)
+        {
+            tabuleiro->tabuleiro[a][b] = peca;
+        }
+    }
+}
+
 int max_variantes(int tipo)
 {
     int numero_variantes[] = {1, 9, 12, 6, 4, 4, 4, 2, 1};
@@ -644,13 +657,7 @@ void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
         pecas_em_jogo += quantidadeTipo[a];
     }
 
-    for (a = 0; a < 15; a++)
-    {
-        for (b = 0; b < 24; b++)
-        {
-            tabuleiroinvi.tabuleiro[a][b] = ' ';
-        }
-    }
+    inicializar_tabuleiro(&tabuleiroinvi, ' ');
 
     preencher_tabuleiro_p2(&tabuleiro, quantidadeTipo);
 
@@ -714,6 +721,105 @@ void imprimir_tabuleiro(TABULEIRO tabuleiro)
     {
         printf(" %c", h);
     }
+}
+
+Celula modo_d1(TABULEIRO *tabuleiro)
+{ // 15 linhas * 24 colunas = 360 quadriculas
+    Celula possibilidades[360];
+    int a, b, i = 0;
+
+    for (a = 0; a < tabuleiro->linhas; a++)
+    {
+        for (b = 0; b < tabuleiro->colunas; b++)
+        {
+            if (tabuleiro->tabuleiro[a][b] == ' ')
+            {
+                possibilidades[i].x = a;
+                possibilidades[i].y = b;
+                i++;
+            }
+        }
+    }
+    if (i == 0)
+    {
+        //quer dizer que o tabuleiro está cheio
+        possibilidades[0].x = -1;
+        possibilidades[0].y = -1;
+        return possibilidades[0];
+    }
+    return possibilidades[random_number(0, i - 1)];
+}
+
+Celula disparar_j2(TABULEIRO *tabuleiro, int modo_disparo)
+{
+    if (modo_disparo == 1)
+    {
+        return modo_d1(tabuleiro);
+    }
+    else
+    {
+        return modo_d1(tabuleiro);
+    }
+}
+
+void modo_j2(TABULEIRO tabuleiro, int quantidadeTipo[9], int modo_disparo)
+{
+    time_t inicio, fim;
+    print_inicial(quantidadeTipo, tabuleiro);
+    Celula disparo;
+    char resposta;
+    int i, a, b, count = 0;
+    double tempo_jogo;
+    time(&inicio);
+
+    for (i = 0; i < 9; i++)
+    {
+        quantidadeTipo[i] *= i;
+    }
+
+    inicializar_tabuleiro(&tabuleiro, ' ');
+
+    while ((disparo = disparar_j2(&tabuleiro, modo_disparo)).x >= 0 && verificar_final(quantidadeTipo))
+    {
+        printf("%c%d\n", disparo.y + 'A', tabuleiro.linhas - disparo.x);
+        scanf(" %c", &resposta);
+
+        if (resposta > '0' && resposta < '9')
+        {
+            quantidadeTipo[resposta - '0']--;
+        }
+        tabuleiro.tabuleiro[disparo.x][disparo.y] = resposta;
+        count++;
+    }
+    time(&fim);
+    tempo_jogo = difftime(fim, inicio);
+    printf("Fim de Jogo: %d em %.2lf segundos\n", count, tempo_jogo);
+
+    for (a = 0; a < 15; a++)
+    {
+        for (b = 0; b < 24; b++)
+        {
+            if (tabuleiro.tabuleiro[a][b] == ' ')
+            {
+                tabuleiro.tabuleiro[a][b] = '-';
+            }
+        }
+    }
+
+    imprimir_tabuleiro(tabuleiro);
+}
+
+int verificar_final(int quantidadeTipo[9])
+{
+    int i;
+    for (i = 1; i < 9; i++)
+    {
+        if (quantidadeTipo[i] > 0)
+        {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 /*
