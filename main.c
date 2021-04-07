@@ -43,6 +43,8 @@ int restricao2(int count, int linhas, int colunas);
 int restricao3(int quantidadeTipo[9]);
 int restricao4(int linhas, int colunas, int count);
 void print_inicial(int quantidadeTipo[9],TABULEIRO tabuleiro);
+int contador_pecas(struct peca);
+int contador_peca(int quantidadeTipo[9]);
 
 int main(int argc, char *argv[])
 {
@@ -332,6 +334,7 @@ void modo0_p1(TABULEIRO tabuleiro)
     struct peca peca;
 
 
+
     for (a = 0; a < 15; a++)
     {
         for (b = 0; b < 24; b++)
@@ -359,11 +362,11 @@ void modo0_p1(TABULEIRO tabuleiro)
                     }
                 }
             }
-
             meter_peca(tabuleiro.tabuleiro, a, b, peca);
+            //contador_pecas(peca);
         }
     }
-
+    //printf("\n%d\n", contador_pecas(peca));
     printf("%dX%d\n", tabuleiro.linhas, tabuleiro.colunas);
     imprimir_tabuleiro(tabuleiro);
 
@@ -408,6 +411,16 @@ struct peca peca_random(int t, int v)
         return tipo8(v);
     }
 }
+/*
+int contador_pecas(struct peca peca)
+{
+    struct peca pecas;
+    int conta_pecas[8];
+
+    if(pecas.tipo == peca.tipo)
+        conta_pecas[0]+=1;
+    return conta_pecas;
+}*/
 
 void preencher_tabuleiro_p2(TABULEIRO* tabuleiro, int pecas[9])
 {
@@ -633,16 +646,11 @@ void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
     TABULEIRO tabuleiroinvi;
     tabuleiroinvi.linhas = tabuleiro.linhas;
     tabuleiroinvi.colunas = tabuleiro.colunas;
-    int a, b, t, l, pecas_em_jogo = 0, pecas_matriz[5][8] = {{0}};
-
+    int a, b, t, l, pecas_matriz[5][8] = {{0}}, pecas_em_jogo = contador_peca(quantidadeTipo);;
     int max_jogadas = tabuleiro.linhas * tabuleiro.colunas;
 
     time_t inicio, fim;
     double tempo_jogo;
-
-    for(a=1; a<9; a++){
-        pecas_em_jogo += quantidadeTipo[a];
-    }
 
     for (a = 0; a < 15; a++)
     {
@@ -651,7 +659,6 @@ void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
             tabuleiroinvi.tabuleiro[a][b] = ' ';
         }
     }
-
 
     preencher_tabuleiro_p2(&tabuleiro, quantidadeTipo);
 
@@ -695,6 +702,39 @@ void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
     tempo_jogo = difftime(fim, inicio);
     printf("\nNumero de tentativas: %d\n", t);
     printf("Tempo de Jogo: %.2lf segundos", tempo_jogo);
+}
+
+int contador_peca(int quantidadeTipo[9])
+{
+    int a, pecas_em_jogo = 0;
+    for(a=1; a<9; a++){
+        switch(a){
+            case 1:
+                pecas_em_jogo += quantidadeTipo[a];
+                break;
+            case 2:
+                pecas_em_jogo += quantidadeTipo[a]*2;
+                break;
+            case 3:
+                pecas_em_jogo += quantidadeTipo[a]*3;
+                break;
+            case 4:
+                pecas_em_jogo += quantidadeTipo[a]*4;
+                break;
+            case 5:
+                pecas_em_jogo += quantidadeTipo[a]*5;
+                break;
+            case 6:
+                pecas_em_jogo += quantidadeTipo[a]*6;
+                break;
+            case 7:
+                pecas_em_jogo += quantidadeTipo[a]*7;
+                break;
+            case 8:
+                pecas_em_jogo += quantidadeTipo[a]*8;
+                break;
+        }
+    }return pecas_em_jogo;
 }
 
 void imprimir_tabuleiro(TABULEIRO tabuleiro)
