@@ -31,6 +31,7 @@ struct peca tipo8();
 void modo0_p1(TABULEIRO tabuleiro);
 void modo0_p2(TABULEIRO tabuleiro, int quantidadeTipo[9]);
 void modo1_p1(TABULEIRO tabuleiro);
+void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9]);
 void preencher_tabuleiro_p2(TABULEIRO* tabuleiro, int pecas[9]);
 struct peca peca_random(int t, int v);
 int max_variantes(int tipo);
@@ -41,7 +42,7 @@ int verificarColisao(char tabuleiro[15][24], int i, int j, struct peca peca);
 int restricao2(int count, int linhas, int colunas);
 int restricao3(int quantidadeTipo[9]);
 int restricao4(int linhas, int colunas, int count);
-
+void print_inicial(int quantidadeTipo[9],TABULEIRO tabuleiro);
 
 int main(int argc, char *argv[])
 {
@@ -197,6 +198,7 @@ void modos_jogo(TABULEIRO tabuleiro, int j, int p, int d, int quantidadeTipo[9])
         }
         else if (p == 2 && r3 == 1 && r4 == 1) // modo de posicionamento 2
         {
+        modo1_p2(tabuleiro, quantidadeTipo);
         }
         exit(0);
     }
@@ -519,15 +521,14 @@ int selecionar_peca(int pecas[9], int tipos_usados[9])
     return possibilidades[random_number(0, count - 1)];
 }
 
-/*void print_inicial(int* quantidadeTipo[9],int linhas,int colunas){
-    printf("%dx%d %d %d %d %d %d %d %d %d",linhas,colunas,quantidadeTipo[1],quantidadeTipo[2],quantidadeTipo[3],quantidadeTipo[4],quantidadeTipo[5],quantidadeTipo[6],quantidadeTipo[7],quantidadeTipo[8]);
-}*/
+void print_inicial(int quantidadeTipo[9],TABULEIRO tabuleiro){
+    printf("%dx%d %d %d %d %d %d %d %d %d\n",tabuleiro.linhas,tabuleiro.colunas,quantidadeTipo[1],quantidadeTipo[2],quantidadeTipo[3],quantidadeTipo[4],quantidadeTipo[5],quantidadeTipo[6],quantidadeTipo[7],quantidadeTipo[8]);
+}
 
 void modo0_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
 {
-
     preencher_tabuleiro_p2(&tabuleiro, quantidadeTipo);
-    printf("%dx%d %d %d %d %d %d %d %d %d\n", tabuleiro.linhas, tabuleiro.colunas, quantidadeTipo[1], quantidadeTipo[2], quantidadeTipo[3], quantidadeTipo[4], quantidadeTipo[5], quantidadeTipo[6], quantidadeTipo[7], quantidadeTipo[8]);
+    print_inicial(quantidadeTipo,tabuleiro);
     imprimir_tabuleiro(tabuleiro);
 }
 
@@ -618,6 +619,76 @@ void modo1_p1(TABULEIRO tabuleiro)
         }
 
     }
+    imprimir_tabuleiro(tabuleiro);
+
+    time(&fim);
+    tempo_jogo = difftime(fim, inicio);
+    printf("\nNumero de tentativas: %d\n", t);
+    printf("Tempo de Jogo: %.2lf segundos", tempo_jogo);
+}
+
+void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
+{
+    char c;
+    TABULEIRO tabuleiroinvi;
+    tabuleiroinvi.linhas = tabuleiro.linhas;
+    tabuleiroinvi.colunas = tabuleiro.colunas;
+    int a, b, t, l, pecas_em_jogo = 0, pecas_matriz[5][8] = {{0}};
+
+    int max_jogadas = tabuleiro.linhas * tabuleiro.colunas;
+
+    time_t inicio, fim;
+    double tempo_jogo;
+
+    for(a=1; a<9; a++){
+        pecas_em_jogo += quantidadeTipo[a];
+    }
+
+    for (a = 0; a < 15; a++)
+    {
+        for (b = 0; b < 24; b++)
+        {
+            tabuleiroinvi.tabuleiro[a][b] = ' ';
+        }
+    }
+
+
+    preencher_tabuleiro_p2(&tabuleiro, quantidadeTipo);
+
+    time(&inicio);
+    for (t = 0; t < max_jogadas; t++)
+    {
+        print_inicial(quantidadeTipo,tabuleiro);
+        imprimir_tabuleiro(tabuleiroinvi);
+        printf("\n");
+
+        scanf(" %c %d", &c, &l);
+
+        if (l <= 0 || l > tabuleiro.linhas || c - 'A' < 0 || c - 'A' >= tabuleiro.colunas || tabuleiroinvi.tabuleiro[tabuleiro.linhas - l][c - 'A'] != ' ')
+        {
+            t--;
+        }
+
+        else
+        {
+            int num = c - 'A';
+            int num2 = tabuleiro.linhas - l;
+            tabuleiroinvi.tabuleiro[num2][num] = tabuleiro.tabuleiro[num2][num];
+
+            if (tabuleiro.tabuleiro[num2][num] != '-')
+            {
+                pecas_em_jogo--;
+                pecas_matriz[num2 / 3][num / 3]--;
+
+                if (pecas_em_jogo == 0)
+                {
+                    break;
+                }
+            }
+        }
+
+    }
+    print_inicial(quantidadeTipo,tabuleiro);
     imprimir_tabuleiro(tabuleiro);
 
     time(&fim);
