@@ -47,7 +47,7 @@ int selecionar_peca(int pecas[9], int tipos_usados[9]);
 void imprimir_tabuleiro(TABULEIRO tabuleiro);
 void inicializar_tabuleiro(TABULEIRO *tabuleiro, char peca);
 int verificar_final(int quantidadeTipo[9]);
-Celula disparar_j2(TABULEIRO *tabuleiro, int modo_disparo);
+Celula disparar_j2(TABULEIRO *tabuleiro, int modo_disparo, int jogada);
 int verificarColisao(char tabuleiro[15][24], int i, int j, struct peca peca);
 int restricao2(int count, int linhas, int colunas);
 int restricao3(int quantidadeTipo[9]);
@@ -750,7 +750,32 @@ Celula modo_d1(TABULEIRO *tabuleiro)
     return possibilidades[random_number(0, i - 1)];
 }
 
-Celula disparar_j2(TABULEIRO *tabuleiro, int modo_disparo)
+Celula modo_d2(TABULEIRO *tabuleiro, int jogada)
+{
+    int ordem[] = {4, 1, 7, 3, 5, 0, 8, 2, 6};
+    int matriz = jogada / 9;
+    int a, b, x, y;
+    Celula disparo;
+
+    a = (matriz / (tabuleiro->colunas / 3)) * 3; //
+    b = (matriz % (tabuleiro->colunas / 3)) * 3;
+
+    x = (ordem[jogada % 9]) / 3;
+    y = (ordem[jogada % 9]) % 3;
+
+    disparo.x = a + x;
+    disparo.y = b + y;
+
+    if (disparo.x >= tabuleiro->linhas || disparo.y >= tabuleiro->colunas) //quando tiver fora do tabuleiro, o jogo acaba
+    {
+        disparo.x = -1;
+        disparo.y = -1;
+    }
+
+    return disparo;
+}
+
+Celula disparar_j2(TABULEIRO *tabuleiro, int modo_disparo, int jogada)
 {
     if (modo_disparo == 1)
     {
@@ -758,7 +783,7 @@ Celula disparar_j2(TABULEIRO *tabuleiro, int modo_disparo)
     }
     else
     {
-        return modo_d1(tabuleiro);
+        return modo_d2(tabuleiro, jogada);
     }
 }
 
@@ -779,7 +804,7 @@ void modo_j2(TABULEIRO tabuleiro, int quantidadeTipo[9], int modo_disparo)
 
     inicializar_tabuleiro(&tabuleiro, ' ');
 
-    while ((disparo = disparar_j2(&tabuleiro, modo_disparo)).x >= 0 && verificar_final(quantidadeTipo))
+    while ((disparo = disparar_j2(&tabuleiro, modo_disparo, count)).x >= 0 && verificar_final(quantidadeTipo))
     {
         printf("%c%d\n", disparo.y + 'A', tabuleiro.linhas - disparo.x);
         scanf(" %c", &resposta);
