@@ -14,7 +14,7 @@ struct peca
 };
 typedef struct
 {
-    char tabuleiro[15][24];
+    char tabuleiro[15][24] /* = '-' */;
     int linhas, colunas;
 } TABULEIRO;
 typedef struct
