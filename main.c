@@ -417,6 +417,13 @@ struct peca peca_random(int t, int v)
     }
 }
 
+/** \brief conta as pecas recebidas pelo modo de posicionamento 1
+ *
+ * \param tipo int: variante da peca
+ * \param conta_pecas[9] int: array que guarda todos os tipos de pecas
+ * \return void
+ *
+ */
 void contador_pecas_p1(int tipo, int conta_pecas[9])
 {
     switch(tipo)
@@ -448,12 +455,21 @@ void contador_pecas_p1(int tipo, int conta_pecas[9])
     }
 }
 
+/** \brief recebe as pecas dos argumentos da linha de comandos e tenta colocar no
+ *   tabuleiro, se nao conseguir colocar uma das variantes, tenta colocar outra, caso nao
+ *  seja possivel formar o tabuleiro depois de 1000 tentativas, da erro e nao gera tabuleiro nenhum.
+ *
+ * \param tabuleiro TABULEIRO*: tabuleiro na qual vao ser colocadas as pecas
+ * \param pecas[9] int: guarda as pecas que vao ser colocadas no tabuleiro
+ * \return void
+ *
+ */
 void preencher_tabuleiro_p2(TABULEIRO *tabuleiro, int pecas[9])
 {
-    int pecas_duplicado[9];
+    int pecas_duplicado[9]; // array para verificar as pecas anteriormente colocadas
     int i, j, k, a, b;
 
-    for (i = 0; i < 1000; i++)
+    for (i = 0; i < 1000; i++) // loop de 1000 regressos
     {
         int sem_erros = 1;
 
@@ -482,7 +498,7 @@ void preencher_tabuleiro_p2(TABULEIRO *tabuleiro, int pecas[9])
                     int max;
                     if (tipo_peca < 0)
                     {
-                        break;
+                        break; // se nao houver mais pecas, sai do loop
                     }
                     max = max_variantes(tipo_peca);
                     for (k = -1; k < max; k++)
@@ -490,7 +506,7 @@ void preencher_tabuleiro_p2(TABULEIRO *tabuleiro, int pecas[9])
                         struct peca tentativa_peca = peca_random(tipo_peca, k); /*peca que vamos tentar por no tabuleiro*/
                         if (!verificarColisao(tabuleiro->tabuleiro, a, b, tentativa_peca))
                         {
-                            success_peca = 1;
+                            success_peca = 1; // peca pode ser colocada
                             meter_peca(tabuleiro->tabuleiro, a, b, tentativa_peca);
                             pecas_duplicado[tipo_peca]--;
                             break;
@@ -569,9 +585,16 @@ int max_variantes(int tipo)
     return numero_variantes[tipo];
 }
 
+/** \brief recebe uma peca escolhida e coloca como possibilidade
+ *
+ * \param pecas[9] int: pecas recebidas da linha de argumentos
+ * \param tipos_usados[9] int: tipos anteriormente utilizados
+ * \return int: -1 se a peca for uma peca ja nao disponivel e retorna uma possibilidade random se correto
+ *
+ */
 int selecionar_peca(int pecas[9], int tipos_usados[9])
 {
-    int possibilidades[40] = {0};
+    int possibilidades[40] = {0}; // quantidade maxima de matrizes 3x3, espalha melhor as pecas pelo tabuleiro
     int count = 0, i, j;
 
     for (i = 0; i < 9; i++)
@@ -620,6 +643,17 @@ void modo0_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
     imprimir_tabuleiro(tabuleiro);
 }
 
+/** \brief distribui pecas random pelo tabuleiro sem ter atencao as restricoes 3 e 4, no caso
+ *   do modo de jogo 1, recebe coordenadas de disparo do utilizador, que tenta afundar todos os barcos.
+ *   possui um tabuleiro invisivel, em que de acordo com as coordenadas do utilizador, vai comparando
+ *   ambos os tabuleiros com as pecas colocadas e o tabuleiro invisivel que vai monstrando os disparos
+ *   do utilizador
+ *
+ * \param tabuleiro TABULEIRO
+ * \param jogo int: modo de jogo escolhido
+ * \return void
+ *
+ */
 void modo_p1(TABULEIRO tabuleiro, int jogo)
 {
     char coluna;
@@ -635,7 +669,7 @@ void modo_p1(TABULEIRO tabuleiro, int jogo)
 
     inicializar_tabuleiro(&tabuleiro, '-');
 
-    inicializar_tabuleiro(&tabuleiroinvi, ' ');
+    inicializar_tabuleiro(&tabuleiroinvi, ' '); // tabuleiro onde vao ser colocados os disparos
 
     for (a = 0; a < tabuleiro.linhas; a += 3)
     {
@@ -645,8 +679,8 @@ void modo_p1(TABULEIRO tabuleiro, int jogo)
             {
                 if (k == 3)
                 {
-                    peca = tipo1(4);
-                }
+                    peca = tipo1(4); // se nao conseguir colocar uma peca em 3 tentativas, coloca
+                }                    // a peca do tipo 1 no centro da matriz
                 else
                 {
                     peca = peca_random(-1, -1);
@@ -663,7 +697,7 @@ void modo_p1(TABULEIRO tabuleiro, int jogo)
         }
     }
 
-    if (jogo == 0)
+    if (jogo == 0) // se o modo de jogo escolhido for 0
     {
         print_inicial(pecas, tabuleiro);
         imprimir_tabuleiro(tabuleiro);
@@ -676,12 +710,12 @@ void modo_p1(TABULEIRO tabuleiro, int jogo)
         print_inicial(pecas, tabuleiro);
         imprimir_tabuleiro(tabuleiroinvi);
         printf("\n");
-
+        printf("Insira as coordenadas: ");
         scanf(" %c %d", &coluna, &linha);
 
         if (linha <= 0 || linha > tabuleiro.linhas || coluna - 'A' < 0 || coluna - 'A' >= tabuleiro.colunas || tabuleiroinvi.tabuleiro[tabuleiro.linhas - linha][coluna - 'A'] != ' ')
         {
-            jogadas--;
+            jogadas--; // coordenadas erradas
         }
         else
         {
@@ -691,7 +725,7 @@ void modo_p1(TABULEIRO tabuleiro, int jogo)
 
             if (tabuleiro.tabuleiro[num2][num] != '-')
             {
-                pecas_em_jogo--;
+                pecas_em_jogo--; // peca atingida
                 pecas_matriz[num2 / 3][num / 3]--;
 
                 if (pecas_em_jogo == 0)
@@ -709,6 +743,16 @@ void modo_p1(TABULEIRO tabuleiro, int jogo)
     printf("Tempo de Jogo: %.2lf segundos", tempo_jogo);
 }
 
+/** \brief recebe coordenadas de disparo do utilizador, que tenta afundar todos os barcos.
+ *   possui um tabuleiro invisivel, em que de acordo com as coordenadas do utilizador, vai comparando
+ *   ambos os tabuleiros com as pecas colocadas e o tabuleiro invisivel que vai monstrando os disparos
+ *   do utilizador
+ *
+ * \param tabuleiro TABULEIRO
+ * \param quantidadeTipo[9] int: quantidade de pecas de cada tipo escolhido
+ * \return void
+ *
+ */
 void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
 {
     char coluna;
@@ -731,13 +775,13 @@ void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
     {
         print_inicial(quantidadeTipo, tabuleiro);
         imprimir_tabuleiro(tabuleiroinvi);
-        printf("\n");
 
+        printf("\nInsira as coordenadas: ");
         scanf(" %c %d", &coluna, &linha);
-        // jogadas invalidas
+
         if (linha <= 0 || linha > tabuleiro.linhas || coluna - 'A' < 0 || coluna - 'A' >= tabuleiro.colunas || tabuleiroinvi.tabuleiro[tabuleiro.linhas - linha][coluna - 'A'] != ' ')
         {
-            jogadas--;
+            jogadas--;  // jogadas invalidas
         }
 
         else
@@ -748,7 +792,7 @@ void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
 
             if (tabuleiro.tabuleiro[num2][num] != '-')
             {
-                pecas_em_jogo--;
+                pecas_em_jogo--; // peca atingida
                 pecas_matriz[num2 / 3][num / 3]--;
                 if (pecas_em_jogo == 0)
                 {
@@ -784,25 +828,25 @@ int contador_pecas_p2(int quantidadeTipo[9])
             pecas_em_jogo += quantidadeTipo[a];
             break;
         case 2:
-            pecas_em_jogo += quantidadeTipo[a] * 2;
+            pecas_em_jogo += quantidadeTipo[a] * a;
             break;
         case 3:
-            pecas_em_jogo += quantidadeTipo[a] * 3;
+            pecas_em_jogo += quantidadeTipo[a] * a;
             break;
         case 4:
-            pecas_em_jogo += quantidadeTipo[a] * 4;
+            pecas_em_jogo += quantidadeTipo[a] * a;
             break;
         case 5:
-            pecas_em_jogo += quantidadeTipo[a] * 5;
+            pecas_em_jogo += quantidadeTipo[a] * a;
             break;
         case 6:
-            pecas_em_jogo += quantidadeTipo[a] * 6;
+            pecas_em_jogo += quantidadeTipo[a] * a;
             break;
         case 7:
-            pecas_em_jogo += quantidadeTipo[a] * 7;
+            pecas_em_jogo += quantidadeTipo[a] * a;
             break;
         case 8:
-            pecas_em_jogo += quantidadeTipo[a] * 8;
+            pecas_em_jogo += quantidadeTipo[a] * a;
             break;
         }
     }
@@ -836,6 +880,14 @@ void imprimir_tabuleiro(TABULEIRO tabuleiro)
     }
 }
 
+/** \brief ve todas as possibilidades ainda disponiveis e envia uma coordenada aleatoria
+ *  dessas possibilidades
+ *
+ * \param tabuleiro TABULEIRO*: tabuleiro na qual vai ser verificado quantas quadriculas ainda
+ *    se pode disparar
+ * \return Celula: coordenada aleatoria disponivel
+ *
+ */
 Celula modo_d1(TABULEIRO *tabuleiro)
 {
     // 15 linhas * 24 colunas = 360 quadriculas
@@ -846,8 +898,9 @@ Celula modo_d1(TABULEIRO *tabuleiro)
     {
         for (b = 0; b < tabuleiro->colunas; b++)
         {
-            if (tabuleiro->tabuleiro[a][b] == ' ')
+            if (tabuleiro->tabuleiro[a][b] == ' ') // verifica se e uma possibilidade ou nao
             {
+                // nao coloca em sitios onde ja foi disparado
                 possibilidades[i].x = a;
                 possibilidades[i].y = b;
                 i++;
@@ -895,6 +948,14 @@ Celula modo_d2(TABULEIRO *tabuleiro, int *jogada)
     return disparo;
 }
 
+/** \brief decide qual o modo de disparo onde nos encontramos
+ *
+ * \param tabuleiro TABULEIRO*
+ * \param modo_disparo int
+ * \param jogada int*
+ * \return Celula
+ *
+ */
 Celula disparar_j2(TABULEIRO *tabuleiro, int modo_disparo, int *jogada)
 {
     if (modo_disparo == 1)
@@ -907,6 +968,14 @@ Celula disparar_j2(TABULEIRO *tabuleiro, int modo_disparo, int *jogada)
     }
 }
 
+/** \brief quando um navia se afunda, verifica a sua volta e impede de ser disparado
+ *   nessas coordenadas
+ *
+ * \param tabuleiro TABULEIRO*
+ * \param matriz int
+ * \return void
+ *
+ */
 void afundar_navio(TABULEIRO *tabuleiro, int matriz)
 {
     int i = (matriz / (tabuleiro->colunas / 3)) * 3;
@@ -940,6 +1009,14 @@ void afundar_navio(TABULEIRO *tabuleiro, int matriz)
     }
 }
 
+/** \brief o jogador indica se o lugar onde o computador disparou e agua ou um barco
+ *
+ * \param tabuleiro TABULEIRO
+ * \param quantidadeTipo[9] int
+ * \param modo_disparo int
+ * \return void
+ *
+ */
 void modo_j2(TABULEIRO tabuleiro, int quantidadeTipo[9], int modo_disparo)
 {
     time_t inicio, fim;
@@ -961,11 +1038,11 @@ void modo_j2(TABULEIRO tabuleiro, int quantidadeTipo[9], int modo_disparo)
     while ((disparo = disparar_j2(&tabuleiro, modo_disparo, &jogada)).x >= 0 && verificar_final(quantidadeTipo))
     {
         printf("%c%d\n", disparo.y + 'A', tabuleiro.linhas - disparo.x);
-        scanf(" %c", &resposta);
+        scanf(" %c", &resposta); // input do utilizador
 
         if (resposta > '0' && resposta < '9')
         {
-            quantidadeTipo[resposta - '0']--;
+            quantidadeTipo[resposta - '0']--; // contador de quadriculas de cada barco
             if (matriz_por_encontrar[jogada / 9] == 0)
             {
                 matriz_por_encontrar[jogada / 9] = resposta - '0';
@@ -973,11 +1050,11 @@ void modo_j2(TABULEIRO tabuleiro, int quantidadeTipo[9], int modo_disparo)
             matriz_por_encontrar[jogada / 9]--;
             if (matriz_por_encontrar[jogada / 9] == 0)
             {
-                if (modo_disparo == 3)
+                if (modo_disparo == 3) // modo de disparo 3
                 {
                     afundar_navio(&tabuleiro, jogada / 9);
                 }
-                jogada = (jogada / 9) * 9 + 8;
+                jogada = (jogada / 9) * 9 + 8; // passa para a matriz seguinte
             }
         }
         tabuleiro.tabuleiro[disparo.x][disparo.y] = resposta;
@@ -1023,7 +1100,7 @@ int verificar_final(int quantidadeTipo[9])
 /** \brief as pecas nunca podem ter arestas ou vertices de contacto com outras pecas
  *
  * \param tabuleiro[15][24] char: tabuleiro
- * \param i int: linha na qual nos encontramos no tabuleiro--------------------------------------------------------
+ * \param i int: linha na qual nos encontramos no tabuleiro
  * \param j int: coluna na qual nos encontramos no tabuleiro
  * \param peca struct peca: peca na qual vai ser verificada a colisao
  * \return int: 1 se houver alguma colisao e 0 se nao houver
