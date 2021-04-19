@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <getopt.h>
 
 #define DEFAULT_DIMENSOES 9
 #define DEFAULT_JOGO 0
