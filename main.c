@@ -144,6 +144,7 @@ void erro_argumentos(TABULEIRO tabuleiro, int jogo, int pecas, int disparos, int
     if (tabuleiro.linhas % 3 != 0 || tabuleiro.colunas % 3 != 0 || tabuleiro.linhas < 9 || tabuleiro.linhas > 15 || tabuleiro.colunas < 9 || tabuleiro.colunas > 24)
     {
         utilizacao();
+        printf("\ndimensoes nao disponiveis\n");
         exit(-1);
     }
     else if (jogo == 0 || jogo == 1)
@@ -151,11 +152,13 @@ void erro_argumentos(TABULEIRO tabuleiro, int jogo, int pecas, int disparos, int
         if (pecas < 1 || pecas > 2 || disparos != 1)
         {
             utilizacao();
+            printf("\nmodo de posicionamento nao disponivel\n");
             exit(-1);
         }
         if (pecas == 2 && quantidadeTipo[1] == 0)
         {
             utilizacao();
+            printf("\npecas insuficientes\n");
             exit(-1);
         }
         if (pecas == 1)
@@ -165,6 +168,7 @@ void erro_argumentos(TABULEIRO tabuleiro, int jogo, int pecas, int disparos, int
                 if (quantidadeTipo[k] != 0)
                 {
                     utilizacao();
+                    printf("\nmodo p1 nao permite a escolha de pecas\n");
                     exit(-1);
                 }
             }
@@ -175,12 +179,14 @@ void erro_argumentos(TABULEIRO tabuleiro, int jogo, int pecas, int disparos, int
         if (disparos < 1 || disparos > 3)
         {
             utilizacao();
+            printf("\nmodo de disparo nao disponivel\n");
             exit(-1);
         }
     }
     else if (jogo < 0 || jogo > 2)
     {
         utilizacao();
+        printf("\nmodo de jogo nao disponivel\n");
         exit(-1);
     }
 }
@@ -197,7 +203,7 @@ void utilizacao()
     printf("[-h]\t\t\t  ajuda para os jogadores\n");
     printf("[-t linhas colunas]\t  define as dimensoes do tabuleiro(predifinicao = 9x9)\n");
     printf("[-j (0 a 2)]\t\t  define o modo de jogo(predifinicao = 0)\n");
-    printf("[-p (1 ou 2)]\t\t  define o o modo de posicionamento das pecas pelo computador(predefinicao = 1)\n");
+    printf("[-p (1 ou 2)]\t\t  define o modo de posicionamento das pecas pelo computador(predefinicao = 1)\n");
     printf("[-d (1 a 3)]\t\t  define o modo de disparo das pecas pelo computador(predefinicao = 1)\n");
     printf("[-1 (minimo 1)]\t\t  numero de pecas do tipo 1\n");
     printf("[-2]\t\t\t  numero de pecas do tipo 2\n");
