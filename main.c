@@ -71,7 +71,6 @@ int main(int argc, char *argv[])
         pecas = DEFAULT_PECAS_TIRO, disparos = DEFAULT_PECAS_TIRO;
     tabuleiro.linhas = DEFAULT_DIMENSOES;
     tabuleiro.colunas = DEFAULT_DIMENSOES;
-
     int quantidadeTipo[9] = {0};
 
     srand(time(NULL));
@@ -115,7 +114,6 @@ int main(int argc, char *argv[])
             break;
         case '8':
             sscanf(optarg, "%d", &quantidadeTipo[8]);
-
             break;
         case 'h': /* help */
         default:  /* opcoes invalidas */
@@ -129,8 +127,8 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-/** \brief * le os argumentos da linha de comandos e verifica se existe alguma situacao
- * de erro
+/** \brief  le os argumentos da linha de comandos e verifica se existe alguma situacao
+ *          de erro
  *
  * \param tabuleiro TABULEIRO: tabuleiro com dimensoes possivelmente incorretas
  * \param jogo int: modo de jogo possivelmente incorreto
@@ -187,6 +185,11 @@ void erro_argumentos(TABULEIRO tabuleiro, int jogo, int pecas, int disparos, int
     }
 }
 
+/** \brief menu de ajuda em caso de erro na linha de argumentos
+ *
+ * \return void
+ *
+ */
 void utilizacao()
 {
     printf("\t\tMEEC WARS\n\n");
@@ -265,8 +268,8 @@ void modos_jogo(TABULEIRO tabuleiro, int jogo, int pecas, int disparos, int quan
     exit(-1);
 }
 
-/** \brief funcoes: struct peca tipo(0 a 8)()
- * construcao dos diferentes tipos de pecas
+/** \brief funcoes: struct peca tipo(0 a 8)
+ *         construcao dos diferentes tipos de pecas
  */
 struct peca tipo0()
 {
@@ -292,7 +295,6 @@ struct peca tipo1(int variante)
 
 struct peca tipo2(int variante)
 {
-
     struct peca variante2[12] = {{{{'2', '2', '-'}, {'-', '-', '-'}, {'-', '-', '-'}}, 2},
         {{{'-', '2', '2'}, {'-', '-', '-'}, {'-', '-', '-'}}, 2},
         {{{'-', '-', '-'}, {'2', '2', '-'}, {'-', '-', '-'}}, 2},
@@ -313,7 +315,6 @@ struct peca tipo2(int variante)
 
 struct peca tipo3(int variante)
 {
-
     struct peca variante3[6] = {{{{'3', '3', '3'}, {'-', '-', '-'}, {'-', '-', '-'}}, 3},
         {{{'-', '-', '-'}, {'3', '3', '3'}, {'-', '-', '-'}}, 3},
         {{{'-', '-', '-'}, {'-', '-', '-'}, {'3', '3', '3'}}, 3},
@@ -328,7 +329,6 @@ struct peca tipo3(int variante)
 
 struct peca tipo4(int variante)
 {
-
     struct peca variante4[4] = {{{{'4', '4', '-'}, {'4', '4', '-'}, {'-', '-', '-'}}, 4},
         {{{'-', '4', '4'}, {'-', '4', '4'}, {'-', '-', '-'}}, 4},
         {{{'-', '-', '-'}, {'4', '4', '-'}, {'4', '4', '-'}}, 4},
@@ -341,7 +341,6 @@ struct peca tipo4(int variante)
 
 struct peca tipo5(int variante)
 {
-
     struct peca variante5[4] = {{{{'5', '5', '5'}, {'-', '5', '-'}, {'-', '5', '-'}}, 5},
         {{{'5', '-', '-'}, {'5', '5', '5'}, {'5', '-', '-'}}, 5},
         {{{'-', '5', '-'}, {'-', '5', '-'}, {'5', '5', '5'}}, 5},
@@ -354,7 +353,6 @@ struct peca tipo5(int variante)
 
 struct peca tipo6(int variante)
 {
-
     struct peca variante6[4] = {{{{'-', '6', '-'}, {'6', '-', '6'}, {'6', '6', '6'}}, 6},
         {{{'-', '6', '6'}, {'6', '-', '6'}, {'-', '6', '6'}}, 6},
         {{{'6', '6', '6'}, {'6', '-', '6'}, {'-', '6', '-'}}, 6},
@@ -367,7 +365,6 @@ struct peca tipo6(int variante)
 
 struct peca tipo7(int variante)
 {
-
     struct peca variante7[2] = {{{{'7', '-', '7'}, {'7', '7', '7'}, {'7', '-', '7'}}, 7},
         {{{'7', '7', '7'}, {'-', '7', '-'}, {'7', '7', '7'}}, 7}
     };
@@ -387,7 +384,6 @@ struct peca tipo8()
  */
 struct peca peca_random(int t, int v)
 {
-
     switch (t < 0 ? random_number(0, 8) : t)
     {
     case 0:
@@ -480,7 +476,6 @@ void preencher_tabuleiro_p2(TABULEIRO *tabuleiro, int pecas[9])
         {
             pecas_duplicado[j] = pecas[j];
         }
-
         for (a = 0; a < 15; a++) /*reiniciar o tabuleiro a zeros*/
         {
             for (b = 0; b < 24; b++)
@@ -488,7 +483,6 @@ void preencher_tabuleiro_p2(TABULEIRO *tabuleiro, int pecas[9])
                 tabuleiro->tabuleiro[a][b] = '-';
             }
         }
-
         for (a = 0; a < tabuleiro->linhas && sem_erros; a += 3)
         {
             for (b = 0; b < tabuleiro->colunas && sem_erros; b += 3)
@@ -639,6 +633,14 @@ void print_inicial(int quantidadeTipo[9], TABULEIRO tabuleiro)
 }
 
 
+/** \brief recebe o tabuleiro com o modo p2 completo e imprime de acordo com
+ *      as intrucoes do enunciado
+ *
+ * \param tabuleiro TABULEIRO: tabuleiro ja preenchido
+ * \param quantidadeTipo[9] int: contador de pecas de cada tipo
+ * \return void
+ *
+ */
 void modo0_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
 {
     preencher_tabuleiro_p2(&tabuleiro, quantidadeTipo);
@@ -690,7 +692,6 @@ void modo_p1(TABULEIRO tabuleiro, int jogo)
             contador_pecas_p1(peca.tipo, pecas);
         }
     }
-
     if (jogo == 0) // se o modo de jogo escolhido for 0
     {
         print_inicial(pecas, tabuleiro);
@@ -714,7 +715,6 @@ void modo_p1(TABULEIRO tabuleiro, int jogo)
 void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
 {
     int pecas_em_jogo =  contador_pecas_p2(quantidadeTipo);
-
     preencher_tabuleiro_p2(&tabuleiro, quantidadeTipo);
 
     indicacao_j(1);
@@ -724,6 +724,15 @@ void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
     coordenadas_j1(tabuleiro, pecas_em_jogo, 2);
 }
 
+/** \brief recebe coordenadas do utilizador e verifica se acertou em agua ou num barco,
+ *      quando acertar no tabuleiro inteiro, o jogador ganha e mostra o tabuleiro completo
+ *
+ * \param tabuleiro TABULEIRO: tabuleiro onde vai ser verificado se acertou nos barcos
+ * \param pecas_em_jogo int: contador de pecas, serve para ver quando o jogo acaba
+ * \param posicionamento int: modo de posicionamento vai diferir a variavel pecas_em_jogo
+ * \return void
+ *
+ */
 void coordenadas_j1(TABULEIRO tabuleiro, int pecas_em_jogo, int posicionamento)
 {
     char coluna, resposta = '-';
@@ -735,7 +744,6 @@ void coordenadas_j1(TABULEIRO tabuleiro, int pecas_em_jogo, int posicionamento)
     for (jogadas = 0; jogadas < max_jogadas; jogadas++)
     {
         scanf(" %c %d", &coluna, &linha);
-
         if (linha <= 0 || linha > tabuleiro.linhas || coluna - 'A' < 0 || coluna - 'A' >= tabuleiro.colunas)
         {
             jogadas--;  // jogadas invalidas
@@ -746,7 +754,6 @@ void coordenadas_j1(TABULEIRO tabuleiro, int pecas_em_jogo, int posicionamento)
             int num = coluna - 'A';
             int num2 = tabuleiro.linhas - linha;
             resposta = tabuleiro.tabuleiro[num2][num];
-
             if (tabuleiro.tabuleiro[num2][num] != '-' && tabuleiro.tabuleiro[num2][num] != 'X')
             {
                 pecas_em_jogo--; // peca atingida
@@ -759,7 +766,6 @@ void coordenadas_j1(TABULEIRO tabuleiro, int pecas_em_jogo, int posicionamento)
         printf("%c\n", resposta);
     }
     time(&fim);
-
     imprimir_tabuleiro(tabuleiro);
 
     tempo_jogo = difftime(fim, inicio);
@@ -874,6 +880,13 @@ Celula modo_d1(TABULEIRO *tabuleiro)
     return possibilidades[random_number(0, i - 1)];
 }
 
+/** \brief o computador dispara matriz a matriz por um algaritmo especifico
+ *
+ * \param tabuleiro TABULEIRO*
+ * \param jogada int*
+ * \return Celula
+ *
+ */
 Celula modo_d2(TABULEIRO *tabuleiro, int *jogada)
 {
     int ordem[] = {4, 1, 7, 3, 5, 0, 8, 2, 6};
@@ -901,7 +914,6 @@ Celula modo_d2(TABULEIRO *tabuleiro, int *jogada)
         }
     }
     while (disparo.x >= 0 && tabuleiro->tabuleiro[disparo.x][disparo.y] != ' ');
-
     return disparo;
 }
 
@@ -979,28 +991,25 @@ void modo_j2(TABULEIRO tabuleiro, int quantidadeTipo[9], int modo_disparo)
     time_t inicio, fim;
     Celula disparo;
     char resposta;
-    int i, a, b, count = 0, jogada = 0, jogo = 2;
+    int i, a, b, count = 0, jogada = 0, jogo = 2, matriz_por_encontrar[40] = {0};
     double tempo_jogo;
-    int matriz_por_encontrar[40] = {0};
+
     time(&inicio);
 
     for (i = 0; i < 9; i++)
     {
         quantidadeTipo[i] *= i;
     }
-
     indicacao_j(jogo);
 
     print_inicial(quantidadeTipo, tabuleiro);
 
     inicializar_tabuleiro(&tabuleiro, ' ');
 
-
     while ((disparo = disparar_j2(&tabuleiro, modo_disparo, &jogada)).x >= 0 && verificar_final(quantidadeTipo))
     {
         printf("%c%d\n", disparo.y + 'A', tabuleiro.linhas - disparo.x);
         scanf(" %c", &resposta); // input do utilizador
-
         if (resposta > '0' && resposta < '9')
         {
             quantidadeTipo[resposta - '0']--; // contador de quadriculas de cada barco
@@ -1124,7 +1133,6 @@ int restricao2(int count, int linhas, int colunas)
 int restricao3(int quantidadeTipo[9])
 {
     int i;
-
     for (i = 2; i < 9; i++)
     {
         if (quantidadeTipo[i] > quantidadeTipo[i - 1])
@@ -1165,6 +1173,13 @@ int random_number(int m, int M)
     return rand() % (M - m + 1) + m;
 }
 
+/** \brief indica qual modo de jogo em que estamos e uma pequena instrucao
+ *   de como jogar
+ *
+ * \param jogo int: modo de jogo
+ * \return void
+ *
+ */
 void indicacao_j(int jogo)
 {
     if(jogo == 1)
