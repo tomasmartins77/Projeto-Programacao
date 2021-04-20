@@ -203,7 +203,7 @@ void utilizacao()
     printf("[-h]\t\t\t  ajuda para os jogadores\n");
     printf("[-t linhas colunas]\t  define as dimensoes do tabuleiro(predifinicao = 9x9)\n");
     printf("[-j (0 a 2)]\t\t  define o modo de jogo(predifinicao = 0)\n");
-    printf("[-p (1 ou 2)]\t\t  define o modo de posicionamento das pecas pelo computador(predefinicao = 1)\n");
+    printf("[-p (1 ou 2)]\t\t  define o7 modo de posicionamento das pecas pelo computador(predefinicao = 1)\n");
     printf("[-d (1 a 3)]\t\t  define o modo de disparo das pecas pelo computador(predefinicao = 1)\n");
     printf("[-1 (minimo 1)]\t\t  numero de pecas do tipo 1\n");
     printf("[-2]\t\t\t  numero de pecas do tipo 2\n");
@@ -742,7 +742,7 @@ void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
 void coordenadas_j1(TABULEIRO tabuleiro, int pecas_em_jogo, int posicionamento)
 {
     char coluna, resposta = '-';
-    int jogadas, linha, max_jogadas = tabuleiro.linhas * tabuleiro.colunas;
+    int jogadas, linha, max_jogadas = tabuleiro.linhas * tabuleiro.colunas, cord_repetidas[15][24] = {0};
     time_t inicio, fim;
     double tempo_jogo;
 
@@ -750,6 +750,13 @@ void coordenadas_j1(TABULEIRO tabuleiro, int pecas_em_jogo, int posicionamento)
     for (jogadas = 0; jogadas < max_jogadas; jogadas++)
     {
         scanf(" %c %d", &coluna, &linha);
+
+        if(cord_repetidas[coluna][linha] = 1)
+        {
+            jogadas--;
+            pecas_em_jogo++;
+        }
+        cord_repetidas[coluna][linha] = 1;
         if (linha <= 0 || linha > tabuleiro.linhas || coluna - 'A' < 0 || coluna - 'A' >= tabuleiro.colunas)
         {
             jogadas--;  // jogadas invalidas
