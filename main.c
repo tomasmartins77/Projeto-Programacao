@@ -59,6 +59,8 @@ void print_inicial(int quantidadeTipo[9], TABULEIRO tabuleiro);
 void contador_pecas_p1(int tipo, int conta_pecas[9]);
 int contador_pecas_p2(int quantidadeTipo[9]);
 int random_number(int m, int M);
+void indicacao_j(int jogo);
+void coordenadas_j1(TABULEIRO tabuleiro, int pecas_em_jogo, int posicionamento);
 
 int main(int argc, char *argv[])
 {
@@ -657,20 +659,12 @@ void modo0_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
  */
 void modo_p1(TABULEIRO tabuleiro, int jogo)
 {
-    char coluna;
-    TABULEIRO tabuleiroinvi;
-    tabuleiroinvi.linhas = tabuleiro.linhas;
-    tabuleiroinvi.colunas = tabuleiro.colunas;
-    int a, b, k, jogadas, linha, pecas_em_jogo = 0, pecas_matriz[5][8] = {{0}}, pecas[9] = {0};
+    int a, b, k, pecas_em_jogo = 0, pecas[9] = {0};
     struct peca peca;
-    int max_jogadas = tabuleiro.linhas * tabuleiro.colunas;
-
-    time_t inicio, fim;
-    double tempo_jogo;
 
     inicializar_tabuleiro(&tabuleiro, '-');
 
-    inicializar_tabuleiro(&tabuleiroinvi, ' '); // tabuleiro onde vao ser colocados os disparos
+    indicacao_j(jogo);
 
     for (a = 0; a < tabuleiro.linhas; a += 3)
     {
@@ -691,7 +685,6 @@ void modo_p1(TABULEIRO tabuleiro, int jogo)
                     }
                 }
             }
-            pecas_matriz[a / 3][b / 3] = peca.tipo;
             pecas_em_jogo += peca.tipo;
             meter_peca(tabuleiro.tabuleiro, a, b, peca);
             contador_pecas_p1(peca.tipo, pecas);
@@ -703,45 +696,9 @@ void modo_p1(TABULEIRO tabuleiro, int jogo)
         print_inicial(pecas, tabuleiro);
         imprimir_tabuleiro(tabuleiro);
         exit(-1);
-    }
-
-    time(&inicio);
-    for (jogadas = 0; jogadas < max_jogadas; jogadas++)
-    {
+    } // se o modo de jogo ser 1
         print_inicial(pecas, tabuleiro);
-        imprimir_tabuleiro(tabuleiroinvi);
-        printf("\n");
-        printf("Insira as coordenadas: ");
-        scanf(" %c %d", &coluna, &linha);
-
-        if (linha <= 0 || linha > tabuleiro.linhas || coluna - 'A' < 0 || coluna - 'A' >= tabuleiro.colunas || tabuleiroinvi.tabuleiro[tabuleiro.linhas - linha][coluna - 'A'] != ' ')
-        {
-            jogadas--; // coordenadas erradas
-        }
-        else
-        {
-            int num = coluna - 'A';
-            int num2 = tabuleiro.linhas - linha;
-            tabuleiroinvi.tabuleiro[num2][num] = tabuleiro.tabuleiro[num2][num];
-
-            if (tabuleiro.tabuleiro[num2][num] != '-')
-            {
-                pecas_em_jogo--; // peca atingida
-                pecas_matriz[num2 / 3][num / 3]--;
-
-                if (pecas_em_jogo == 0)
-                {
-                    break;
-                }
-            }
-        }
-    }
-    imprimir_tabuleiro(tabuleiro);
-
-    time(&fim);
-    tempo_jogo = difftime(fim, inicio);
-    printf("\nNumero de tentativas: %d\n", jogadas);
-    printf("Tempo de Jogo: %.2lf segundos", tempo_jogo);
+        coordenadas_j1(tabuleiro, pecas_em_jogo, 1);
 }
 
 /** \brief recebe coordenadas de disparo do utilizador, que tenta afundar todos os barcos.
@@ -756,56 +713,55 @@ void modo_p1(TABULEIRO tabuleiro, int jogo)
  */
 void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
 {
-    char coluna;
-    TABULEIRO tabuleiroinvi;
-    tabuleiroinvi.linhas = tabuleiro.linhas;
-    tabuleiroinvi.colunas = tabuleiro.colunas;
-    int jogadas, linha, pecas_matriz[5][8] = {{0}}, pecas_em_jogo = contador_pecas_p2(quantidadeTipo);
-
-    int max_jogadas = tabuleiro.linhas * tabuleiro.colunas;
-
-    time_t inicio, fim;
-    double tempo_jogo;
-
-    inicializar_tabuleiro(&tabuleiroinvi, ' ');
+    int pecas_em_jogo =  contador_pecas_p2(quantidadeTipo);
 
     preencher_tabuleiro_p2(&tabuleiro, quantidadeTipo);
+
+    indicacao_j(1);
+
+    print_inicial(quantidadeTipo, tabuleiro);
+
+    coordenadas_j1(tabuleiro, pecas_em_jogo, 2);
+}
+
+void coordenadas_j1(TABULEIRO tabuleiro, int pecas_em_jogo, int posicionamento)
+{
+    char coluna, resposta = '-';
+    int jogadas, linha, max_jogadas = tabuleiro.linhas * tabuleiro.colunas;
+    time_t inicio, fim;
+    double tempo_jogo;
 
     time(&inicio);
     for (jogadas = 0; jogadas < max_jogadas; jogadas++)
     {
-        print_inicial(quantidadeTipo, tabuleiro);
-        imprimir_tabuleiro(tabuleiroinvi);
-
-        printf("\nInsira as coordenadas: ");
         scanf(" %c %d", &coluna, &linha);
 
-        if (linha <= 0 || linha > tabuleiro.linhas || coluna - 'A' < 0 || coluna - 'A' >= tabuleiro.colunas || tabuleiroinvi.tabuleiro[tabuleiro.linhas - linha][coluna - 'A'] != ' ')
+        if (linha <= 0 || linha > tabuleiro.linhas || coluna - 'A' < 0 || coluna - 'A' >= tabuleiro.colunas)
         {
             jogadas--;  // jogadas invalidas
+            resposta = 'X';
         }
-
         else
         {
             int num = coluna - 'A';
             int num2 = tabuleiro.linhas - linha;
-            tabuleiroinvi.tabuleiro[num2][num] = tabuleiro.tabuleiro[num2][num];
+            resposta = tabuleiro.tabuleiro[num2][num];
 
-            if (tabuleiro.tabuleiro[num2][num] != '-')
+            if (tabuleiro.tabuleiro[num2][num] != '-' && tabuleiro.tabuleiro[num2][num] != 'X')
             {
                 pecas_em_jogo--; // peca atingida
-                pecas_matriz[num2 / 3][num / 3]--;
-                if (pecas_em_jogo == 0)
-                {
-                    break;
-                }
+            }
+            if (pecas_em_jogo == 0)
+            {
+                break;
             }
         }
+        printf("%c\n", resposta);
     }
-    print_inicial(quantidadeTipo, tabuleiro);
+    time(&fim);
+
     imprimir_tabuleiro(tabuleiro);
 
-    time(&fim);
     tempo_jogo = difftime(fim, inicio);
     printf("\nNumero de tentativas: %d\n", jogadas);
     printf("Tempo de Jogo: %.2lf segundos", tempo_jogo);
@@ -1021,10 +977,9 @@ void afundar_navio(TABULEIRO *tabuleiro, int matriz)
 void modo_j2(TABULEIRO tabuleiro, int quantidadeTipo[9], int modo_disparo)
 {
     time_t inicio, fim;
-    print_inicial(quantidadeTipo, tabuleiro);
     Celula disparo;
     char resposta;
-    int i, a, b, count = 0, jogada = 0;
+    int i, a, b, count = 0, jogada = 0, jogo = 2;
     double tempo_jogo;
     int matriz_por_encontrar[40] = {0};
     time(&inicio);
@@ -1034,7 +989,12 @@ void modo_j2(TABULEIRO tabuleiro, int quantidadeTipo[9], int modo_disparo)
         quantidadeTipo[i] *= i;
     }
 
+    indicacao_j(jogo);
+
+    print_inicial(quantidadeTipo, tabuleiro);
+
     inicializar_tabuleiro(&tabuleiro, ' ');
+
 
     while ((disparo = disparar_j2(&tabuleiro, modo_disparo, &jogada)).x >= 0 && verificar_final(quantidadeTipo))
     {
@@ -1203,4 +1163,22 @@ int restricao4(int linhas, int colunas, int count)
 int random_number(int m, int M)
 {
     return rand() % (M - m + 1) + m;
+}
+
+void indicacao_j(int jogo)
+{
+    if(jogo == 1)
+    {
+        printf("*=================================\n");
+        printf("* Modo de jogo %d\n", jogo);
+        printf("* Insira as Coordenadas de Disparo\n");
+        printf("*=================================\n");
+    }
+    else if(jogo == 2)
+    {
+        printf("*===================================================\n");
+        printf("* Modo de jogo %d\n", jogo);
+        printf("* Crie um tabuleiro com as caracteristicas indicadas\n* Responda aos disparos do programa\n");
+        printf("*===================================================\n");
+    }
 }
