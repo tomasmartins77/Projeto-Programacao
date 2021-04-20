@@ -704,8 +704,8 @@ void modo_p1(TABULEIRO tabuleiro, int jogo)
         imprimir_tabuleiro(tabuleiro);
         exit(-1);
     } // se o modo de jogo ser 1
-        print_inicial(pecas, tabuleiro);
-        coordenadas_j1(tabuleiro, pecas_em_jogo, 1);
+    print_inicial(pecas, tabuleiro);
+    coordenadas_j1(tabuleiro, pecas_em_jogo, 1);
 }
 
 /** \brief recebe coordenadas de disparo do utilizador, que tenta afundar todos os barcos.
@@ -749,25 +749,26 @@ void coordenadas_j1(TABULEIRO tabuleiro, int pecas_em_jogo, int posicionamento)
     time(&inicio);
     for (jogadas = 0; jogadas < max_jogadas; jogadas++)
     {
-        scanf(" %c %d", &coluna, &linha);
-
-        if(cord_repetidas[coluna][linha] = 1)
+        scanf(" %c %d", &coluna, &linha); // input do utilizador
+        int cordx = coluna - 'A';
+        int cordy = tabuleiro.linhas - linha;
+        if(cord_repetidas[cordy][cordx] == 1 && tabuleiro.tabuleiro[cordy][cordx] != '-')
         {
-            jogadas--;
+            jogadas--; // se colocar uma coordenada repetida, nao acontece nada
             pecas_em_jogo++;
         }
-        cord_repetidas[coluna][linha] = 1;
-        if (linha <= 0 || linha > tabuleiro.linhas || coluna - 'A' < 0 || coluna - 'A' >= tabuleiro.colunas)
+        if(tabuleiro.tabuleiro[cordy][cordx] != 'X' && tabuleiro.tabuleiro[cordy][cordx] != '-')
+            cord_repetidas[cordy][cordx] = 1;
+
+        if (cordy < 0 || cordy >= tabuleiro.linhas || cordx < 0 || cordx >= tabuleiro.colunas)
         {
             jogadas--;  // jogadas invalidas
             resposta = 'X';
         }
         else
         {
-            int num = coluna - 'A';
-            int num2 = tabuleiro.linhas - linha;
-            resposta = tabuleiro.tabuleiro[num2][num];
-            if (tabuleiro.tabuleiro[num2][num] != '-' && tabuleiro.tabuleiro[num2][num] != 'X')
+            resposta = tabuleiro.tabuleiro[cordy][cordx];
+            if (tabuleiro.tabuleiro[cordy][cordx] != '-' && tabuleiro.tabuleiro[cordy][cordx] != 'X')
             {
                 pecas_em_jogo--; // peca atingida
             }
