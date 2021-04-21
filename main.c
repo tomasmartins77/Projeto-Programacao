@@ -17,15 +17,15 @@ typedef struct
 {
     char tabuleiro[15][24];
     int linhas, colunas;
-} TABULEIRO;
+} Tabuleiro;
 typedef struct
 {
     int x;
     int y;
 } Celula;
-void erro_argumentos(TABULEIRO tabuleiro, int jogo, int pecas, int disparos, int quantidadeTipo[9]);
+void erro_argumentos(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int quantidadeTipo[9]);
 void utilizacao();
-void modos_jogo(TABULEIRO tabuleiro, int jogo, int pecas, int disparos, int quantidadeTipo[9]);
+void modos_jogo(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int quantidadeTipo[9]);
 struct peca tipo0();
 struct peca tipo1(int variante);
 struct peca tipo2(int variante);
@@ -35,36 +35,36 @@ struct peca tipo5(int variante);
 struct peca tipo6(int variante);
 struct peca tipo7(int variante);
 struct peca tipo8();
-void modo0_p2(TABULEIRO tabuleiro, int quantidadeTipo[9]);
-void modo_p1(TABULEIRO tabuleiro, int jogo);
-void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9]);
-void modo_j2(TABULEIRO tabuleiro, int quantidadeTipo[9], int modo_disparo);
-void preencher_tabuleiro_p2(TABULEIRO *tabuleiro, int pecas[9]);
+void modo0_p2(Tabuleiro tabuleiro, int quantidadeTipo[9]);
+void modo_p1(Tabuleiro tabuleiro, int jogo);
+void modo1_p2(Tabuleiro tabuleiro, int quantidadeTipo[9]);
+void modo_j2(Tabuleiro tabuleiro, int quantidadeTipo[9], int modo_disparo);
+void preencher_tabuleiro_p2(Tabuleiro *tabuleiro, int pecas[9]);
 struct peca peca_random(int t, int v);
 int max_variantes(int tipo);
 void meter_peca(char tabuleiro[15][24], int a, int b, struct peca peca);
 int selecionar_peca(int pecas[9], int tipos_usados[9]);
-void imprimir_tabuleiro(TABULEIRO tabuleiro);
-void inicializar_tabuleiro(TABULEIRO *tabuleiro, char peca);
+void imprimir_tabuleiro(Tabuleiro tabuleiro);
+void inicializar_tabuleiro(Tabuleiro *tabuleiro, char peca);
 int verificar_final(int quantidadeTipo[9]);
-void afundar_navio(TABULEIRO *tabuleiro, int matriz);
-Celula modo_d1(TABULEIRO *tabuleiro);
-Celula modo_d2(TABULEIRO *tabuleiro, int *jogada);
-Celula disparar_j2(TABULEIRO *tabuleiro, int modo_disparo, int *jogada);
+void afundar_navio(Tabuleiro *tabuleiro, int matriz);
+Celula modo_d1(Tabuleiro *tabuleiro);
+Celula modo_d2(Tabuleiro *tabuleiro, int *jogada);
+Celula disparar_j2(Tabuleiro *tabuleiro, int modo_disparo, int *jogada);
 int verificarColisao(char tabuleiro[15][24], int i, int j, struct peca peca);
 int restricao2(int count, int linhas, int colunas);
 int restricao3(int quantidadeTipo[9]);
 int restricao4(int linhas, int colunas, int count);
-void print_inicial(int quantidadeTipo[9], TABULEIRO tabuleiro);
+void print_inicial(int quantidadeTipo[9], Tabuleiro tabuleiro);
 void contador_pecas_p1(int tipo, int conta_pecas[9]);
 int contador_pecas_p2(int quantidadeTipo[9]);
 int random_number(int m, int M);
 void indicacao_j(int jogo);
-void coordenadas_j1(TABULEIRO tabuleiro, int pecas_em_jogo, int posicionamento);
+void coordenadas_j1(Tabuleiro tabuleiro, int pecas_em_jogo, int posicionamento);
 
 int main(int argc, char *argv[])
 {
-    TABULEIRO tabuleiro;
+    Tabuleiro tabuleiro;
     int opt = 'h';
     opterr = 0;
     int jogo = DEFAULT_JOGO,
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 /** \brief * le os argumentos da linha de comandos e verifica se existe alguma situacao
  * de erro
  *
- * \param tabuleiro TABULEIRO: tabuleiro com dimensoes possivelmente incorretas
+ * \param tabuleiro Tabuleiro: tabuleiro com dimensoes possivelmente incorretas
  * \param jogo int: modo de jogo possivelmente incorreto
  * \param pecas int: modo de posicionamento de pecas possivelmente incorreto
  * \param disparos int: modo de disparo possivelmente incorreto
@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
  * \return void
  *
  */
-void erro_argumentos(TABULEIRO tabuleiro, int jogo, int pecas, int disparos, int quantidadeTipo[9])
+void erro_argumentos(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int quantidadeTipo[9])
 {
     int k;
     if (tabuleiro.linhas % 3 != 0 || tabuleiro.colunas % 3 != 0 || tabuleiro.linhas < 9 || tabuleiro.linhas > 15 || tabuleiro.colunas < 9 || tabuleiro.colunas > 24)
@@ -213,7 +213,7 @@ Exemplo 3: ./wargame -j 2 -d 1 -1 5 -2 4 -3 5\n");
 /** \brief  menu que vai para cada modo diferente de jogo ou posicionamento de pecas
  * ou modo de disparo
  *
- * \param tabuleiro TABULEIRO: tabuleiro utilizado em todos os modos de jogo
+ * \param tabuleiro Tabuleiro: tabuleiro utilizado em todos os modos de jogo
  * \param jogo int: modo de jogo escolhido
  * \param pecas int: tipo de posicionamento de pecas
  * \param disparos int: modo de disparo
@@ -221,7 +221,7 @@ Exemplo 3: ./wargame -j 2 -d 1 -1 5 -2 4 -3 5\n");
  * \return void
  *
  */
-void modos_jogo(TABULEIRO tabuleiro, int jogo, int pecas, int disparos, int quantidadeTipo[9])
+void modos_jogo(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int quantidadeTipo[9])
 {
     int i, count, r2, r3, r4;
 
@@ -277,15 +277,14 @@ struct peca tipo0()
 struct peca tipo1(int variante)
 {
     struct peca variante1[9] = {{{{'1', '-', '-'}, {'-', '-', '-'}, {'-', '-', '-'}}, 1},
-        {{{'-', '1', '-'}, {'-', '-', '-'}, {'-', '-', '-'}}, 1},
-        {{{'-', '-', '1'}, {'-', '-', '-'}, {'-', '-', '-'}}, 1},
-        {{{'-', '-', '-'}, {'1', '-', '-'}, {'-', '-', '-'}}, 1},
-        {{{'-', '-', '-'}, {'-', '1', '-'}, {'-', '-', '-'}}, 1},
-        {{{'-', '-', '-'}, {'-', '-', '1'}, {'-', '-', '-'}}, 1},
-        {{{'-', '-', '-'}, {'-', '-', '-'}, {'1', '-', '-'}}, 1},
-        {{{'-', '-', '-'}, {'-', '-', '-'}, {'-', '1', '-'}}, 1},
-        {{{'-', '-', '-'}, {'-', '-', '-'}, {'-', '-', '1'}}, 1}
-    };
+                                {{{'-', '1', '-'}, {'-', '-', '-'}, {'-', '-', '-'}}, 1},
+                                {{{'-', '-', '1'}, {'-', '-', '-'}, {'-', '-', '-'}}, 1},
+                                {{{'-', '-', '-'}, {'1', '-', '-'}, {'-', '-', '-'}}, 1},
+                                {{{'-', '-', '-'}, {'-', '1', '-'}, {'-', '-', '-'}}, 1},
+                                {{{'-', '-', '-'}, {'-', '-', '1'}, {'-', '-', '-'}}, 1},
+                                {{{'-', '-', '-'}, {'-', '-', '-'}, {'1', '-', '-'}}, 1},
+                                {{{'-', '-', '-'}, {'-', '-', '-'}, {'-', '1', '-'}}, 1},
+                                {{{'-', '-', '-'}, {'-', '-', '-'}, {'-', '-', '1'}}, 1}};
     int k = variante < 0 ? random_number(0, 8) : variante;
     return variante1[k];
 }
@@ -294,18 +293,17 @@ struct peca tipo2(int variante)
 {
 
     struct peca variante2[12] = {{{{'2', '2', '-'}, {'-', '-', '-'}, {'-', '-', '-'}}, 2},
-        {{{'-', '2', '2'}, {'-', '-', '-'}, {'-', '-', '-'}}, 2},
-        {{{'-', '-', '-'}, {'2', '2', '-'}, {'-', '-', '-'}}, 2},
-        {{{'-', '-', '-'}, {'-', '2', '2'}, {'-', '-', '-'}}, 2},
-        {{{'-', '-', '-'}, {'-', '-', '-'}, {'2', '2', '-'}}, 2},
-        {{{'-', '-', '-'}, {'-', '-', '-'}, {'-', '2', '2'}}, 2},
-        {{{'2', '-', '-'}, {'2', '-', '-'}, {'-', '-', '-'}}, 2},
-        {{{'-', '-', '-'}, {'2', '-', '-'}, {'2', '-', '-'}}, 2},
-        {{{'-', '2', '-'}, {'-', '2', '-'}, {'-', '-', '-'}}, 2},
-        {{{'-', '-', '-'}, {'-', '2', '-'}, {'-', '2', '-'}}, 2},
-        {{{'-', '-', '2'}, {'-', '-', '2'}, {'-', '-', '-'}}, 2},
-        {{{'-', '-', '-'}, {'-', '-', '2'}, {'-', '-', '2'}}, 2}
-    };
+                                 {{{'-', '2', '2'}, {'-', '-', '-'}, {'-', '-', '-'}}, 2},
+                                 {{{'-', '-', '-'}, {'2', '2', '-'}, {'-', '-', '-'}}, 2},
+                                 {{{'-', '-', '-'}, {'-', '2', '2'}, {'-', '-', '-'}}, 2},
+                                 {{{'-', '-', '-'}, {'-', '-', '-'}, {'2', '2', '-'}}, 2},
+                                 {{{'-', '-', '-'}, {'-', '-', '-'}, {'-', '2', '2'}}, 2},
+                                 {{{'2', '-', '-'}, {'2', '-', '-'}, {'-', '-', '-'}}, 2},
+                                 {{{'-', '-', '-'}, {'2', '-', '-'}, {'2', '-', '-'}}, 2},
+                                 {{{'-', '2', '-'}, {'-', '2', '-'}, {'-', '-', '-'}}, 2},
+                                 {{{'-', '-', '-'}, {'-', '2', '-'}, {'-', '2', '-'}}, 2},
+                                 {{{'-', '-', '2'}, {'-', '-', '2'}, {'-', '-', '-'}}, 2},
+                                 {{{'-', '-', '-'}, {'-', '-', '2'}, {'-', '-', '2'}}, 2}};
 
     int k = variante < 0 ? random_number(0, 11) : variante;
     return variante2[k];
@@ -315,12 +313,11 @@ struct peca tipo3(int variante)
 {
 
     struct peca variante3[6] = {{{{'3', '3', '3'}, {'-', '-', '-'}, {'-', '-', '-'}}, 3},
-        {{{'-', '-', '-'}, {'3', '3', '3'}, {'-', '-', '-'}}, 3},
-        {{{'-', '-', '-'}, {'-', '-', '-'}, {'3', '3', '3'}}, 3},
-        {{{'3', '-', '-'}, {'3', '-', '-'}, {'3', '-', '-'}}, 3},
-        {{{'-', '3', '-'}, {'-', '3', '-'}, {'-', '3', '-'}}, 3},
-        {{{'-', '-', '3'}, {'-', '-', '3'}, {'-', '-', '3'}}, 3}
-    };
+                                {{{'-', '-', '-'}, {'3', '3', '3'}, {'-', '-', '-'}}, 3},
+                                {{{'-', '-', '-'}, {'-', '-', '-'}, {'3', '3', '3'}}, 3},
+                                {{{'3', '-', '-'}, {'3', '-', '-'}, {'3', '-', '-'}}, 3},
+                                {{{'-', '3', '-'}, {'-', '3', '-'}, {'-', '3', '-'}}, 3},
+                                {{{'-', '-', '3'}, {'-', '-', '3'}, {'-', '-', '3'}}, 3}};
 
     int k = variante < 0 ? random_number(0, 5) : variante;
     return variante3[k];
@@ -330,10 +327,9 @@ struct peca tipo4(int variante)
 {
 
     struct peca variante4[4] = {{{{'4', '4', '-'}, {'4', '4', '-'}, {'-', '-', '-'}}, 4},
-        {{{'-', '4', '4'}, {'-', '4', '4'}, {'-', '-', '-'}}, 4},
-        {{{'-', '-', '-'}, {'4', '4', '-'}, {'4', '4', '-'}}, 4},
-        {{{'-', '-', '-'}, {'-', '4', '4'}, {'-', '4', '4'}}, 4}
-    };
+                                {{{'-', '4', '4'}, {'-', '4', '4'}, {'-', '-', '-'}}, 4},
+                                {{{'-', '-', '-'}, {'4', '4', '-'}, {'4', '4', '-'}}, 4},
+                                {{{'-', '-', '-'}, {'-', '4', '4'}, {'-', '4', '4'}}, 4}};
 
     int k = variante < 0 ? random_number(0, 3) : variante;
     return variante4[k];
@@ -343,10 +339,9 @@ struct peca tipo5(int variante)
 {
 
     struct peca variante5[4] = {{{{'5', '5', '5'}, {'-', '5', '-'}, {'-', '5', '-'}}, 5},
-        {{{'5', '-', '-'}, {'5', '5', '5'}, {'5', '-', '-'}}, 5},
-        {{{'-', '5', '-'}, {'-', '5', '-'}, {'5', '5', '5'}}, 5},
-        {{{'-', '-', '5'}, {'5', '5', '5'}, {'-', '-', '5'}}, 5}
-    };
+                                {{{'5', '-', '-'}, {'5', '5', '5'}, {'5', '-', '-'}}, 5},
+                                {{{'-', '5', '-'}, {'-', '5', '-'}, {'5', '5', '5'}}, 5},
+                                {{{'-', '-', '5'}, {'5', '5', '5'}, {'-', '-', '5'}}, 5}};
 
     int k = variante < 0 ? random_number(0, 3) : variante;
     return variante5[k];
@@ -356,10 +351,9 @@ struct peca tipo6(int variante)
 {
 
     struct peca variante6[4] = {{{{'-', '6', '-'}, {'6', '-', '6'}, {'6', '6', '6'}}, 6},
-        {{{'-', '6', '6'}, {'6', '-', '6'}, {'-', '6', '6'}}, 6},
-        {{{'6', '6', '6'}, {'6', '-', '6'}, {'-', '6', '-'}}, 6},
-        {{{'6', '6', '-'}, {'6', '-', '6'}, {'6', '6', '-'}}, 6}
-    };
+                                {{{'-', '6', '6'}, {'6', '-', '6'}, {'-', '6', '6'}}, 6},
+                                {{{'6', '6', '6'}, {'6', '-', '6'}, {'-', '6', '-'}}, 6},
+                                {{{'6', '6', '-'}, {'6', '-', '6'}, {'6', '6', '-'}}, 6}};
 
     int k = variante < 0 ? random_number(0, 3) : variante;
     return variante6[k];
@@ -369,8 +363,7 @@ struct peca tipo7(int variante)
 {
 
     struct peca variante7[2] = {{{{'7', '-', '7'}, {'7', '7', '7'}, {'7', '-', '7'}}, 7},
-        {{{'7', '7', '7'}, {'-', '7', '-'}, {'7', '7', '7'}}, 7}
-    };
+                                {{{'7', '7', '7'}, {'-', '7', '-'}, {'7', '7', '7'}}, 7}};
 
     int k = variante < 0 ? random_number(0, 1) : variante;
     return variante7[k];
@@ -429,7 +422,7 @@ struct peca peca_random(int t, int v)
  */
 void contador_pecas_p1(int tipo, int conta_pecas[9])
 {
-    switch(tipo)
+    switch (tipo)
     {
     case 1:
         conta_pecas[1] += 1;
@@ -462,23 +455,23 @@ void contador_pecas_p1(int tipo, int conta_pecas[9])
  *   tabuleiro, se nao conseguir colocar uma das variantes, tenta colocar outra, caso nao
  *  seja possivel formar o tabuleiro depois de 1000 tentativas, da erro e nao gera tabuleiro nenhum.
  *
- * \param tabuleiro TABULEIRO*: tabuleiro na qual vao ser colocadas as pecas
+ * \param tabuleiro Tabuleiro*: tabuleiro na qual vao ser colocadas as pecas
  * \param pecas[9] int: guarda as pecas que vao ser colocadas no tabuleiro
  * \return void
  *
  */
-void preencher_tabuleiro_p2(TABULEIRO *tabuleiro, int pecas[9])
+void preencher_tabuleiro_p2(Tabuleiro *tabuleiro, int pecas[9])
 {
     int pecas_duplicado[9]; // array para verificar as pecas anteriormente colocadas
     int i, j, k, a, b;
 
     for (i = 0; i < 1000; i++) // loop de 1000 regressos
     {
-        int sem_erros = 1;
+        int sem_erros = 1; //booleano que indica se o tabuleiro foi gerado com sucesso (sem erros) ou nao
 
         for (j = 0; j < 9; j++)
         {
-            pecas_duplicado[j] = pecas[j];
+            pecas_duplicado[j] = pecas[j]; //duplica o vetor pecas
         }
 
         for (a = 0; a < 15; a++) /*reiniciar o tabuleiro a zeros*/
@@ -493,7 +486,7 @@ void preencher_tabuleiro_p2(TABULEIRO *tabuleiro, int pecas[9])
         {
             for (b = 0; b < tabuleiro->colunas && sem_erros; b += 3)
             {
-                int success_peca = 0;
+                int success_peca = 0; //booleano que indica se a peca foi colocada com sucesso
                 int tipos_usados[9] = {0};
                 for (j = 0; j < 8; j++)
                 {
@@ -559,12 +552,12 @@ void meter_peca(char tabuleiro[15][24], int a, int b, struct peca peca)
 
 /** \brief inicializa o tabuleiro inteiro com algo a escolha
  *
- * \param tabuleiro TABULEIRO*
+ * \param tabuleiro Tabuleiro*
  * \param peca char: char que vai inicializar o tabuleiro
  * \return void
  *
  */
-void inicializar_tabuleiro(TABULEIRO *tabuleiro, char peca)
+void inicializar_tabuleiro(Tabuleiro *tabuleiro, char peca)
 {
     int a, b;
     for (a = 0; a < 15; a++)
@@ -576,7 +569,7 @@ void inicializar_tabuleiro(TABULEIRO *tabuleiro, char peca)
     }
 }
 
-/** \brief indica o numero de variantes escolhidas de cada tipo de barco
+/** \brief indica o numero máximo de variantes que existem para um certo tipo de barco
  *
  * \param tipo int: recebe o tipo de peca
  * \return int: array com o numero de variantes de cada tipo de barco
@@ -622,24 +615,23 @@ int selecionar_peca(int pecas[9], int tipos_usados[9])
  * de pecas
  *
  * \param quantidadeTipo[9] int: quantidade inicial de cada tipo de barco
- * \param tabuleiro TABULEIRO: tamanho do tabuleiro
+ * \param tabuleiro Tabuleiro: tamanho do tabuleiro
  * \return void
  *
  */
 
-void print_inicial(int quantidadeTipo[9], TABULEIRO tabuleiro)
+void print_inicial(int quantidadeTipo[9], Tabuleiro tabuleiro)
 {
     int k;
     printf("%dx%d", tabuleiro.linhas, tabuleiro.colunas);
-    for(k=1; k<9; k++)
+    for (k = 1; k < 9; k++)
     {
         printf(" %d", quantidadeTipo[k]);
     }
     printf("\n");
 }
 
-
-void modo0_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
+void modo0_p2(Tabuleiro tabuleiro, int quantidadeTipo[9])
 {
     preencher_tabuleiro_p2(&tabuleiro, quantidadeTipo);
     print_inicial(quantidadeTipo, tabuleiro);
@@ -652,12 +644,12 @@ void modo0_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
  *   ambos os tabuleiros com as pecas colocadas e o tabuleiro invisivel que vai monstrando os disparos
  *   do utilizador
  *
- * \param tabuleiro TABULEIRO
+ * \param tabuleiro Tabuleiro
  * \param jogo int: modo de jogo escolhido
  * \return void
  *
  */
-void modo_p1(TABULEIRO tabuleiro, int jogo)
+void modo_p1(Tabuleiro tabuleiro, int jogo)
 {
     int a, b, k, pecas_em_jogo = 0, pecas[9] = {0};
     struct peca peca;
@@ -697,8 +689,8 @@ void modo_p1(TABULEIRO tabuleiro, int jogo)
         imprimir_tabuleiro(tabuleiro);
         exit(-1);
     } // se o modo de jogo ser 1
-        print_inicial(pecas, tabuleiro);
-        coordenadas_j1(tabuleiro, pecas_em_jogo, 1);
+    print_inicial(pecas, tabuleiro);
+    coordenadas_j1(tabuleiro, pecas_em_jogo, 1);
 }
 
 /** \brief recebe coordenadas de disparo do utilizador, que tenta afundar todos os barcos.
@@ -706,14 +698,14 @@ void modo_p1(TABULEIRO tabuleiro, int jogo)
  *   ambos os tabuleiros com as pecas colocadas e o tabuleiro invisivel que vai monstrando os disparos
  *   do utilizador
  *
- * \param tabuleiro TABULEIRO
+ * \param tabuleiro Tabuleiro
  * \param quantidadeTipo[9] int: quantidade de pecas de cada tipo escolhido
  * \return void
  *
  */
-void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
+void modo1_p2(Tabuleiro tabuleiro, int quantidadeTipo[9])
 {
-    int pecas_em_jogo =  contador_pecas_p2(quantidadeTipo);
+    int pecas_em_jogo = contador_pecas_p2(quantidadeTipo);
 
     preencher_tabuleiro_p2(&tabuleiro, quantidadeTipo);
 
@@ -724,7 +716,7 @@ void modo1_p2(TABULEIRO tabuleiro, int quantidadeTipo[9])
     coordenadas_j1(tabuleiro, pecas_em_jogo, 2);
 }
 
-void coordenadas_j1(TABULEIRO tabuleiro, int pecas_em_jogo, int posicionamento)
+void coordenadas_j1(Tabuleiro tabuleiro, int pecas_em_jogo, int posicionamento)
 {
     char coluna, resposta = '-';
     int jogadas, linha, max_jogadas = tabuleiro.linhas * tabuleiro.colunas;
@@ -738,7 +730,7 @@ void coordenadas_j1(TABULEIRO tabuleiro, int pecas_em_jogo, int posicionamento)
 
         if (linha <= 0 || linha > tabuleiro.linhas || coluna - 'A' < 0 || coluna - 'A' >= tabuleiro.colunas)
         {
-            jogadas--;  // jogadas invalidas
+            jogadas--; // jogadas invalidas
             resposta = 'X';
         }
         else
@@ -812,11 +804,11 @@ int contador_pecas_p2(int quantidadeTipo[9])
 
 /** \brief imprime o tabuleiro no ecra
  *
- * \param tabuleiro TABULEIRO: tabuleiro que se pretende imprimir
+ * \param tabuleiro Tabuleiro: tabuleiro que se pretende imprimir
  * \return void
  *
  */
-void imprimir_tabuleiro(TABULEIRO tabuleiro)
+void imprimir_tabuleiro(Tabuleiro tabuleiro)
 {
     char h;
     int i, j;
@@ -840,12 +832,12 @@ void imprimir_tabuleiro(TABULEIRO tabuleiro)
 /** \brief ve todas as possibilidades ainda disponiveis e envia uma coordenada aleatoria
  *  dessas possibilidades
  *
- * \param tabuleiro TABULEIRO*: tabuleiro na qual vai ser verificado quantas quadriculas ainda
+ * \param tabuleiro Tabuleiro*: tabuleiro na qual vai ser verificado quantas quadriculas ainda
  *    se pode disparar
  * \return Celula: coordenada aleatoria disponivel
  *
  */
-Celula modo_d1(TABULEIRO *tabuleiro)
+Celula modo_d1(Tabuleiro *tabuleiro)
 {
     // 15 linhas * 24 colunas = 360 quadriculas
     Celula possibilidades[360];
@@ -874,7 +866,7 @@ Celula modo_d1(TABULEIRO *tabuleiro)
     return possibilidades[random_number(0, i - 1)];
 }
 
-Celula modo_d2(TABULEIRO *tabuleiro, int *jogada)
+Celula modo_d2(Tabuleiro *tabuleiro, int *jogada)
 {
     int ordem[] = {4, 1, 7, 3, 5, 0, 8, 2, 6};
     int a, b, x, y, matriz;
@@ -899,21 +891,20 @@ Celula modo_d2(TABULEIRO *tabuleiro, int *jogada)
             disparo.x = -1;
             disparo.y = -1;
         }
-    }
-    while (disparo.x >= 0 && tabuleiro->tabuleiro[disparo.x][disparo.y] != ' ');
+    } while (disparo.x >= 0 && tabuleiro->tabuleiro[disparo.x][disparo.y] != ' ');
 
     return disparo;
 }
 
 /** \brief decide qual o modo de disparo onde nos encontramos
  *
- * \param tabuleiro TABULEIRO*
+ * \param tabuleiro Tabuleiro*
  * \param modo_disparo int
  * \param jogada int*
  * \return Celula
  *
  */
-Celula disparar_j2(TABULEIRO *tabuleiro, int modo_disparo, int *jogada)
+Celula disparar_j2(Tabuleiro *tabuleiro, int modo_disparo, int *jogada)
 {
     if (modo_disparo == 1)
     {
@@ -928,12 +919,12 @@ Celula disparar_j2(TABULEIRO *tabuleiro, int modo_disparo, int *jogada)
 /** \brief quando um navia se afunda, verifica a sua volta e impede de ser disparado
  *   nessas coordenadas
  *
- * \param tabuleiro TABULEIRO*
+ * \param tabuleiro Tabuleiro*
  * \param matriz int
  * \return void
  *
  */
-void afundar_navio(TABULEIRO *tabuleiro, int matriz)
+void afundar_navio(Tabuleiro *tabuleiro, int matriz)
 {
     int i = (matriz / (tabuleiro->colunas / 3)) * 3;
     int j = (matriz % (tabuleiro->colunas / 3)) * 3;
@@ -968,13 +959,13 @@ void afundar_navio(TABULEIRO *tabuleiro, int matriz)
 
 /** \brief o jogador indica se o lugar onde o computador disparou e agua ou um barco
  *
- * \param tabuleiro TABULEIRO
+ * \param tabuleiro Tabuleiro
  * \param quantidadeTipo[9] int
  * \param modo_disparo int
  * \return void
  *
  */
-void modo_j2(TABULEIRO tabuleiro, int quantidadeTipo[9], int modo_disparo)
+void modo_j2(Tabuleiro tabuleiro, int quantidadeTipo[9], int modo_disparo)
 {
     time_t inicio, fim;
     Celula disparo;
@@ -994,7 +985,6 @@ void modo_j2(TABULEIRO tabuleiro, int quantidadeTipo[9], int modo_disparo)
     print_inicial(quantidadeTipo, tabuleiro);
 
     inicializar_tabuleiro(&tabuleiro, ' ');
-
 
     while ((disparo = disparar_j2(&tabuleiro, modo_disparo, &jogada)).x >= 0 && verificar_final(quantidadeTipo))
     {
@@ -1167,14 +1157,14 @@ int random_number(int m, int M)
 
 void indicacao_j(int jogo)
 {
-    if(jogo == 1)
+    if (jogo == 1)
     {
         printf("*=================================\n");
         printf("* Modo de jogo %d\n", jogo);
         printf("* Insira as Coordenadas de Disparo\n");
         printf("*=================================\n");
     }
-    else if(jogo == 2)
+    else if (jogo == 2)
     {
         printf("*===================================================\n");
         printf("* Modo de jogo %d\n", jogo);

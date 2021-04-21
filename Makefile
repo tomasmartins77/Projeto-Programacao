@@ -1,5 +1,5 @@
 GCC=gcc
-GCC_FLAGS=
+GCC_FLAGS=-Wall -std=c11 -O3
 
 
 all: main
