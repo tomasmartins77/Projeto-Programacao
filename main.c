@@ -261,10 +261,12 @@ void modos_jogo(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int quan
         if (pecas == 1) // modo de posicionamento 1
         {
             modo_p1(tabuleiro, jogo);
+            return;
         }
         else if (pecas == 2 && r3 == 1 && r4 == 1) // modo de posicionamento 2
         {
             modo0_p2(tabuleiro, quantidadeTipo);
+            return;
         }
         utilizacao();
         exit(-1);
@@ -274,10 +276,12 @@ void modos_jogo(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int quan
         if (pecas == 1) // modo de posicionamento 1
         {
             modo_p1(tabuleiro, jogo);
+            return;
         }
         else if (pecas == 2 && r3 == 1 && r4 == 1) // modo de posicionamento 2
         {
             modo1_p2(tabuleiro, quantidadeTipo);
+            return;
         }
         utilizacao();
         exit(-1);
@@ -285,6 +289,7 @@ void modos_jogo(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int quan
     else if (jogo == 2 && r2 == 1 && r3 == 1 && r4 == 1) // modo de jogo 2
     {
         modo_j2(tabuleiro, quantidadeTipo, disparos);
+        return;
     }
     utilizacao();
     exit(-1);
@@ -758,7 +763,8 @@ void coordenadas_j1(Tabuleiro tabuleiro, int pecas_em_jogo, int posicionamento)
     time(&inicio);
     for (jogadas = 0; jogadas < max_jogadas; jogadas++)
     {
-        scanf(" %c %d", &coluna, &linha); // input do utilizador
+        if (scanf(" %c %d", &coluna, &linha) != 2)
+            break; // input do utilizador
         int cordx = coluna - 'A';
         int cordy = tabuleiro.linhas - linha;
         if (cord_repetidas[cordy][cordx] == 1)
@@ -791,7 +797,7 @@ void coordenadas_j1(Tabuleiro tabuleiro, int pecas_em_jogo, int posicionamento)
 
     tempo_jogo = difftime(fim, inicio);
     printf("\nNumero de tentativas: %d\n", jogadas);
-    printf("Tempo de Jogo: %.2lf segundos", tempo_jogo);
+    printf("Tempo de Jogo: %.2lf segundos\n", tempo_jogo);
 }
 
 /** \brief conta todas as posicoes possiveis de posicionamento de partes dos barcos em relacao
@@ -1206,16 +1212,16 @@ void indicacao_j(int jogo)
 {
     if (jogo == 1)
     {
-        printf("*=================================\n");
+        printf("* =================================\n");
         printf("* Modo de jogo %d\n", jogo);
         printf("* Insira as Coordenadas de Disparo\n");
-        printf("*=================================\n");
+        printf("* =================================\n");
     }
     else if (jogo == 2)
     {
-        printf("*===================================================\n");
+        printf("* ===================================================\n");
         printf("* Modo de jogo %d\n", jogo);
         printf("* Crie um tabuleiro com as caracteristicas indicadas\n* Responda aos disparos do programa\n");
-        printf("*===================================================\n");
+        printf("* ===================================================\n");
     }
 }
