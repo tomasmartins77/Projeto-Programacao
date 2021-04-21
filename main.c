@@ -735,7 +735,7 @@ void modo1_p2(Tabuleiro tabuleiro, int quantidadeTipo[9])
 void coordenadas_j1(Tabuleiro tabuleiro, int pecas_em_jogo, int posicionamento)
 {
     char coluna, resposta = '-';
-    int jogadas, linha, max_jogadas = tabuleiro.linhas * tabuleiro.colunas, cord_repetidas[15][24] = {0};
+    int jogadas, linha, max_jogadas = tabuleiro.linhas * tabuleiro.colunas, cord_repetidas[15][24] = {{0}};
     time_t inicio, fim;
     double tempo_jogo;
 
@@ -745,23 +745,23 @@ void coordenadas_j1(Tabuleiro tabuleiro, int pecas_em_jogo, int posicionamento)
         scanf(" %c %d", &coluna, &linha); // input do utilizador
         int cordx = coluna - 'A';
         int cordy = tabuleiro.linhas - linha;
-        if (cord_repetidas[cordy][cordx] == 1 && tabuleiro.tabuleiro[cordy][cordx] != '-')
+        if (cord_repetidas[cordy][cordx] == 1)
         {
             jogadas--; // se colocar uma coordenada repetida, nao acontece nada
-            pecas_em_jogo++;
         }
-        if (tabuleiro.tabuleiro[cordy][cordx] != '*' && tabuleiro.tabuleiro[cordy][cordx] != '-')
-            cord_repetidas[cordy][cordx] = 1;
 
-        if (cordy < 0 || cordy >= tabuleiro.linhas || cordx < 0 || cordx >= tabuleiro.colunas)
+        /*  if (tabuleiro.tabuleiro[cordy][cordx] != '*' || tabuleiro.tabuleiro[cordy][cordx] != '-')
+            cord_repetidas[cordy][cordx] = 1; */
+
+        if (cordy < 0 || cordy >= tabuleiro.linhas || cordx < 0 || cordx >= tabuleiro.colunas) //fora do tabuleiro
         {
             jogadas--; // jogadas invalidas
             resposta = '*';
         }
-        else
+        else //resposta correta
         {
             resposta = tabuleiro.tabuleiro[cordy][cordx];
-            if (tabuleiro.tabuleiro[cordy][cordx] != '-' && tabuleiro.tabuleiro[cordy][cordx] != '*')
+            if (tabuleiro.tabuleiro[cordy][cordx] != '-' && tabuleiro.tabuleiro[cordy][cordx] != '*' && cord_repetidas[cordy][cordx] == 0)
             {
                 pecas_em_jogo--; // peca atingida
             }
@@ -770,6 +770,9 @@ void coordenadas_j1(Tabuleiro tabuleiro, int pecas_em_jogo, int posicionamento)
                 break;
             }
         }
+        cord_repetidas[cordy][cordx] = 1;
+        printf("%d\n", jogadas);
+        printf("%d\n", pecas_em_jogo);
         printf("%c\n", resposta);
     }
     time(&fim);
@@ -1003,13 +1006,14 @@ void modo_j2(Tabuleiro tabuleiro, int quantidadeTipo[9], int modo_disparo)
 
     time(&inicio);
 
+    indicacao_j(jogo);
+
+    print_inicial(quantidadeTipo, tabuleiro);
+
     for (i = 0; i < 9; i++)
     {
         quantidadeTipo[i] *= i;
     }
-    indicacao_j(jogo);
-
-    print_inicial(quantidadeTipo, tabuleiro);
 
     inicializar_tabuleiro(&tabuleiro, ' ');
 
