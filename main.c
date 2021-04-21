@@ -793,11 +793,9 @@ void coordenadas_j1(Tabuleiro tabuleiro, int pecas_em_jogo, int posicionamento)
         printf("%c\n", resposta);
     }
     time(&fim);
-    imprimir_tabuleiro(tabuleiro);
-
     tempo_jogo = difftime(fim, inicio);
-    printf("\nNumero de tentativas: %d\n", jogadas);
-    printf("Tempo de Jogo: %.2lf segundos\n", tempo_jogo);
+    printf("\nFim de jogo: %d jogadas em %.2lf segundos\n", jogadas, tempo_jogo);
+    imprimir_tabuleiro(tabuleiro);
 }
 
 /** \brief conta todas as posicoes possiveis de posicionamento de partes dos barcos em relacao
