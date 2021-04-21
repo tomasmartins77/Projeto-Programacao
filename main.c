@@ -23,7 +23,7 @@ typedef struct
     int x;
     int y;
 } Celula;
-void erro_argumentos(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int quantidadeTipo[9]);
+void erro_argumentos(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int quantidadeTipo[9], int flag);
 void utilizacao();
 void modos_jogo(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int quantidadeTipo[9]);
 struct peca tipo0();
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
         pecas = DEFAULT_PECAS_TIRO, disparos = DEFAULT_PECAS_TIRO;
     tabuleiro.linhas = DEFAULT_DIMENSOES;
     tabuleiro.colunas = DEFAULT_DIMENSOES;
-    int quantidadeTipo[9] = {0};
+    int quantidadeTipo[9] = {0}, flag = 0;
 
     srand(time(NULL));
 
@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
             break;
         case 'd':                            /* modo de disparo*/
             sscanf(optarg, "%d", &disparos); // modos de disparo sao 1, 2, 3
+            flag = 1;
             break;
         case '1':
             sscanf(optarg, "%d", &quantidadeTipo[1]); //minimo 1 peca tipo 1
@@ -122,7 +123,7 @@ int main(int argc, char *argv[])
             break;
         }
     }
-    erro_argumentos(tabuleiro, jogo, pecas, disparos, quantidadeTipo);
+    erro_argumentos(tabuleiro, jogo, pecas, disparos, quantidadeTipo, flag);
     modos_jogo(tabuleiro, jogo, pecas, disparos, quantidadeTipo);
     return 0;
 }
@@ -138,7 +139,7 @@ int main(int argc, char *argv[])
  * \return void
  *
  */
-void erro_argumentos(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int quantidadeTipo[9])
+void erro_argumentos(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int quantidadeTipo[9], int flag)
 {
     int k;
     if (tabuleiro.linhas % 3 != 0 || tabuleiro.colunas % 3 != 0 || tabuleiro.linhas < 9 || tabuleiro.linhas > 15 || tabuleiro.colunas < 9 || tabuleiro.colunas > 24)
@@ -149,10 +150,16 @@ void erro_argumentos(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int
     }
     else if (jogo == 0 || jogo == 1)
     {
-        if (pecas < 1 || pecas > 2 || disparos != 1)
+        if (pecas < 1 || pecas > 2)
         {
             utilizacao();
             printf("\n*modo de posicionamento nao disponivel\n");
+            exit(-1);
+        }
+        else if(flag == 1)
+        {
+            utilizacao();
+            printf("\n*nao pode escolher modo de disparo neste modo de jogo\n");
             exit(-1);
         }
         if (pecas == 2 && quantidadeTipo[1] == 0)
@@ -182,6 +189,12 @@ void erro_argumentos(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int
             printf("\n*modo de disparo nao disponivel\n");
             exit(-1);
         }
+        else if(quantidadeTipo[1] == 0)
+        {
+            utilizacao();
+            printf("\n*precisa colocar no minimo uma peca\n");
+            exit(-1);
+        }
     }
     else if (jogo < 0 || jogo > 2)
     {
@@ -203,7 +216,7 @@ void utilizacao()
     printf("[-h]\t\t\t  ajuda para os jogadores\n");
     printf("[-t linhas colunas]\t  define as dimensoes do tabuleiro(predifinicao = 9x9)\n");
     printf("[-j (0 a 2)]\t\t  define o modo de jogo(predifinicao = 0)\n");
-    printf("[-p (1 ou 2)]\t\t  define o7 modo de posicionamento das pecas pelo computador(predefinicao = 1)\n");
+    printf("[-p (1 ou 2)]\t\t  define o modo de posicionamento das pecas pelo computador(predefinicao = 1)\n");
     printf("[-d (1 a 3)]\t\t  define o modo de disparo das pecas pelo computador(predefinicao = 1)\n");
     printf("[-1 (minimo 1)]\t\t  numero de pecas do tipo 1\n");
     printf("[-2]\t\t\t  numero de pecas do tipo 2\n");
@@ -214,7 +227,7 @@ void utilizacao()
     printf("[-7]\t\t\t  numero de pecas do tipo 7\n");
     printf("[-8]\t\t\t  numero de pecas do tipo 8\n");
     printf("exemplos validos de invocacao de programa:");
-    printf("\nExemplo 1: ./wargame -j 1 -p 1\nExemplo 2: ./wargame -j 2 -p 1 -d 3\nExemplo 3: ./wargame -d 3 -j 1 -p 2 -1 5 -2 3");
+    printf("\nExemplo 1: ./wargame -j 1 -p 1\nExemplo 2: ./wargame -j 2 -d 3 -1 1");
     printf("\nExemplos invalidos de invocacao de programa:\nExemplo 1: ./wargame -j 1 -p 1 -d 3\nExemplo 2: ./wargame -j 1 -d 2\n\
 Exemplo 3: ./wargame -j 2 -d 1 -1 5 -2 4 -3 5\n");
 }
@@ -253,6 +266,7 @@ void modos_jogo(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int quan
         {
             modo0_p2(tabuleiro, quantidadeTipo);
         }
+        utilizacao();
         exit(-1);
     }
     else if (jogo == 1 && r2 == 1) // modo de jogo 1
@@ -265,12 +279,14 @@ void modos_jogo(Tabuleiro tabuleiro, int jogo, int pecas, int disparos, int quan
         {
             modo1_p2(tabuleiro, quantidadeTipo);
         }
+        utilizacao();
         exit(-1);
     }
     else if (jogo == 2 && r2 == 1 && r3 == 1 && r4 == 1) // modo de jogo 2
     {
         modo_j2(tabuleiro, quantidadeTipo, disparos);
     }
+    utilizacao();
     exit(-1);
 }
 
@@ -286,14 +302,15 @@ struct peca tipo0()
 struct peca tipo1(int variante)
 {
     struct peca variante1[9] = {{{{'1', '-', '-'}, {'-', '-', '-'}, {'-', '-', '-'}}, 1},
-                                {{{'-', '1', '-'}, {'-', '-', '-'}, {'-', '-', '-'}}, 1},
-                                {{{'-', '-', '1'}, {'-', '-', '-'}, {'-', '-', '-'}}, 1},
-                                {{{'-', '-', '-'}, {'1', '-', '-'}, {'-', '-', '-'}}, 1},
-                                {{{'-', '-', '-'}, {'-', '1', '-'}, {'-', '-', '-'}}, 1},
-                                {{{'-', '-', '-'}, {'-', '-', '1'}, {'-', '-', '-'}}, 1},
-                                {{{'-', '-', '-'}, {'-', '-', '-'}, {'1', '-', '-'}}, 1},
-                                {{{'-', '-', '-'}, {'-', '-', '-'}, {'-', '1', '-'}}, 1},
-                                {{{'-', '-', '-'}, {'-', '-', '-'}, {'-', '-', '1'}}, 1}};
+        {{{'-', '1', '-'}, {'-', '-', '-'}, {'-', '-', '-'}}, 1},
+        {{{'-', '-', '1'}, {'-', '-', '-'}, {'-', '-', '-'}}, 1},
+        {{{'-', '-', '-'}, {'1', '-', '-'}, {'-', '-', '-'}}, 1},
+        {{{'-', '-', '-'}, {'-', '1', '-'}, {'-', '-', '-'}}, 1},
+        {{{'-', '-', '-'}, {'-', '-', '1'}, {'-', '-', '-'}}, 1},
+        {{{'-', '-', '-'}, {'-', '-', '-'}, {'1', '-', '-'}}, 1},
+        {{{'-', '-', '-'}, {'-', '-', '-'}, {'-', '1', '-'}}, 1},
+        {{{'-', '-', '-'}, {'-', '-', '-'}, {'-', '-', '1'}}, 1}
+    };
     int k = variante < 0 ? random_number(0, 8) : variante;
     return variante1[k];
 }
@@ -301,17 +318,18 @@ struct peca tipo1(int variante)
 struct peca tipo2(int variante)
 {
     struct peca variante2[12] = {{{{'2', '2', '-'}, {'-', '-', '-'}, {'-', '-', '-'}}, 2},
-                                 {{{'-', '2', '2'}, {'-', '-', '-'}, {'-', '-', '-'}}, 2},
-                                 {{{'-', '-', '-'}, {'2', '2', '-'}, {'-', '-', '-'}}, 2},
-                                 {{{'-', '-', '-'}, {'-', '2', '2'}, {'-', '-', '-'}}, 2},
-                                 {{{'-', '-', '-'}, {'-', '-', '-'}, {'2', '2', '-'}}, 2},
-                                 {{{'-', '-', '-'}, {'-', '-', '-'}, {'-', '2', '2'}}, 2},
-                                 {{{'2', '-', '-'}, {'2', '-', '-'}, {'-', '-', '-'}}, 2},
-                                 {{{'-', '-', '-'}, {'2', '-', '-'}, {'2', '-', '-'}}, 2},
-                                 {{{'-', '2', '-'}, {'-', '2', '-'}, {'-', '-', '-'}}, 2},
-                                 {{{'-', '-', '-'}, {'-', '2', '-'}, {'-', '2', '-'}}, 2},
-                                 {{{'-', '-', '2'}, {'-', '-', '2'}, {'-', '-', '-'}}, 2},
-                                 {{{'-', '-', '-'}, {'-', '-', '2'}, {'-', '-', '2'}}, 2}};
+        {{{'-', '2', '2'}, {'-', '-', '-'}, {'-', '-', '-'}}, 2},
+        {{{'-', '-', '-'}, {'2', '2', '-'}, {'-', '-', '-'}}, 2},
+        {{{'-', '-', '-'}, {'-', '2', '2'}, {'-', '-', '-'}}, 2},
+        {{{'-', '-', '-'}, {'-', '-', '-'}, {'2', '2', '-'}}, 2},
+        {{{'-', '-', '-'}, {'-', '-', '-'}, {'-', '2', '2'}}, 2},
+        {{{'2', '-', '-'}, {'2', '-', '-'}, {'-', '-', '-'}}, 2},
+        {{{'-', '-', '-'}, {'2', '-', '-'}, {'2', '-', '-'}}, 2},
+        {{{'-', '2', '-'}, {'-', '2', '-'}, {'-', '-', '-'}}, 2},
+        {{{'-', '-', '-'}, {'-', '2', '-'}, {'-', '2', '-'}}, 2},
+        {{{'-', '-', '2'}, {'-', '-', '2'}, {'-', '-', '-'}}, 2},
+        {{{'-', '-', '-'}, {'-', '-', '2'}, {'-', '-', '2'}}, 2}
+    };
 
     int k = variante < 0 ? random_number(0, 11) : variante;
     return variante2[k];
@@ -320,11 +338,12 @@ struct peca tipo2(int variante)
 struct peca tipo3(int variante)
 {
     struct peca variante3[6] = {{{{'3', '3', '3'}, {'-', '-', '-'}, {'-', '-', '-'}}, 3},
-                                {{{'-', '-', '-'}, {'3', '3', '3'}, {'-', '-', '-'}}, 3},
-                                {{{'-', '-', '-'}, {'-', '-', '-'}, {'3', '3', '3'}}, 3},
-                                {{{'3', '-', '-'}, {'3', '-', '-'}, {'3', '-', '-'}}, 3},
-                                {{{'-', '3', '-'}, {'-', '3', '-'}, {'-', '3', '-'}}, 3},
-                                {{{'-', '-', '3'}, {'-', '-', '3'}, {'-', '-', '3'}}, 3}};
+        {{{'-', '-', '-'}, {'3', '3', '3'}, {'-', '-', '-'}}, 3},
+        {{{'-', '-', '-'}, {'-', '-', '-'}, {'3', '3', '3'}}, 3},
+        {{{'3', '-', '-'}, {'3', '-', '-'}, {'3', '-', '-'}}, 3},
+        {{{'-', '3', '-'}, {'-', '3', '-'}, {'-', '3', '-'}}, 3},
+        {{{'-', '-', '3'}, {'-', '-', '3'}, {'-', '-', '3'}}, 3}
+    };
 
     int k = variante < 0 ? random_number(0, 5) : variante;
     return variante3[k];
@@ -333,9 +352,10 @@ struct peca tipo3(int variante)
 struct peca tipo4(int variante)
 {
     struct peca variante4[4] = {{{{'4', '4', '-'}, {'4', '4', '-'}, {'-', '-', '-'}}, 4},
-                                {{{'-', '4', '4'}, {'-', '4', '4'}, {'-', '-', '-'}}, 4},
-                                {{{'-', '-', '-'}, {'4', '4', '-'}, {'4', '4', '-'}}, 4},
-                                {{{'-', '-', '-'}, {'-', '4', '4'}, {'-', '4', '4'}}, 4}};
+        {{{'-', '4', '4'}, {'-', '4', '4'}, {'-', '-', '-'}}, 4},
+        {{{'-', '-', '-'}, {'4', '4', '-'}, {'4', '4', '-'}}, 4},
+        {{{'-', '-', '-'}, {'-', '4', '4'}, {'-', '4', '4'}}, 4}
+    };
 
     int k = variante < 0 ? random_number(0, 3) : variante;
     return variante4[k];
@@ -344,9 +364,10 @@ struct peca tipo4(int variante)
 struct peca tipo5(int variante)
 {
     struct peca variante5[4] = {{{{'5', '5', '5'}, {'-', '5', '-'}, {'-', '5', '-'}}, 5},
-                                {{{'5', '-', '-'}, {'5', '5', '5'}, {'5', '-', '-'}}, 5},
-                                {{{'-', '5', '-'}, {'-', '5', '-'}, {'5', '5', '5'}}, 5},
-                                {{{'-', '-', '5'}, {'5', '5', '5'}, {'-', '-', '5'}}, 5}};
+        {{{'5', '-', '-'}, {'5', '5', '5'}, {'5', '-', '-'}}, 5},
+        {{{'-', '5', '-'}, {'-', '5', '-'}, {'5', '5', '5'}}, 5},
+        {{{'-', '-', '5'}, {'5', '5', '5'}, {'-', '-', '5'}}, 5}
+    };
 
     int k = variante < 0 ? random_number(0, 3) : variante;
     return variante5[k];
@@ -355,9 +376,10 @@ struct peca tipo5(int variante)
 struct peca tipo6(int variante)
 {
     struct peca variante6[4] = {{{{'-', '6', '-'}, {'6', '-', '6'}, {'6', '6', '6'}}, 6},
-                                {{{'-', '6', '6'}, {'6', '-', '6'}, {'-', '6', '6'}}, 6},
-                                {{{'6', '6', '6'}, {'6', '-', '6'}, {'-', '6', '-'}}, 6},
-                                {{{'6', '6', '-'}, {'6', '-', '6'}, {'6', '6', '-'}}, 6}};
+        {{{'-', '6', '6'}, {'6', '-', '6'}, {'-', '6', '6'}}, 6},
+        {{{'6', '6', '6'}, {'6', '-', '6'}, {'-', '6', '-'}}, 6},
+        {{{'6', '6', '-'}, {'6', '-', '6'}, {'6', '6', '-'}}, 6}
+    };
 
     int k = variante < 0 ? random_number(0, 3) : variante;
     return variante6[k];
@@ -366,7 +388,8 @@ struct peca tipo6(int variante)
 struct peca tipo7(int variante)
 {
     struct peca variante7[2] = {{{{'7', '-', '7'}, {'7', '7', '7'}, {'7', '-', '7'}}, 7},
-                                {{{'7', '7', '7'}, {'-', '7', '-'}, {'7', '7', '7'}}, 7}};
+        {{{'7', '7', '7'}, {'-', '7', '-'}, {'7', '7', '7'}}, 7}
+    };
 
     int k = variante < 0 ? random_number(0, 1) : variante;
     return variante7[k];
@@ -750,9 +773,6 @@ void coordenadas_j1(Tabuleiro tabuleiro, int pecas_em_jogo, int posicionamento)
             jogadas--; // se colocar uma coordenada repetida, nao acontece nada
         }
 
-        /*  if (tabuleiro.tabuleiro[cordy][cordx] != '*' || tabuleiro.tabuleiro[cordy][cordx] != '-')
-            cord_repetidas[cordy][cordx] = 1; */
-
         if (cordy < 0 || cordy >= tabuleiro.linhas || cordx < 0 || cordx >= tabuleiro.colunas) //fora do tabuleiro
         {
             jogadas--; // jogadas invalidas
@@ -771,8 +791,6 @@ void coordenadas_j1(Tabuleiro tabuleiro, int pecas_em_jogo, int posicionamento)
             }
         }
         cord_repetidas[cordy][cordx] = 1;
-        printf("%d\n", jogadas);
-        printf("%d\n", pecas_em_jogo);
         printf("%c\n", resposta);
     }
     time(&fim);
@@ -922,7 +940,8 @@ Celula modo_d2(Tabuleiro *tabuleiro, int *jogada)
             disparo.x = -1;
             disparo.y = -1;
         }
-    } while (disparo.x >= 0 && tabuleiro->tabuleiro[disparo.x][disparo.y] != ' ');
+    }
+    while (disparo.x >= 0 && tabuleiro->tabuleiro[disparo.x][disparo.y] != ' ');
 
     return disparo;
 }
