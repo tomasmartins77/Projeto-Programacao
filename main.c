@@ -144,7 +144,7 @@ void erro_argumentos(TABULEIRO tabuleiro, int jogo, int pecas, int disparos, int
     if (tabuleiro.linhas % 3 != 0 || tabuleiro.colunas % 3 != 0 || tabuleiro.linhas < 9 || tabuleiro.linhas > 15 || tabuleiro.colunas < 9 || tabuleiro.colunas > 24)
     {
         utilizacao();
-        printf("\ndimensoes nao disponiveis\n");
+        printf("\n*dimensoes nao disponiveis\n");
         exit(-1);
     }
     else if (jogo == 0 || jogo == 1)
@@ -152,13 +152,13 @@ void erro_argumentos(TABULEIRO tabuleiro, int jogo, int pecas, int disparos, int
         if (pecas < 1 || pecas > 2 || disparos != 1)
         {
             utilizacao();
-            printf("\nmodo de posicionamento nao disponivel\n");
+            printf("\n*modo de posicionamento nao disponivel\n");
             exit(-1);
         }
         if (pecas == 2 && quantidadeTipo[1] == 0)
         {
             utilizacao();
-            printf("\npecas insuficientes\n");
+            printf("\n*pecas insuficientes\n");
             exit(-1);
         }
         if (pecas == 1)
@@ -168,7 +168,7 @@ void erro_argumentos(TABULEIRO tabuleiro, int jogo, int pecas, int disparos, int
                 if (quantidadeTipo[k] != 0)
                 {
                     utilizacao();
-                    printf("\nmodo p1 nao permite a escolha de pecas\n");
+                    printf("\n*modo p1 nao permite a escolha de pecas\n");
                     exit(-1);
                 }
             }
@@ -179,14 +179,14 @@ void erro_argumentos(TABULEIRO tabuleiro, int jogo, int pecas, int disparos, int
         if (disparos < 1 || disparos > 3)
         {
             utilizacao();
-            printf("\nmodo de disparo nao disponivel\n");
+            printf("\n*modo de disparo nao disponivel\n");
             exit(-1);
         }
     }
     else if (jogo < 0 || jogo > 2)
     {
         utilizacao();
-        printf("\nmodo de jogo nao disponivel\n");
+        printf("\n*modo de jogo nao disponivel\n");
         exit(-1);
     }
 }
@@ -757,18 +757,18 @@ void coordenadas_j1(TABULEIRO tabuleiro, int pecas_em_jogo, int posicionamento)
             jogadas--; // se colocar uma coordenada repetida, nao acontece nada
             pecas_em_jogo++;
         }
-        if(tabuleiro.tabuleiro[cordy][cordx] != 'X' && tabuleiro.tabuleiro[cordy][cordx] != '-')
+        if(tabuleiro.tabuleiro[cordy][cordx] != '*' && tabuleiro.tabuleiro[cordy][cordx] != '-')
             cord_repetidas[cordy][cordx] = 1;
 
         if (cordy < 0 || cordy >= tabuleiro.linhas || cordx < 0 || cordx >= tabuleiro.colunas)
         {
             jogadas--;  // jogadas invalidas
-            resposta = 'X';
+            resposta = '*';
         }
         else
         {
             resposta = tabuleiro.tabuleiro[cordy][cordx];
-            if (tabuleiro.tabuleiro[cordy][cordx] != '-' && tabuleiro.tabuleiro[cordy][cordx] != 'X')
+            if (tabuleiro.tabuleiro[cordy][cordx] != '-' && tabuleiro.tabuleiro[cordy][cordx] != '*')
             {
                 pecas_em_jogo--; // peca atingida
             }
