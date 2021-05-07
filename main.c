@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
         }
     }
     menu(linhas, &num_linhas, leitura_dados, ordenacao_dados, selecao_dados, restricao_dados, leitura_ficheiros, leitura_dados);
-    linhas_continente(linhas, &linhas, continente);
+
     liberta_memoria(linhas, num_linhas);
     return 0;
 }
@@ -70,7 +70,6 @@ void menu(char **linhas, int* num_linhas, char* leitura_dados, char* ordenacao_d
         linhas = ler_ficheiro("covid19_w_t01.csv", &num_linhas);
         printf("%d", num_linhas);
     }
-
 
 }
 
@@ -129,7 +128,6 @@ char** linhas_continente(char** linhas_lidas, int* linhas, char* continente)
     {
         if(*linhas != 0)
         {
-
             int length = strlen(linhas_lidas[i]);
             if(linhas_lidas[length - 1] == '\n')
                 linhas_lidas[length - 1] = '\0';
