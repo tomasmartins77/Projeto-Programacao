@@ -6,9 +6,18 @@
 
 #define MAX_PALAVRAS_LINHAS 100
 
+typedef struct node
+{
+
+    char linha[MAX_PALAVRAS_LINHAS];
+
+    struct node *next;
+} node_t;
+
 void menu(char **linhas, int* num_linhas, char* leitura_dados, char* ordenacao_dados, char* selecao_dados, char* restricao_dados, char* leitura_ficheiros, char* escrita_ficheiros);
 
 char ** ler_ficheiro(char * nomeficheiro, int *linhas);
+char** linhas_continente(char** linhas_lidas, int* linhas, char* continente);
 void liberta_memoria(char **linhas, int num_linhas);
 
 int main(int argc, char *argv[])
@@ -48,18 +57,20 @@ int main(int argc, char *argv[])
         }
     }
     menu(linhas, &num_linhas, leitura_dados, ordenacao_dados, selecao_dados, restricao_dados, leitura_ficheiros, leitura_dados);
-
+    linhas_continente(linhas, &linhas, continente);
     liberta_memoria(linhas, num_linhas);
     return 0;
 }
 
 void menu(char **linhas, int* num_linhas, char* leitura_dados, char* ordenacao_dados, char* selecao_dados, char* restricao_dados, char* leitura_ficheiros, char* escrita_ficheiros)
 {
-       if(strcmp(leitura_dados, "all") == 0){
+    if(strcmp(leitura_dados, "all") == 0)
+    {
 
-         linhas = ler_ficheiro("covid19_w_t01.csv", &num_linhas);
+        linhas = ler_ficheiro("covid19_w_t01.csv", &num_linhas);
         printf("%d", num_linhas);
     }
+
 
 }
 
@@ -108,7 +119,33 @@ char ** ler_ficheiro(char * nomeficheiro, int *linhas)
     return linha_lida;
 }
 
+char** linhas_continente(char** linhas_lidas, int* linhas, char* continente)
+{
+    int i;
+    char** novas_linhas;
+    char* buffer;
+    *linhas = 0;
+    for (int i = 0; i < strlen(*linhas_lidas); i++)
+    {
+        if(*linhas != 0)
+        {
 
+            int length = strlen(linhas_lidas[i]);
+            if(linhas_lidas[length - 1] == '\n')
+                linhas_lidas[length - 1] = '\0';
+            buffer = strstr(continente, linhas_lidas[i]);
+            if(*linhas == 1)
+            {
+                if(strcmp(buffer, continente) == 0)
+                {
+                    novas_linhas[i] = linhas_lidas[i];
+                    printf("%s", novas_linhas[i]);
+                }
+            }
+        }
+    }
+    return novas_linhas;
+}
 
 void liberta_memoria(char **linhas, int num_linhas)
 {
