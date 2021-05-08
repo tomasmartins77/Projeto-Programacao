@@ -19,6 +19,7 @@ void menu(char **linhas, int* num_linhas, char* leitura_dados, char* ordenacao_d
 char ** ler_ficheiro(char * nomeficheiro, int *linhas);
 char** linhas_continente(char** linhas_lidas, int* linhas, char* continente);
 void liberta_memoria(char **linhas, int num_linhas);
+void escrever_ficheiro(char* nomeficheiro);
 
 int main(int argc, char *argv[])
 {
@@ -26,7 +27,8 @@ int main(int argc, char *argv[])
     int num_linhas = 0;
     int opt;
     opterr = 0;
-    char leitura_dados[MAX_PALAVRAS_LINHAS], ordenacao_dados[MAX_PALAVRAS_LINHAS], selecao_dados[MAX_PALAVRAS_LINHAS], restricao_dados[MAX_PALAVRAS_LINHAS], leitura_ficheiros[MAX_PALAVRAS_LINHAS], escrita_ficheiros[MAX_PALAVRAS_LINHAS];
+    char leitura_dados[MAX_PALAVRAS_LINHAS] = {0}, ordenacao_dados[MAX_PALAVRAS_LINHAS] = {0}, selecao_dados[MAX_PALAVRAS_LINHAS] = {0}, restricao_dados[MAX_PALAVRAS_LINHAS] = {0},\
+            leitura_ficheiros[MAX_PALAVRAS_LINHAS] = {0}, escrita_ficheiros[MAX_PALAVRAS_LINHAS] = {0};
 
     while ((opt = getopt(argc, argv, "hL:S:D:P:i:o:")) != -1)
     {
@@ -56,7 +58,7 @@ int main(int argc, char *argv[])
             break;
         }
     }
-    menu(linhas, &num_linhas, leitura_dados, ordenacao_dados, selecao_dados, restricao_dados, leitura_ficheiros, leitura_dados);
+    menu(linhas, &num_linhas, leitura_dados, ordenacao_dados, selecao_dados, restricao_dados, leitura_ficheiros, escrita_ficheiros);
 
     liberta_memoria(linhas, num_linhas);
     return 0;
@@ -64,13 +66,24 @@ int main(int argc, char *argv[])
 
 void menu(char **linhas, int* num_linhas, char* leitura_dados, char* ordenacao_dados, char* selecao_dados, char* restricao_dados, char* leitura_ficheiros, char* escrita_ficheiros)
 {
-    if(strcmp(leitura_dados, "all") == 0)
+    /* if(strcmp(leitura_dados, "all") == 0)
+     {
+
+         linhas = ler_ficheiro("covid19_w_t01.csv", &num_linhas);
+         printf("%d", num_linhas);
+     }
+     if(leitura_ficheiros != NULL)
+     {
+         linhas = ler_ficheiro(leitura_ficheiros, &num_linhas);
+     }
+     if(leitura_dados != NULL)
+     {
+
+     }*/
+    if(escrita_ficheiros != NULL)
     {
-
-        linhas = ler_ficheiro("covid19_w_t01.csv", &num_linhas);
-        printf("%d", num_linhas);
+        escrever_ficheiro(escrita_ficheiros);
     }
-
 }
 
 char ** ler_ficheiro(char * nomeficheiro, int *linhas)
@@ -117,6 +130,29 @@ char ** ler_ficheiro(char * nomeficheiro, int *linhas)
     fclose(ficheiro);
     return linha_lida;
 }
+
+void escrever_ficheiro(char* nomeficheiro)
+{
+    char buffer[MAX_PALAVRAS_LINHAS];
+
+    FILE* ficheiro = fopen(nomeficheiro, "w");
+    if(ficheiro == NULL)
+    {
+        printf("Erro a abrir ficheiro");
+        exit(EXIT_FAILURE);
+    }
+    printf("Para terminar de escrever escrever: EOF\n---------------------------------------\n");
+    while(fgets(buffer, MAX_PALAVRAS_LINHAS, stdin) != NULL)
+    {
+        if(strstr(buffer,"EOF") != 0){
+        break;
+        }
+        fputs(buffer, ficheiro);
+    }
+    fclose(ficheiro);
+}
+
+
 
 char** linhas_continente(char** linhas_lidas, int* linhas, char* continente)
 {
