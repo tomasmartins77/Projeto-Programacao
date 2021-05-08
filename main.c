@@ -22,24 +22,24 @@ typedef struct dados
     struct dados *next;
 } dados_t;
 
-void menu(char **linhas, int* num_linhas, char* leitura_dados, char* ordenacao_dados, char* selecao_dados, char* restricao_dados, char* leitura_ficheiros, char* escrita_ficheiros);
+void menu(char **linhas, int *num_linhas, char *leitura_dados, char *ordenacao_dados, char *selecao_dados, char *restricao_dados, char *leitura_ficheiros, char *escrita_ficheiros);
 
-char ** ler_ficheiro(char * nomeficheiro, int *linhas);
-char ** ler_ficheiro_bin(char * nomeficheiro, int *linhas);
-char** linhas_continente(char** linhas_lidas, int* linhas, char* continente);
+char **ler_ficheiro(char *nomeficheiro, int *linhas);
+char **ler_ficheiro_bin(char *nomeficheiro, int *linhas);
+char **linhas_continente(char **linhas_lidas, int *linhas, char *continente);
 void liberta_memoria(char **linhas, int num_linhas);
-void escrever_ficheiro(char* nomeficheiro);
-void escrever_ficheiro_bin(char* nomeficheiro);
-void imprime_ficheiro(char** linhas_ficheiro, int* linhas);
+void escrever_ficheiro(char *nomeficheiro);
+void escrever_ficheiro_bin(char *nomeficheiro);
+void imprime_ficheiro(char **linhas_ficheiro, int *linhas);
 
 int main(int argc, char *argv[])
 {
-    char ** linhas = NULL;
+    char **linhas = NULL;
     int num_linhas = 0;
     int opt;
     opterr = 0;
-    char leitura_dados[MAX_PALAVRAS_LINHAS] = {0}, ordenacao_dados[MAX_PALAVRAS_LINHAS] = {0}, selecao_dados[MAX_PALAVRAS_LINHAS] = {0}, restricao_dados[MAX_PALAVRAS_LINHAS] = {0},\
-            leitura_ficheiros[MAX_PALAVRAS_LINHAS] = {0}, escrita_ficheiros[MAX_PALAVRAS_LINHAS] = {0};
+    char leitura_dados[MAX_PALAVRAS_LINHAS] = {0}, ordenacao_dados[MAX_PALAVRAS_LINHAS] = {0}, selecao_dados[MAX_PALAVRAS_LINHAS] = {0}, restricao_dados[MAX_PALAVRAS_LINHAS] = {0},
+         leitura_ficheiros[MAX_PALAVRAS_LINHAS] = {0}, escrita_ficheiros[MAX_PALAVRAS_LINHAS] = {0};
 
     while ((opt = getopt(argc, argv, "hL:S:D:P:i:o:")) != -1)
     {
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
         case 'o':
             sscanf(optarg, "%s", escrita_ficheiros);
             break;
-        default:  /* opcoes invalidas */
+        default: /* opcoes invalidas */
             printf("Erro na leitura");
             return EXIT_FAILURE;
             break;
@@ -77,31 +77,29 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-
-
-char ** ler_ficheiro(char * nomeficheiro, int *linhas)
+char **ler_ficheiro(char *nomeficheiro, int *linhas)
 {
-    FILE * ficheiro;
+    FILE *ficheiro;
     char buffer[MAX_PALAVRAS_LINHAS];
-    char ** linha_lida;
+    char **linha_lida;
     ficheiro = fopen(nomeficheiro, "r");
 
-    if(ficheiro == NULL)
+    if (ficheiro == NULL)
     {
         printf("Erro a abrir ficheiro\n");
         exit(EXIT_FAILURE);
     }
     *linhas = 0;
-    while(fgets(buffer, MAX_PALAVRAS_LINHAS, ficheiro) != NULL)
+    while (fgets(buffer, MAX_PALAVRAS_LINHAS, ficheiro) != NULL)
     {
-        if(*linhas != 0)
+        if (*linhas != 0)
         {
             int length = strlen(buffer);
-            if(buffer[length - 1] == '\n')
+            if (buffer[length - 1] == '\n')
                 buffer[length - 1] = '\0';
-            if(*linhas == 1)
+            if (*linhas == 1)
             {
-                if((linha_lida = (char**)malloc(sizeof(char**))) == NULL)
+                if ((linha_lida = (char **)malloc(sizeof(char **))) == NULL)
                 {
                     printf("Erro na alocacao de memoria\n");
                     exit(EXIT_FAILURE);
@@ -109,14 +107,13 @@ char ** ler_ficheiro(char * nomeficheiro, int *linhas)
             }
             else
             {
-                if((linha_lida = (char**)realloc(linha_lida, *linhas * sizeof(char*))) == NULL)
+                if ((linha_lida = (char **)realloc(linha_lida, *linhas * sizeof(char *))) == NULL)
                 {
                     printf("Erro no realloc\n");
                     exit(EXIT_FAILURE);
                 }
-
             }
-            linha_lida[(*linhas) - 1] = (char*)malloc(sizeof(char*) * length + 1);
+            linha_lida[(*linhas) - 1] = (char *)malloc(sizeof(char *) * length + 1);
             strcpy(linha_lida[(*linhas) - 1], buffer);
         }
         (*linhas)++;
@@ -126,28 +123,28 @@ char ** ler_ficheiro(char * nomeficheiro, int *linhas)
     return linha_lida;
 }
 
-char ** ler_ficheiro_bin(char * nomeficheiro, int *linhas)
+char **ler_ficheiro_bin(char *nomeficheiro, int *linhas)
 {
-    FILE * ficheiro;
+    FILE *ficheiro;
     char buffer[MAX_PALAVRAS_LINHAS];
 
-    char ** linha_lida;
+    char **linha_lida;
     ficheiro = fopen(nomeficheiro, "rb");
 
-    if(ficheiro == NULL)
+    if (ficheiro == NULL)
     {
         printf("Erro a abrir ficheiro\n");
         exit(EXIT_FAILURE);
     }
     *linhas = 1;
-    while(fgets(buffer, MAX_PALAVRAS_LINHAS, ficheiro) != NULL)
+    while (fgets(buffer, MAX_PALAVRAS_LINHAS, ficheiro) != NULL)
     {
         int length = strlen(buffer);
-        if(buffer[length - 1] == '\n')
+        if (buffer[length - 1] == '\n')
             buffer[length - 1] = '\0';
-        if(*linhas == 1)
+        if (*linhas == 1)
         {
-            if((linha_lida = (char**)malloc(sizeof(char**))) == NULL)
+            if ((linha_lida = (char **)malloc(sizeof(char **))) == NULL)
             {
                 printf("Erro na alocacao de memoria\n");
                 exit(EXIT_FAILURE);
@@ -155,14 +152,13 @@ char ** ler_ficheiro_bin(char * nomeficheiro, int *linhas)
         }
         else
         {
-            if((linha_lida = (char**)realloc(linha_lida, *linhas * sizeof(char*))) == NULL)
+            if ((linha_lida = (char **)realloc(linha_lida, *linhas * sizeof(char *))) == NULL)
             {
                 printf("Erro no realloc\n");
                 exit(EXIT_FAILURE);
             }
-
         }
-        linha_lida[(*linhas) - 1] = (char*)malloc(sizeof(char*) * length + 1);
+        linha_lida[(*linhas) - 1] = (char *)malloc(sizeof(char *) * length + 1);
         strcpy(linha_lida[(*linhas) - 1], buffer);
         (*linhas)++;
     }
@@ -171,13 +167,13 @@ char ** ler_ficheiro_bin(char * nomeficheiro, int *linhas)
     return linha_lida;
 }
 
-void imprime_ficheiro(char** linhas_ficheiro, int* linhas)
+void imprime_ficheiro(char **linhas_ficheiro, int *linhas)
 {
     int i, j;
 
-    for(i=0; i<*linhas; i++)
+    for (i = 0; i < *linhas; i++)
     {
-        for(j = 0; j < strlen(linhas_ficheiro[i]); j++)
+        for (j = 0; j < strlen(linhas_ficheiro[i]); j++)
         {
             printf("%c", linhas_ficheiro[i][j]);
         }
@@ -185,23 +181,23 @@ void imprime_ficheiro(char** linhas_ficheiro, int* linhas)
     }
 }
 
-void escrever_ficheiro(char* nomeficheiro)
+void escrever_ficheiro(char *nomeficheiro)
 {
     char buffer[MAX_PALAVRAS_LINHAS];
 
-    FILE* ficheiro = fopen("covid19_w_t01", "w");
-    if(ficheiro == NULL)
+    FILE *ficheiro = fopen("covid19_w_t01", "w");
+    if (ficheiro == NULL)
     {
         printf("Erro a abrir ficheiro");
         exit(EXIT_FAILURE);
     }
     printf("Para terminar de escrever escrever: EOF\n---------------------------------------\n");
-    while(fgets(buffer, MAX_PALAVRAS_LINHAS, stdin) != NULL)
+    while (fgets(buffer, MAX_PALAVRAS_LINHAS, stdin) != NULL)
     {
-        if(strstr(buffer,"EOF") != 0)
+        if (strstr(buffer, "EOF") != 0)
         {
             int length = strlen(buffer);
-            for(int i = 0; i < length - 4; i++)
+            for (int i = 0; i < length - 4; i++)
                 fputc(buffer[i], ficheiro);
             break;
         }
@@ -210,23 +206,23 @@ void escrever_ficheiro(char* nomeficheiro)
     fclose(ficheiro);
 }
 
-void escrever_ficheiro_bin(char* nomeficheiro)
+void escrever_ficheiro_bin(char *nomeficheiro)
 {
     char buffer[MAX_PALAVRAS_LINHAS];
 
-    FILE* ficheiro = fopen(nomeficheiro, "wb");
-    if(ficheiro == NULL)
+    FILE *ficheiro = fopen(nomeficheiro, "wb");
+    if (ficheiro == NULL)
     {
         printf("Erro a abrir ficheiro");
         exit(EXIT_FAILURE);
     }
     printf("Para terminar de escrever escrever: EOF\n---------------------------------------\n");
-    while(fgets(buffer, MAX_PALAVRAS_LINHAS, stdin) != NULL)
+    while (fgets(buffer, MAX_PALAVRAS_LINHAS, stdin) != NULL)
     {
-        if(strstr(buffer,"EOF") != 0)
+        if (strstr(buffer, "EOF") != 0)
         {
             int length = strlen(buffer);
-            for(int i = 0; i < length - 4; i++)
+            for (int i = 0; i < length - 4; i++)
                 fputc(buffer[i], ficheiro);
             break;
         }
@@ -262,7 +258,7 @@ char** linhas_continente(char** linhas_lidas, int* linhas, char* continente)
 void liberta_memoria(char **linhas, int num_linhas)
 {
     int i;
-    for(i = 0; i < num_linhas; i++)
+    for (i = 0; i < num_linhas; i++)
     {
         free(linhas[i]);
     }
