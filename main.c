@@ -144,15 +144,17 @@ void escrever_ficheiro(char* nomeficheiro)
     printf("Para terminar de escrever escrever: EOF\n---------------------------------------\n");
     while(fgets(buffer, MAX_PALAVRAS_LINHAS, stdin) != NULL)
     {
-        if(strstr(buffer,"EOF") != 0){
-        break;
+        if(strstr(buffer,"EOF") != 0)
+        {
+            int length = strlen(buffer);
+            for(int i = 0; i < length - 4; i++)
+                fputc(buffer[i], ficheiro);
+            break;
         }
         fputs(buffer, ficheiro);
     }
     fclose(ficheiro);
 }
-
-
 
 char** linhas_continente(char** linhas_lidas, int* linhas, char* continente)
 {
