@@ -237,6 +237,70 @@ yearWeek_t *parseYearWeek(char *data)
     yearWeek->week = atoi(data + 5); //int
     return yearWeek;
 }
+/*
+void menu_ordenar_lista(dados_t* lista,char* tipo, yearWeek_t* ano_semana)
+{
+    if(tipo == "alfa")
+    {
+       // ordenar_alfa();
+    }
+    else if(tipo == "pop")
+    {
+     //   ordenar_pop();
+    }
+    else if(tipo == "inf")
+    {
+      //  ordenar_inf();
+    }
+    else if(tipo == "dea")
+    {
+     //   ordenar_dea();
+    }
+    else
+    {
+        printf("Erro de tipo de ordenacao");
+        exit(-1);
+    }
+}*/
+dados_t* troca(dados_t* left, dados_t* right)
+{
+    left->next = right->next;
+    right->next = left;
+    return right;
+}
+
+void ordenar_pop(dados_t** root)
+{
+    int flag = 1;
+    dados_t *left, *right, *head, aux;
+
+    head = &aux;
+    head->next = (*root);
+    if(root == NULL)
+    {
+        return;
+    }
+    if(((*root) != NULL) && ((*root)->next != NULL))
+    {
+        while(flag)
+        {
+            flag = 0;
+            left = head;
+            right = head->next;
+            while(right->next != NULL)
+            {
+                if(right->population < right->next->population)
+                {
+                    left->next = troca(right, right->next);
+                    flag = 1;
+                }
+                left = right;
+                right = right->next;
+            }
+        }
+    }
+    right = head->next;
+}
 
 /*
 char ** ler_ficheiro_bin(char * nomeficheiro, int *linhas)
@@ -304,7 +368,8 @@ void imprime_lista(dados_t *root)
     while (curr->next != NULL)
     {
         // yearweek a nao imprimir certo
-        printf("%s - %s - %s - %d - %s - %d - %d - %f - %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator, curr->weekly_count, curr->year_week, curr->rate_14_day, curr->cumulative_count);
+        printf("%s - %s - %s - %d - %s - %d - %d-%d - %f - %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,\
+               curr->weekly_count, curr->year_week->year, curr->year_week->week, curr->rate_14_day, curr->cumulative_count);
         curr = curr->next;
     }
 }
@@ -411,8 +476,8 @@ void liberta_memoria(char **linhas, int num_linhas)
 
 int main(int argc, char *argv[])
 {
-
     dados_t *root_principal = cria_lista();
+    ordenar_pop(&root_principal);
     imprime_lista(root_principal);
     liberta_lista(root_principal);
     return 0;
