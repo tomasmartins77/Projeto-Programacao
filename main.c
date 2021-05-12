@@ -269,18 +269,37 @@ dados_t* troca(dados_t* left, dados_t* right)
     return right;
 }
 
-void ordenar_pop(dados_t** root)
+void ordenacao_pop(dados_t** right, dados_t** left, int* flag)
+{
+    if((*right)->population < (*right)->next->population)
+    {
+        (*left)->next = troca((*right), (*right)->next);
+        (*flag) = 1;
+    }
+}
+// em desenvolvimento
+void ordenacao_alfa(dados_t** right, dados_t** left, int* flag)
+{
+    int i, j;
+    for(i=0; i<=strlen((*right)->country); i++)
+        for(j=i+1; j<=strlen((*right)->next->country); j++)
+        {
+            if(strcmp((*right)->country[i],(*right)->next->country[j])>0)
+            {
+                (*left)->next = troca((*right), (*right)->next);
+                (*flag) = 1;
+            }
+        }
+}
+
+void ordenar_lista(dados_t** root)
 {
     int flag = 1;
     dados_t *left, *right, *head, aux;
 
     head = &aux;
-    head->next = (*root);
-    if(root == NULL)
-    {
-        return;
-    }
-    if(((*root) != NULL) && ((*root)->next != NULL))
+    head = (*root);
+    if((*root) != NULL && (*root)->next != NULL)
     {
         while(flag)
         {
@@ -289,17 +308,14 @@ void ordenar_pop(dados_t** root)
             right = head->next;
             while(right->next != NULL)
             {
-                if(right->population < right->next->population)
-                {
-                    left->next = troca(right, right->next);
-                    flag = 1;
-                }
+                //ordenacao_pop(&right, &left, &flag);
+                //ordenacao_alfa(&right, &left, &flag);
                 left = right;
-                right = right->next;
+                if(right->next != NULL)
+                    right = right->next;
             }
         }
     }
-    right = head->next;
 }
 
 /*
@@ -477,7 +493,7 @@ void liberta_memoria(char **linhas, int num_linhas)
 int main(int argc, char *argv[])
 {
     dados_t *root_principal = cria_lista();
-    ordenar_pop(&root_principal);
+   // ordenar_lista(&root_principal);
     imprime_lista(root_principal);
     liberta_lista(root_principal);
     return 0;
