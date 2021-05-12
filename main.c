@@ -6,11 +6,7 @@
 #define COUNTRY 35
 #define COUNTRY_CODE 4
 #define CONTINENT 8
-#define POPULATION 10
-#define WEEKLY_COUNT 6
 #define INDICATOR 7
-#define RATE_14_DAY 13
-#define CUMULATIVE_COUNT 7
 #define FILEPATH_COVID "covid19_w_t01.csv"
 
 typedef struct yearWeek
@@ -83,7 +79,7 @@ dados_t *ler_linha(char *letra);
 void inserir_dados(dados_t *dados, char *inicio_coluna, int coluna);
 yearWeek_t *parseYearWeek(char *data);
 
-/* char **ler_ficheiro(char *nomeficheiro, int *linhas)
+char **ler_ficheiro(char *nomeficheiro, int *linhas)
 {
     FILE *ficheiro;
     char buffer[MAX_PALAVRAS_LINHAS];
@@ -127,7 +123,7 @@ yearWeek_t *parseYearWeek(char *data);
     (*linhas)--;
     fclose(ficheiro);
     return linha_lida;
-} */
+}
 
 dados_t *cria_lista()
 {
@@ -145,17 +141,14 @@ dados_t *cria_lista()
     }
 
     int linhas = 0;
-    printf("%s", buffer);
     while (fgets(buffer, MAX_PALAVRAS_LINHAS, ficheiro) != NULL)
     {
-        printf("%s", buffer);
         if (linhas == 0)
         {
             linhas++;
             continue;
         }
         dados_t *item = ler_linha(buffer);
-        printf("%d", item->population);
         if (root == NULL)
         {
             root = item;
@@ -205,7 +198,6 @@ void inserir_dados(dados_t *dados, char *inicio_coluna, int coluna)
 {
     switch (coluna)
     {
-
     case 0:
         strcpy(dados->country, inicio_coluna);
         break;
@@ -292,7 +284,7 @@ char ** ler_ficheiro_bin(char * nomeficheiro, int *linhas)
     return linha_lida;
 }*/
 
-/* void imprime_ficheiro(char **linhas_ficheiro, int *linhas)
+void imprime_ficheiro(char **linhas_ficheiro, int *linhas)
 {
     int i, j;
 
@@ -304,19 +296,20 @@ char ** ler_ficheiro_bin(char * nomeficheiro, int *linhas)
         }
         printf("\n");
     }
-} */
-/* 
+}
+
 void imprime_lista(dados_t *root)
 {
     dados_t *curr = root;
     while (curr->next != NULL)
     {
-        printf("%s - %s - %s - %s - %s - %s - %s - %s - %s", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator, curr->weekly_count, curr->year_week, curr->rate_14_day, curr->cumulative_count);
+        // yearweek a nao imprimir certo
+        printf("%s - %s - %s - %d - %s - %d - %d - %f - %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator, curr->weekly_count, curr->year_week, curr->rate_14_day, curr->cumulative_count);
         curr = curr->next;
     }
-} */
+}
 
-/* void escrever_ficheiro(char *nomeficheiro)
+void escrever_ficheiro(char *nomeficheiro)
 {
     char buffer[MAX_PALAVRAS_LINHAS];
 
@@ -341,19 +334,6 @@ void imprime_lista(dados_t *root)
     fclose(ficheiro);
 }
 
-char *string_tok(char *linha, int *linhas_totais)
-{
-    char *token;
-    char *linhas_novas = NULL;
-
-    token = strtok(linha, ",");
-
-    while (token != NULL)
-    {
-        token = strtok(NULL, ",");
-    }
-    return linhas_novas;
-} */
 /*
 void escrever_ficheiro_bin(char* nomeficheiro)
 {
@@ -404,71 +384,22 @@ char** linhas_continente(char** linhas_lidas, int* linhas, char* continente)
     return novas_linhas;
 }
 */
-/* void novo_node(dados_t **root)
+
+
+void liberta_lista(dados_t* head)
 {
-    dados_t *new_node = malloc(sizeof(dados_t));
-    if (new_node == NULL)
-    {
-        printf("Erro a alocar novo node");
-        exit(EXIT_FAILURE);
-    }
-    new_node->next = NULL;
+    dados_t* curr;
 
-    if (*root == NULL)
+    while (head != NULL)
     {
-        *root = new_node;
-        return;
+        curr = head;
+        head = head->next;
+        free(curr);
     }
 
-    dados_t *curr = *root;
-    while (curr->next != NULL) //erroooooooo
-    {
-        curr = curr->next;
-    }
-    curr->next = new_node;
-} */
-
-/*
-void deallocate_node(dados_t** root)
-{
-    dados_t* curr = *root;
-    while(curr != NULL)
-    {
-        dados_t* aux = *curr;
-        curr = curr->next;
-        free(aux);
-    }
-    *root = NULL;
-}*/
-/*
-insert_beginning(dados_t** root, char* linha)
-{
-    dados_t* new_node = malloc(sizeof(dados_t));
-    if(new_node == NULL)
-    {
-        printf("Erro na alocacao");
-        exit(-1);
-    }
-    new_node->? = linha;
-    new_node->next = *root;
-
-    *root = new_node;
 }
 
-void insert_after(dados_t* node, char* string)
-{
-    dados_t* new_node = malloc(sizeof(char*));
-    if(new_node == NULL)
-    {
-        printf("Erro na alocacao");
-        exit(-1);
-    }
-    new_node->? = string;
-    new_node->next = node->next;
-    node->next = new_node;
-}
-*/
-/* void liberta_memoria(char **linhas, int num_linhas)
+void liberta_memoria(char **linhas, int num_linhas)
 {
     int i;
     for (i = 0; i < num_linhas; i++)
@@ -476,13 +407,13 @@ void insert_after(dados_t* node, char* string)
         free(linhas[i]);
     }
     free(linhas);
-} */
+}
 
 int main(int argc, char *argv[])
 {
 
-    /*dados_t *root_principal = */ cria_lista();
-    // imprime_lista(root_principal);
-
+    dados_t *root_principal = cria_lista();
+    imprime_lista(root_principal);
+    liberta_lista(root_principal);
     return 0;
 }
