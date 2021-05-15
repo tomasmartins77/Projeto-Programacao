@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
 
 #define MAX_PALAVRAS_LINHAS 110
 #define COUNTRY 35
@@ -44,17 +45,17 @@ enum ordenacao
 };
 enum selecao
 {
-    inf,
-    dea,
-    racioinf,
-    raciodea
+    INF,
+    DEA,
+    RACIOINF,
+    RACIODEA
 };
 enum restricao
 {
-    min,
-    max,
-    date,
-    dates
+    MIN,
+    MAX,
+    DATE,
+    DATES
 };
 
 typedef struct settings
@@ -262,34 +263,34 @@ void menu_ordenar_lista(dados_t* lista,char* tipo, yearWeek_t* ano_semana)
         exit(-1);
     }
 }*/
-dados_t* troca(dados_t* left, dados_t* right)
+dados_t *troca(dados_t *left, dados_t *right)
 {
     left->next = right->next;
     right->next = left;
     return right;
 }
 
-void ordenacao_pop(dados_t** right, dados_t** left, int* flag)
+void ordenacao_pop(dados_t **right, dados_t **left, int *flag)
 {
-    if((*right)->population < (*right)->next->population)
+    if ((*right)->population < (*right)->next->population)
     {
         (*left)->next = troca((*right), (*right)->next);
         (*flag) = 1;
     }
 }
 
-void ordenacao_alfa(dados_t** right, dados_t** left, int* flag)
+void ordenacao_alfa(dados_t **right, dados_t **left, int *flag)
 {
-    if(strcmp((*right)->country, (*right)->next->country) > 0 )
+    if (strcmp((*right)->country, (*right)->next->country) > 0)
     {
         (*left)->next = troca((*right), (*right)->next);
         (*flag) = 1;
     }
 }
 
-dados_t* remove_do_inicio(dados_t* headlist)
+dados_t *remove_do_inicio(dados_t *headlist)
 {
-    if(headlist == NULL)
+    if (headlist == NULL)
     {
         printf("A lista esta vazia");
     }
@@ -303,31 +304,30 @@ dados_t* remove_do_inicio(dados_t* headlist)
     return headlist;
 }
 
-dados_t* selecao_lista_inf(dados_t* root)
+dados_t *selecao_lista_inf(dados_t *root)
 {
     dados_t *left, *right, *head, aux;
 
     head = &aux;
     head = root;
-    if(root != NULL && root->next != NULL)
+    if (root != NULL && root->next != NULL)
     {
         left = head;
         right = head->next;
-        while(right->next != NULL)
+        while (right->next != NULL)
         {
             printf("%s\n", right->country);
             printf("%s\n", right->next->country);
             printf("%d\n", right->weekly_count);
             printf("%d\n", right->next->weekly_count);
-            while(strcmp(right->country, right->next->country) == 0)
+            while (strcmp(right->country, right->next->country) == 0)
             {
 
-                if(strcmp(right->indicator, "cases") == 0)
+                if (strcmp(right->indicator, "cases") == 0)
                 {
-                    if(right->weekly_count < right->next->weekly_count)
+                    if (right->weekly_count < right->next->weekly_count)
                     {
                         left->next = remove_do_inicio(right);
-
                     }
                 }
                 else
@@ -336,39 +336,38 @@ dados_t* selecao_lista_inf(dados_t* root)
                 }
 
                 left = right;
-                if(right->next != NULL)
+                if (right->next != NULL)
                     right = right->next;
             }
             left = right;
-            if(right->next != NULL)
+            if (right->next != NULL)
                 right = right->next;
         }
-
     }
     root = head->next;
     return root;
 }
 
-dados_t* ordenar_lista(dados_t* root)
+dados_t *ordenar_lista(dados_t *root)
 {
     int flag = 1;
     dados_t *left, *right, *head, aux;
 
     head = &aux;
     head = root;
-    if(root != NULL && root->next != NULL)
+    if (root != NULL && root->next != NULL)
     {
-        while(flag)
+        while (flag)
         {
             flag = 0;
             left = head;
             right = head->next;
-            while(right->next != NULL)
+            while (right->next != NULL)
             {
                 //ordenacao_pop(&right, &left, &flag);
                 ordenacao_alfa(&right, &left, &flag);
                 left = right;
-                if(right->next != NULL)
+                if (right->next != NULL)
                     right = right->next;
             }
         }
@@ -397,7 +396,7 @@ void imprime_lista(dados_t *root)
     while (curr->next != NULL)
     {
         // yearweek a nao imprimir certo
-        printf("%s - %s - %s - %d - %s - %d - %d-%d - %f - %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,\
+        printf("%s - %s - %s - %d - %s - %d - %d-%d - %f - %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,
                curr->weekly_count, curr->year_week->year, curr->year_week->week, curr->rate_14_day, curr->cumulative_count);
         curr = curr->next;
     }
@@ -454,11 +453,9 @@ char** linhas_continente(char** linhas_lidas, int* linhas, char* continente)
 }
 */
 
-
-
-void liberta_lista(dados_t* head)
+void liberta_lista(dados_t *head)
 {
-    dados_t* curr;
+    dados_t *curr;
 
     while (head != NULL)
     {
@@ -480,6 +477,83 @@ void liberta_memoria(char **linhas, int num_linhas)
 
 int main(int argc, char *argv[])
 {
+    settings_t *settings = malloc(sizeof(settings_t));
+    int opt;
+    opterr = 0;
+    char criterio_L[20];
+    char criterio_S[20];
+    char criterio_D[20];
+    char criterio_P[20];
+
+    while ((opt = getopt(argc, argv, "L:S:D:P:i:o:")) != -1)
+    {
+        switch (opt)
+        {
+        case 'L':
+            sscanf(optarg, "%s", &criterio_L);
+            if (strcmp(criterio_L, "all") == 0)
+                settings->criterio_leitura = L_ALL;
+            break;
+
+        case 'S':
+            sscanf(optarg, "%s", &criterio_S);
+            if (strcmp(criterio_S, "alfa") == 0)
+                settings->criterio_ord = S_ALFA;
+            break;
+
+            if (strcmp(criterio_S, "pop") == 0)
+                settings->criterio_ord = S_POP;
+            break;
+
+            if (strcmp(criterio_S, "inf") == 0)
+                settings->criterio_ord = S_INF;
+            break;
+
+            if (strcmp(criterio_S, "dea") == 0)
+                settings->criterio_ord = S_DEA;
+            break;
+
+        case 'D':
+            sscanf(optarg, "%s", &criterio_D);
+            if (strcmp(criterio_S, "inf") == 0)
+                settings->criterio_sel = INF;
+            break;
+
+            if (strcmp(criterio_S, "dea") == 0)
+                settings->criterio_sel = DEA;
+            break;
+
+            if (strcmp(criterio_S, "dea") == 0)
+                settings->criterio_sel = RACIOINF;
+            break;
+
+            if (strcmp(criterio_S, "dea") == 0)
+                settings->criterio_sel = RACIODEA;
+            break;
+        case 'P':
+            sscanf(optarg, "%s", &criterio_P);
+            if (strcmp(criterio_P, "inf") == 0)
+                settings->criterio_res = MIN;
+            break;
+
+            if (strcmp(criterio_P, "inf") == 0)
+                settings->criterio_res = MAX;
+            break;
+
+            if (strcmp(criterio_P, "inf") == 0)
+                settings->criterio_res = DATE;
+            break;
+
+            if (strcmp(criterio_P, "inf") == 0)
+                settings->criterio_res = DATES;
+            break;
+        case 'i':
+            break;
+        case 'o':
+            break;
+        }
+    }
+
     dados_t *root_principal = cria_lista();
     //root_principal = ordenar_lista(root_principal);
     root_principal = selecao_lista_inf(root_principal);
