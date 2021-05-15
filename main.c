@@ -277,29 +277,86 @@ void ordenacao_pop(dados_t** right, dados_t** left, int* flag)
         (*flag) = 1;
     }
 }
-// em desenvolvimento
+
 void ordenacao_alfa(dados_t** right, dados_t** left, int* flag)
 {
-    int i, j;
-    for(i=0; i<=strlen((*right)->country); i++)
-        for(j=i+1; j<=strlen((*right)->next->country); j++)
-        {
-            if(strcmp((*right)->country[i],(*right)->next->country[j])>0)
-            {
-                (*left)->next = troca((*right), (*right)->next);
-                (*flag) = 1;
-            }
-        }
+    if(strcmp((*right)->country, (*right)->next->country) > 0 )
+    {
+        (*left)->next = troca((*right), (*right)->next);
+        (*flag) = 1;
+    }
 }
 
-void ordenar_lista(dados_t** root)
+dados_t* remove_do_inicio(dados_t* headlist)
+{
+    if(headlist == NULL)
+    {
+        printf("A lista esta vazia");
+    }
+    else
+    {
+        dados_t *temp = headlist;
+        headlist = headlist->next;
+        free(temp);
+        temp = NULL;
+    }
+    return headlist;
+}
+
+dados_t* selecao_lista_inf(dados_t* root)
+{
+    dados_t *left, *right, *head, aux;
+
+    head = &aux;
+    head = root;
+    if(root != NULL && root->next != NULL)
+    {
+        left = head;
+        right = head->next;
+        while(right->next != NULL)
+        {
+            printf("%s\n", right->country);
+            printf("%s\n", right->next->country);
+            printf("%d\n", right->weekly_count);
+            printf("%d\n", right->next->weekly_count);
+            while(strcmp(right->country, right->next->country) == 0)
+            {
+
+                if(strcmp(right->indicator, "cases") == 0)
+                {
+                    if(right->weekly_count < right->next->weekly_count)
+                    {
+                        left->next = remove_do_inicio(right);
+
+                    }
+                }
+                else
+                {
+                    left->next = remove_do_inicio(right);
+                }
+
+                left = right;
+                if(right->next != NULL)
+                    right = right->next;
+            }
+            left = right;
+            if(right->next != NULL)
+                right = right->next;
+        }
+
+    }
+    root = head->next;
+    return root;
+}
+
+dados_t* ordenar_lista(dados_t* root)
 {
     int flag = 1;
     dados_t *left, *right, *head, aux;
 
     head = &aux;
-    head = (*root);
-    if((*root) != NULL && (*root)->next != NULL)
+    head = root;
+    if(root != NULL && root->next != NULL)
     {
         while(flag)
         {
@@ -309,60 +366,16 @@ void ordenar_lista(dados_t** root)
             while(right->next != NULL)
             {
                 //ordenacao_pop(&right, &left, &flag);
-                //ordenacao_alfa(&right, &left, &flag);
+                ordenacao_alfa(&right, &left, &flag);
                 left = right;
                 if(right->next != NULL)
                     right = right->next;
             }
         }
     }
+    root = head->next;
+    return root;
 }
-
-/*
-char ** ler_ficheiro_bin(char * nomeficheiro, int *linhas)
-{
-    FILE * ficheiro;
-    char buffer[MAX_PALAVRAS_LINHAS];
-
-    char ** linha_lida;
-    ficheiro = fopen(nomeficheiro, "rb");
-
-    if(ficheiro == NULL)
-    {
-        printf("Erro a abrir ficheiro\n");
-        exit(EXIT_FAILURE);
-    }
-    *linhas = 1;
-    while(fgets(buffer, MAX_PALAVRAS_LINHAS, ficheiro) != NULL)
-    {
-        int length = strlen(buffer);
-        if(buffer[length - 1] == '\n')
-            buffer[length - 1] = '\0';
-        if(*linhas == 1)
-        {
-            if((linha_lida = (char**)malloc(sizeof(char*))) == NULL)
-            {
-                printf("Erro na alocacao de memoria\n");
-                exit(EXIT_FAILURE);
-            }
-        }
-        else
-        {
-            if((linha_lida = (char**)realloc(linha_lida, *linhas * sizeof(char*))) == NULL)
-            {
-                printf("Erro no realloc\n");
-                exit(EXIT_FAILURE);
-            }
-
-        }
-        linha_lida[(*linhas) - 1] = (char*)malloc(sizeof(char*) * length + 1);
-        strcpy(linha_lida[(*linhas) - 1], buffer);
-        (*linhas)++;
-    }
-    (*linhas)--;
-    fclose(ficheiro);
-    return linha_lida;
-}*/
 
 void imprime_ficheiro(char **linhas_ficheiro, int *linhas)
 {
@@ -416,31 +429,6 @@ void escrever_ficheiro(char *nomeficheiro)
 }
 
 /*
-void escrever_ficheiro_bin(char* nomeficheiro)
-{
-    char buffer[MAX_PALAVRAS_LINHAS];
-
-    FILE* ficheiro = fopen(nomeficheiro, "wb");
-    if(ficheiro == NULL)
-    {
-        printf("Erro a abrir ficheiro");
-        exit(EXIT_FAILURE);
-    }
-    printf("Para terminar de escrever escrever: EOF\n---------------------------------------\n");
-    while(fgets(buffer, MAX_PALAVRAS_LINHAS, stdin) != NULL)
-    {
-        if(strstr(buffer,"EOF") != 0)
-        {
-            int length = strlen(buffer);
-            for(int i = 0; i < length - 4; i++)
-                fputc(buffer[i], ficheiro);
-            break;
-        }
-        fputs(buffer, ficheiro);
-    }
-    fclose(ficheiro);
-}
-
 char** linhas_continente(char** linhas_lidas, int* linhas, char* continente)
 {
     int i;
@@ -467,6 +455,7 @@ char** linhas_continente(char** linhas_lidas, int* linhas, char* continente)
 */
 
 
+
 void liberta_lista(dados_t* head)
 {
     dados_t* curr;
@@ -477,7 +466,6 @@ void liberta_lista(dados_t* head)
         head = head->next;
         free(curr);
     }
-
 }
 
 void liberta_memoria(char **linhas, int num_linhas)
@@ -493,7 +481,8 @@ void liberta_memoria(char **linhas, int num_linhas)
 int main(int argc, char *argv[])
 {
     dados_t *root_principal = cria_lista();
-   // ordenar_lista(&root_principal);
+    //root_principal = ordenar_lista(root_principal);
+    root_principal = selecao_lista_inf(root_principal);
     imprime_lista(root_principal);
     liberta_lista(root_principal);
     return 0;
