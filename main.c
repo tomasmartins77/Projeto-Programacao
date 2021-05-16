@@ -256,48 +256,55 @@ dados_t* remove_do_inicio(dados_t* headlist)
     return headlist;
 }
 
+void selecao_inf(dados_t** right, dados_t** left, int* flag)
+{
+    dados_t *aux;
+
+    if(strcmp((*right)->indicator, "cases") == 0)
+    {
+        if(strcmp((*right)->country, (*right)->next->country) == 0)
+        {
+            if((*right)->weekly_count < (*right)->next->weekly_count)
+            {
+                aux = (*right);
+                (*left)->next = remove_do_inicio(aux);
+                (*flag) = 1;
+            }
+            else
+            {
+                (*right) = (*right)->next;
+                aux = (*right);
+                (*left)->next = remove_do_inicio(aux);
+                (*flag) = 1;
+            }
+
+        }
+    }
+    else
+    {
+        aux = (*right);
+        (*left)->next = remove_do_inicio(aux);
+        (*flag) = 1;
+    }
+}
+
 dados_t* selecao_lista_inf(dados_t* root)
 {
     int flag = 1;
-    dados_t *left, *right, *head, *aux;
+    dados_t *left, *right, *head, aux;
 
+    head = &aux;
     head = root;
     if(root != NULL && root->next != NULL)
     {
         while(flag)
         {
             flag = 0;
-
             left = head;
             right = head->next;
             while(right->next != NULL)
             {
-                if(strcmp(right->indicator, "cases") == 0)
-                {
-                    if(strcmp(right->country, right->next->country) == 0)
-                    {
-                        if(right->weekly_count < right->next->weekly_count)
-                        {
-                            aux = right;
-                            left->next = remove_do_inicio(aux);
-                            flag = 1;
-                        }
-                        else
-                        {
-
-                            aux = right;
-                            left->next = remove_do_inicio(aux);
-                            flag = 1;
-
-                        }
-                    }
-                }
-                else
-                {
-                    aux = right;
-                    left->next = remove_do_inicio(aux);
-                    flag = 1;
-                }
+                selecao_inf(&right, &left, &flag);
                 left = right;
                 if(right->next != NULL)
                     right = right->next;
