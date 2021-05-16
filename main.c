@@ -80,52 +80,6 @@ dados_t *ler_linha(char *letra);
 void inserir_dados(dados_t *dados, char *inicio_coluna, int coluna);
 yearWeek_t *parseYearWeek(char *data);
 
-char **ler_ficheiro(char *nomeficheiro, int *linhas)
-{
-    FILE *ficheiro;
-    char buffer[MAX_PALAVRAS_LINHAS];
-    char **linha_lida;
-    ficheiro = fopen(nomeficheiro, "r");
-
-    if (ficheiro == NULL)
-    {
-        printf("Erro a abrir ficheiro\n");
-        exit(EXIT_FAILURE);
-    }
-    *linhas = 0;
-    while (fgets(buffer, MAX_PALAVRAS_LINHAS, ficheiro) != NULL)
-    {
-        if (*linhas != 0)
-        {
-            int length = strlen(buffer);
-            if (buffer[length - 1] == '\n')
-                buffer[length - 1] = '\0';
-            if (*linhas == 1)
-            {
-                if ((linha_lida = (char **)malloc(sizeof(char *))) == NULL)
-                {
-                    printf("Erro na alocacao de memoria\n");
-                    exit(EXIT_FAILURE);
-                }
-            }
-            else
-            {
-                if ((linha_lida = (char **)realloc(linha_lida, *linhas * sizeof(char *))) == NULL)
-                {
-                    printf("Erro no realloc\n");
-                    exit(EXIT_FAILURE);
-                }
-            }
-            linha_lida[(*linhas) - 1] = (char *)malloc(sizeof(char *) * length + 1);
-            strcpy(linha_lida[(*linhas) - 1], buffer);
-        }
-        (*linhas)++;
-    }
-    (*linhas)--;
-    fclose(ficheiro);
-    return linha_lida;
-}
-
 dados_t *cria_lista()
 {
     FILE *ficheiro;
@@ -176,7 +130,6 @@ dados_t *ler_linha(char *letra)
 
     while (*letra != '\0' && *letra != '\n')
     {
-
         if (*letra == ',')
         {
             *letra = '\0';
@@ -186,7 +139,6 @@ dados_t *ler_linha(char *letra)
             coluna++;
             inicio_coluna = letra + 1;
         }
-
         letra++;
     }
 
@@ -263,34 +215,34 @@ void menu_ordenar_lista(dados_t* lista,char* tipo, yearWeek_t* ano_semana)
         exit(-1);
     }
 }*/
-dados_t *troca(dados_t *left, dados_t *right)
+dados_t* troca(dados_t* left, dados_t* right)
 {
     left->next = right->next;
     right->next = left;
     return right;
 }
 
-void ordenacao_pop(dados_t **right, dados_t **left, int *flag)
+void ordenacao_pop(dados_t** right, dados_t** left, int* flag)
 {
-    if ((*right)->population < (*right)->next->population)
+    if((*right)->population < (*right)->next->population)
     {
         (*left)->next = troca((*right), (*right)->next);
         (*flag) = 1;
     }
 }
 
-void ordenacao_alfa(dados_t **right, dados_t **left, int *flag)
+void ordenacao_alfa(dados_t** right, dados_t** left, int* flag)
 {
-    if (strcmp((*right)->country, (*right)->next->country) > 0)
+    if(strcmp((*right)->country, (*right)->next->country) > 0 )
     {
         (*left)->next = troca((*right), (*right)->next);
         (*flag) = 1;
     }
 }
 
-dados_t *remove_do_inicio(dados_t *headlist)
+dados_t* remove_do_inicio(dados_t* headlist)
 {
-    if (headlist == NULL)
+    if(headlist == NULL)
     {
         printf("A lista esta vazia");
     }
@@ -304,90 +256,84 @@ dados_t *remove_do_inicio(dados_t *headlist)
     return headlist;
 }
 
-dados_t *selecao_lista_inf(dados_t *root)
+dados_t* selecao_lista_inf(dados_t* root)
 {
-    dados_t *left, *right, *head, aux;
+    int flag = 1;
+    dados_t *left, *right, *head, *aux;
 
-    head = &aux;
     head = root;
-    if (root != NULL && root->next != NULL)
+    if(root != NULL && root->next != NULL)
     {
-        left = head;
-        right = head->next;
-        while (right->next != NULL)
+        while(flag)
         {
-            printf("%s\n", right->country);
-            printf("%s\n", right->next->country);
-            printf("%d\n", right->weekly_count);
-            printf("%d\n", right->next->weekly_count);
-            while (strcmp(right->country, right->next->country) == 0)
-            {
+            flag = 0;
 
-                if (strcmp(right->indicator, "cases") == 0)
+            left = head;
+            right = head->next;
+            while(right->next != NULL)
+            {
+                if(strcmp(right->indicator, "cases") == 0)
                 {
-                    if (right->weekly_count < right->next->weekly_count)
+                    if(strcmp(right->country, right->next->country) == 0)
                     {
-                        left->next = remove_do_inicio(right);
+                        if(right->weekly_count < right->next->weekly_count)
+                        {
+                            aux = right;
+                            left->next = remove_do_inicio(aux);
+                            flag = 1;
+                        }
+                        else
+                        {
+
+                            aux = right;
+                            left->next = remove_do_inicio(aux);
+                            flag = 1;
+
+                        }
                     }
                 }
                 else
                 {
-                    left->next = remove_do_inicio(right);
+                    aux = right;
+                    left->next = remove_do_inicio(aux);
+                    flag = 1;
                 }
-
                 left = right;
-                if (right->next != NULL)
+                if(right->next != NULL)
                     right = right->next;
             }
-            left = right;
-            if (right->next != NULL)
-                right = right->next;
         }
     }
     root = head->next;
     return root;
 }
 
-dados_t *ordenar_lista(dados_t *root)
+dados_t* ordenar_lista(dados_t* root)
 {
     int flag = 1;
     dados_t *left, *right, *head, aux;
 
     head = &aux;
     head = root;
-    if (root != NULL && root->next != NULL)
+    if(root != NULL && root->next != NULL)
     {
-        while (flag)
+        while(flag)
         {
             flag = 0;
             left = head;
             right = head->next;
-            while (right->next != NULL)
+            while(right->next != NULL)
             {
                 //ordenacao_pop(&right, &left, &flag);
                 ordenacao_alfa(&right, &left, &flag);
                 left = right;
-                if (right->next != NULL)
+                if(right->next != NULL)
                     right = right->next;
             }
         }
     }
     root = head->next;
     return root;
-}
-
-void imprime_ficheiro(char **linhas_ficheiro, int *linhas)
-{
-    int i, j;
-
-    for (i = 0; i < *linhas; i++)
-    {
-        for (j = 0; j < strlen(linhas_ficheiro[i]); j++)
-        {
-            printf("%c", linhas_ficheiro[i][j]);
-        }
-        printf("\n");
-    }
 }
 
 void imprime_lista(dados_t *root)
@@ -395,67 +341,15 @@ void imprime_lista(dados_t *root)
     dados_t *curr = root;
     while (curr->next != NULL)
     {
-        // yearweek a nao imprimir certo
-        printf("%s - %s - %s - %d - %s - %d - %d-%d - %f - %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,
+        printf("%s - %s - %s - %d - %s - %d - %d-%d - %f - %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,\
                curr->weekly_count, curr->year_week->year, curr->year_week->week, curr->rate_14_day, curr->cumulative_count);
         curr = curr->next;
     }
 }
 
-void escrever_ficheiro(char *nomeficheiro)
+void liberta_lista(dados_t* head)
 {
-    char buffer[MAX_PALAVRAS_LINHAS];
-
-    FILE *ficheiro = fopen("covid19_w_t01", "w");
-    if (ficheiro == NULL)
-    {
-        printf("Erro a abrir ficheiro");
-        exit(EXIT_FAILURE);
-    }
-    printf("Para terminar de escrever escrever: EOF\n---------------------------------------\n");
-    while (fgets(buffer, MAX_PALAVRAS_LINHAS, stdin) != NULL)
-    {
-        if (strstr(buffer, "EOF") != 0)
-        {
-            int length = strlen(buffer);
-            for (int i = 0; i < length - 4; i++)
-                fputc(buffer[i], ficheiro);
-            break;
-        }
-        fputs(buffer, ficheiro);
-    }
-    fclose(ficheiro);
-}
-
-/*
-char** linhas_continente(char** linhas_lidas, int* linhas, char* continente)
-{
-    int i;
-    char** novas_linhas = NULL;
-    char buffer1[MAX_PALAVRAS_LINHAS];
-
-    for (i = 0; i < *linhas; i++)
-    {
-        printf("%s", buffer1);
-        printf("%s", linhas_lidas[i]);
-        int length = strlen(linhas_lidas[i]);
-
-        buffer1 = strstr(continente, linhas_lidas[i]);
-        printf("%s", buffer1);
-        if(strcmp(buffer1, "Europe") != 0)
-        {
-            novas_linhas[i] = linhas_lidas[i];
-
-        }
-    }
-
-    return novas_linhas;
-}
-*/
-
-void liberta_lista(dados_t *head)
-{
-    dados_t *curr;
+    dados_t* curr;
 
     while (head != NULL)
     {
@@ -463,16 +357,6 @@ void liberta_lista(dados_t *head)
         head = head->next;
         free(curr);
     }
-}
-
-void liberta_memoria(char **linhas, int num_linhas)
-{
-    int i;
-    for (i = 0; i < num_linhas; i++)
-    {
-        free(linhas[i]);
-    }
-    free(linhas);
 }
 
 int main(int argc, char *argv[])
