@@ -187,31 +187,7 @@ yearWeek_t *parseYearWeek(char *data)
     yearWeek->week = atoi(data + 5); //int
     return yearWeek;
 }
-/*
-void menu_ordenar_lista(dados_t* lista,char* tipo, yearWeek_t* ano_semana)
-{
-    if(tipo == "alfa")
-    {
-       // ordenar_alfa();
-    }
-    else if(tipo == "pop")
-    {
-     //   ordenar_pop();
-    }
-    else if(tipo == "inf")
-    {
-      //  ordenar_inf();
-    }
-    else if(tipo == "dea")
-    {
-     //   ordenar_dea();
-    }
-    else
-    {
-        printf("Erro de tipo de ordenacao");
-        exit(-1);
-    }
-}*/
+
 dados_t *troca(dados_t *left, dados_t *right)
 {
     left->next = right->next;
@@ -251,6 +227,61 @@ dados_t *remove_do_inicio(dados_t *headlist)
         temp = NULL;
     }
     return headlist;
+}
+
+void restricao_min(dados_t **right, dados_t **left, int *flag, int n)
+{
+    dados_t* aux;
+    if((*right)->population < n)
+    {
+        aux = (*right);
+        (*left)->next = remove_do_inicio(aux);
+        (*flag) = 1;
+        (*right) = aux;
+    }
+}
+
+void restricao_max(dados_t **right, dados_t **left, int *flag, int n)
+{
+    dados_t* aux;
+    if((*right)->population > n)
+    {
+        aux = (*right);
+        (*left)->next = remove_do_inicio(aux);
+        (*flag) = 1;
+        (*right) = aux;
+    }
+}
+
+dados_t* restricao_lista(dados_t *root, int n)
+{
+    int flag = 1;
+    dados_t *left, *right, *head, aux;
+
+    n *= 1000;
+
+    head = &aux;
+    head = root;
+    if (root != NULL && root->next != NULL)
+    {
+        while (flag)
+        {
+            flag = 0;
+            left = head;
+            right = head->next;
+            while(right->next != NULL)
+            {
+                //restricao_min(&right, &left, &flag, n);
+                restricao_max(&right, &left, &flag, n);
+
+                left = right;
+                if (right->next != NULL)
+                    right = right->next;
+            }
+        }
+    }
+    root = head->next;
+    return root;
 }
 
 void selecao_inf(dados_t **right, dados_t **left, int *flag)
@@ -390,6 +421,7 @@ dados_t *selecao_lista(dados_t *root)
     int flag = 1;
     dados_t *left, *right, *head, aux;
 
+    head = &aux;
     head = root;
     if (root != NULL && root->next != NULL)
     {
@@ -451,6 +483,22 @@ void imprime_lista(dados_t *root)
                curr->weekly_count, curr->year_week->year, curr->year_week->week, curr->rate_14_day, curr->cumulative_count);
         curr = curr->next;
     }
+}
+
+void cria_ficheiro(dados_t* root)
+{
+    FILE* fp;
+    dados_t* curr;
+    fp = fopen("teste.csv", "w");
+
+    curr = root;
+    while(curr->next != NULL)
+    {
+        fprintf(fp, "%s, %s, %s, %d, %s, %d, %d-%d, %f, %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,
+                curr->weekly_count, curr->year_week->year, curr->year_week->week, curr->rate_14_day, curr->cumulative_count);
+        curr = curr->next;
+    }
+    fclose(fp);
 }
 
 void liberta_lista(dados_t *head)
@@ -556,10 +604,12 @@ int main(int argc, char *argv[])
             break;
         }
     }
-
+    int n = 10000;
     dados_t *root_principal = cria_lista();
-    root_principal = selecao_lista(root_principal);
+    //root_principal = selecao_lista(root_principal);
     //root_principal = ordenar_lista(root_principal);
+    root_principal = restricao_lista(root_principal, n);
+    cria_ficheiro(root_principal);
     imprime_lista(root_principal);
     liberta_lista(root_principal);
     return 0;
