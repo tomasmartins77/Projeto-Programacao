@@ -63,15 +63,12 @@ typedef struct settings
     enum leitura criterio_leitura; // -L
     char *leitura_continente;
     enum ordenacao criterio_ord; //-S
-    short ord_year;
-    short ord_week;
+    yearWeek_t *ord_date;
     enum selecao criterio_sel;   //-D
     enum restricao criterio_res; //-P
     short restricao_n;
-    short restricao_ano1;
-    short restricao_semana1;
-    short restricao_ano2;
-    short restricao_semana2;
+    yearWeek_t *restricao_date1;
+    yearWeek_t *restricao_date2;
 } settings_t;
 
 //headers
@@ -215,34 +212,34 @@ void menu_ordenar_lista(dados_t* lista,char* tipo, yearWeek_t* ano_semana)
         exit(-1);
     }
 }*/
-dados_t* troca(dados_t* left, dados_t* right)
+dados_t *troca(dados_t *left, dados_t *right)
 {
     left->next = right->next;
     right->next = left;
     return right;
 }
 
-void ordenacao_pop(dados_t** right, dados_t** left, int* flag)
+void ordenacao_pop(dados_t **right, dados_t **left, int *flag)
 {
-    if((*right)->population < (*right)->next->population)
+    if ((*right)->population < (*right)->next->population)
     {
         (*left)->next = troca((*right), (*right)->next);
         (*flag) = 1;
     }
 }
 
-void ordenacao_alfa(dados_t** right, dados_t** left, int* flag)
+void ordenacao_alfa(dados_t **right, dados_t **left, int *flag)
 {
-    if(strcmp((*right)->country, (*right)->next->country) > 0 )
+    if (strcmp((*right)->country, (*right)->next->country) > 0)
     {
         (*left)->next = troca((*right), (*right)->next);
         (*flag) = 1;
     }
 }
 
-dados_t* remove_do_inicio(dados_t* headlist)
+dados_t *remove_do_inicio(dados_t *headlist)
 {
-    if(headlist == NULL)
+    if (headlist == NULL)
     {
         printf("A lista esta vazia");
     }
@@ -256,15 +253,15 @@ dados_t* remove_do_inicio(dados_t* headlist)
     return headlist;
 }
 
-void selecao_inf(dados_t** right, dados_t** left, int* flag)
+void selecao_inf(dados_t **right, dados_t **left, int *flag)
 {
     dados_t *aux;
 
-    if(strcmp((*right)->indicator, "cases") == 0)
+    if (strcmp((*right)->indicator, "cases") == 0)
     {
-        if(strcmp((*right)->country, (*right)->next->country) == 0)
+        if (strcmp((*right)->country, (*right)->next->country) == 0)
         {
-            if((*right)->weekly_count < (*right)->next->weekly_count)
+            if ((*right)->weekly_count < (*right)->next->weekly_count)
             {
                 aux = (*right);
                 (*left)->next = remove_do_inicio(aux);
@@ -273,7 +270,7 @@ void selecao_inf(dados_t** right, dados_t** left, int* flag)
             else
             {
                 (*left) = (*right);
-                if((*right)->next != NULL)
+                if ((*right)->next != NULL)
                     (*right) = (*right)->next;
                 aux = (*right);
                 (*left)->next = remove_do_inicio(aux);
@@ -289,15 +286,15 @@ void selecao_inf(dados_t** right, dados_t** left, int* flag)
     }
 }
 
-void selecao_dea(dados_t** right, dados_t** left, int* flag)
+void selecao_dea(dados_t **right, dados_t **left, int *flag)
 {
     dados_t *aux;
 
-    if(strcmp((*right)->indicator, "deaths") == 0)
+    if (strcmp((*right)->indicator, "deaths") == 0)
     {
-        if(strcmp((*right)->country, (*right)->next->country) == 0)
+        if (strcmp((*right)->country, (*right)->next->country) == 0)
         {
-            if((*right)->weekly_count < (*right)->next->weekly_count)
+            if ((*right)->weekly_count < (*right)->next->weekly_count)
             {
                 aux = (*right);
                 (*left)->next = remove_do_inicio(aux);
@@ -306,7 +303,7 @@ void selecao_dea(dados_t** right, dados_t** left, int* flag)
             else
             {
                 (*left) = (*right);
-                if((*right)->next != NULL)
+                if ((*right)->next != NULL)
                     (*right) = (*right)->next;
                 aux = (*right);
                 (*left)->next = remove_do_inicio(aux);
@@ -322,15 +319,15 @@ void selecao_dea(dados_t** right, dados_t** left, int* flag)
     }
 }
 
-void selecao_racioinf(dados_t** right, dados_t** left, int* flag)
+void selecao_racioinf(dados_t **right, dados_t **left, int *flag)
 {
     dados_t *aux;
 
-    if(strcmp((*right)->indicator, "cases") == 0)
+    if (strcmp((*right)->indicator, "cases") == 0)
     {
-        if(strcmp((*right)->country, (*right)->next->country) == 0)
+        if (strcmp((*right)->country, (*right)->next->country) == 0)
         {
-            if((*right)->rate_14_day < (*right)->next->rate_14_day)
+            if ((*right)->rate_14_day < (*right)->next->rate_14_day)
             {
                 aux = (*right);
                 (*left)->next = remove_do_inicio(aux);
@@ -339,7 +336,7 @@ void selecao_racioinf(dados_t** right, dados_t** left, int* flag)
             else
             {
                 (*left) = (*right);
-                if((*right)->next != NULL)
+                if ((*right)->next != NULL)
                     (*right) = (*right)->next;
                 aux = (*right);
                 (*left)->next = remove_do_inicio(aux);
@@ -355,15 +352,15 @@ void selecao_racioinf(dados_t** right, dados_t** left, int* flag)
     }
 }
 
-void selecao_raciodea(dados_t** right, dados_t** left, int* flag)
+void selecao_raciodea(dados_t **right, dados_t **left, int *flag)
 {
     dados_t *aux;
 
-    if(strcmp((*right)->indicator, "deaths") == 0)
+    if (strcmp((*right)->indicator, "deaths") == 0)
     {
-        if(strcmp((*right)->country, (*right)->next->country) == 0)
+        if (strcmp((*right)->country, (*right)->next->country) == 0)
         {
-            if((*right)->rate_14_day < (*right)->next->rate_14_day)
+            if ((*right)->rate_14_day < (*right)->next->rate_14_day)
             {
                 aux = (*right);
                 (*left)->next = remove_do_inicio(aux);
@@ -372,7 +369,7 @@ void selecao_raciodea(dados_t** right, dados_t** left, int* flag)
             else
             {
                 (*left) = (*right);
-                if((*right)->next != NULL)
+                if ((*right)->next != NULL)
                     (*right) = (*right)->next;
                 aux = (*right);
                 (*left)->next = remove_do_inicio(aux);
@@ -388,28 +385,27 @@ void selecao_raciodea(dados_t** right, dados_t** left, int* flag)
     }
 }
 
-dados_t* selecao_lista(dados_t* root)
+dados_t *selecao_lista(dados_t *root)
 {
     int flag = 1;
     dados_t *left, *right, *head, aux;
 
-    head = &aux;
     head = root;
-    if(root != NULL && root->next != NULL)
+    if (root != NULL && root->next != NULL)
     {
-        while(flag)
+        while (flag)
         {
             flag = 0;
             left = head;
             right = head->next;
-            while(right->next != NULL)
+            while (right->next != NULL)
             {
                 //selecao_inf(&right, &left, &flag);
                 //selecao_dea(&right, &left, &flag);
                 selecao_racioinf(&right, &left, &flag);
                 //selecao_raciodea(&right, &left, &flag);
                 left = right;
-                if(right->next != NULL)
+                if (right->next != NULL)
                     right = right->next;
             }
         }
@@ -418,26 +414,26 @@ dados_t* selecao_lista(dados_t* root)
     return root;
 }
 
-dados_t* ordenar_lista(dados_t* root)
+dados_t *ordenar_lista(dados_t *root)
 {
     int flag = 1;
     dados_t *left, *right, *head, aux;
 
     head = &aux;
     head = root;
-    if(root != NULL && root->next != NULL)
+    if (root != NULL && root->next != NULL)
     {
-        while(flag)
+        while (flag)
         {
             flag = 0;
             left = head;
             right = head->next;
-            while(right->next != NULL)
+            while (right->next != NULL)
             {
                 //ordenacao_pop(&right, &left, &flag);
                 ordenacao_alfa(&right, &left, &flag);
                 left = right;
-                if(right->next != NULL)
+                if (right->next != NULL)
                     right = right->next;
             }
         }
@@ -451,15 +447,15 @@ void imprime_lista(dados_t *root)
     dados_t *curr = root;
     while (curr->next != NULL)
     {
-        printf("%s - %s - %s - %d - %s - %d - %d-%d - %f - %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,\
+        printf("%s - %s - %s - %d - %s - %d - %d-%d - %f - %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,
                curr->weekly_count, curr->year_week->year, curr->year_week->week, curr->rate_14_day, curr->cumulative_count);
         curr = curr->next;
     }
 }
 
-void liberta_lista(dados_t* head)
+void liberta_lista(dados_t *head)
 {
-    dados_t* curr;
+    dados_t *curr;
 
     while (head != NULL)
     {
@@ -478,68 +474,81 @@ int main(int argc, char *argv[])
     char criterio_S[20];
     char criterio_D[20];
     char criterio_P[20];
-
     while ((opt = getopt(argc, argv, "L:S:D:P:i:o:")) != -1)
     {
         switch (opt)
         {
         case 'L':
-            sscanf(optarg, "%s", &criterio_L);
+            sscanf(optarg, "%s", criterio_L);
             if (strcmp(criterio_L, "all") == 0)
                 settings->criterio_leitura = L_ALL;
+
+            else
+            {
+                settings->criterio_leitura = L_CONTINENTE;
+                settings->leitura_continente = malloc(sizeof(char) * (strlen(criterio_L) + 1));
+                strcpy(settings->leitura_continente, criterio_L);
+            }
+
             break;
 
         case 'S':
-            sscanf(optarg, "%s", &criterio_S);
+            sscanf(optarg, "%s", criterio_S);
             if (strcmp(criterio_S, "alfa") == 0)
                 settings->criterio_ord = S_ALFA;
-            break;
 
-            if (strcmp(criterio_S, "pop") == 0)
+            else if (strcmp(criterio_S, "pop") == 0)
                 settings->criterio_ord = S_POP;
-            break;
 
-            if (strcmp(criterio_S, "inf") == 0)
+            else if (strcmp(criterio_S, "inf") == 0)
+            {
                 settings->criterio_ord = S_INF;
-            break;
+                settings->ord_date = parseYearWeek("2020-15");
+            }
+            //separar ano e semana
 
-            if (strcmp(criterio_S, "dea") == 0)
+            else if (strcmp(criterio_S, "dea") == 0)
+            {
                 settings->criterio_ord = S_DEA;
+                settings->ord_date = parseYearWeek("2020-15");
+            }
+            //separar ano e semana
             break;
 
         case 'D':
-            sscanf(optarg, "%s", &criterio_D);
-            if (strcmp(criterio_S, "inf") == 0)
+            sscanf(optarg, "%s", criterio_D);
+            if (strcmp(criterio_D, "inf") == 0)
                 settings->criterio_sel = INF;
-            break;
 
-            if (strcmp(criterio_S, "dea") == 0)
+            else if (strcmp(criterio_D, "dea") == 0)
                 settings->criterio_sel = DEA;
-            break;
 
-            if (strcmp(criterio_S, "dea") == 0)
+            else if (strcmp(criterio_D, "dea") == 0)
                 settings->criterio_sel = RACIOINF;
-            break;
 
-            if (strcmp(criterio_S, "dea") == 0)
+            else if (strcmp(criterio_D, "dea") == 0)
                 settings->criterio_sel = RACIODEA;
             break;
-        case 'P':
-            sscanf(optarg, "%s", &criterio_P);
-            if (strcmp(criterio_P, "inf") == 0)
+        case 'P': //nenhum destes ta a funcionar caralho
+            sscanf(optarg, "%s", criterio_P);
+            if (strcmp(criterio_P, "min") == 0)
                 settings->criterio_res = MIN;
-            break;
 
-            if (strcmp(criterio_P, "inf") == 0)
+            else if (strcmp(criterio_P, "max") == 0)
                 settings->criterio_res = MAX;
-            break;
 
-            if (strcmp(criterio_P, "inf") == 0)
+            else if (strcmp(criterio_P, "date") == 0)
+            {
                 settings->criterio_res = DATE;
-            break;
+                settings->restricao_date1 = parseYearWeek("2020-15");
+            }
 
-            if (strcmp(criterio_P, "inf") == 0)
+            else if (strcmp(criterio_P, "dates") == 0)
+            {
                 settings->criterio_res = DATES;
+                settings->restricao_date1 = parseYearWeek("2020-14");
+                settings->restricao_date2 = parseYearWeek("2020-15");
+            }
             break;
         case 'i':
             break;
