@@ -272,12 +272,13 @@ void selecao_inf(dados_t** right, dados_t** left, int* flag)
             }
             else
             {
-                (*right) = (*right)->next;
+                (*left) = (*right);
+                if((*right)->next != NULL)
+                    (*right) = (*right)->next;
                 aux = (*right);
                 (*left)->next = remove_do_inicio(aux);
                 (*flag) = 1;
             }
-
         }
     }
     else
@@ -288,7 +289,106 @@ void selecao_inf(dados_t** right, dados_t** left, int* flag)
     }
 }
 
-dados_t* selecao_lista_inf(dados_t* root)
+void selecao_dea(dados_t** right, dados_t** left, int* flag)
+{
+    dados_t *aux;
+
+    if(strcmp((*right)->indicator, "deaths") == 0)
+    {
+        if(strcmp((*right)->country, (*right)->next->country) == 0)
+        {
+            if((*right)->weekly_count < (*right)->next->weekly_count)
+            {
+                aux = (*right);
+                (*left)->next = remove_do_inicio(aux);
+                (*flag) = 1;
+            }
+            else
+            {
+                (*left) = (*right);
+                if((*right)->next != NULL)
+                    (*right) = (*right)->next;
+                aux = (*right);
+                (*left)->next = remove_do_inicio(aux);
+                (*flag) = 1;
+            }
+        }
+    }
+    else
+    {
+        aux = (*right);
+        (*left)->next = remove_do_inicio(aux);
+        (*flag) = 1;
+    }
+}
+
+void selecao_racioinf(dados_t** right, dados_t** left, int* flag)
+{
+    dados_t *aux;
+
+    if(strcmp((*right)->indicator, "cases") == 0)
+    {
+        if(strcmp((*right)->country, (*right)->next->country) == 0)
+        {
+            if((*right)->rate_14_day < (*right)->next->rate_14_day)
+            {
+                aux = (*right);
+                (*left)->next = remove_do_inicio(aux);
+                (*flag) = 1;
+            }
+            else
+            {
+                (*left) = (*right);
+                if((*right)->next != NULL)
+                    (*right) = (*right)->next;
+                aux = (*right);
+                (*left)->next = remove_do_inicio(aux);
+                (*flag) = 1;
+            }
+        }
+    }
+    else
+    {
+        aux = (*right);
+        (*left)->next = remove_do_inicio(aux);
+        (*flag) = 1;
+    }
+}
+
+void selecao_raciodea(dados_t** right, dados_t** left, int* flag)
+{
+    dados_t *aux;
+
+    if(strcmp((*right)->indicator, "deaths") == 0)
+    {
+        if(strcmp((*right)->country, (*right)->next->country) == 0)
+        {
+            if((*right)->rate_14_day < (*right)->next->rate_14_day)
+            {
+                aux = (*right);
+                (*left)->next = remove_do_inicio(aux);
+                (*flag) = 1;
+            }
+            else
+            {
+                (*left) = (*right);
+                if((*right)->next != NULL)
+                    (*right) = (*right)->next;
+                aux = (*right);
+                (*left)->next = remove_do_inicio(aux);
+                (*flag) = 1;
+            }
+        }
+    }
+    else
+    {
+        aux = (*right);
+        (*left)->next = remove_do_inicio(aux);
+        (*flag) = 1;
+    }
+}
+
+dados_t* selecao_lista(dados_t* root)
 {
     int flag = 1;
     dados_t *left, *right, *head, aux;
@@ -304,7 +404,10 @@ dados_t* selecao_lista_inf(dados_t* root)
             right = head->next;
             while(right->next != NULL)
             {
-                selecao_inf(&right, &left, &flag);
+                //selecao_inf(&right, &left, &flag);
+                //selecao_dea(&right, &left, &flag);
+                selecao_racioinf(&right, &left, &flag);
+                //selecao_raciodea(&right, &left, &flag);
                 left = right;
                 if(right->next != NULL)
                     right = right->next;
@@ -446,8 +549,8 @@ int main(int argc, char *argv[])
     }
 
     dados_t *root_principal = cria_lista();
+    root_principal = selecao_lista(root_principal);
     //root_principal = ordenar_lista(root_principal);
-    root_principal = selecao_lista_inf(root_principal);
     imprime_lista(root_principal);
     liberta_lista(root_principal);
     return 0;
