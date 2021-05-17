@@ -28,8 +28,15 @@ typedef struct dados
     double rate_14_day;
     int cumulative_count;
 
+    struct dados *prev;
     struct dados *next;
 } dados_t;
+
+typedef struct lista
+{
+    dados_t *first;
+    dados_t *last;
+} lista_t;
 
 enum leitura
 {
@@ -45,17 +52,18 @@ enum ordenacao
 };
 enum selecao
 {
-    INF,
-    DEA,
-    RACIOINF,
-    RACIODEA
+    D_NONE,
+    D_INF,
+    D_DEA,
+    D_RACIOINF,
+    D_RACIODEA
 };
 enum restricao
 {
-    MIN,
-    MAX,
-    DATE,
-    DATES
+    P_MIN,
+    P_MAX,
+    P_DATE,
+    P_DATES
 };
 
 typedef struct settings
@@ -72,17 +80,46 @@ typedef struct settings
 } settings_t;
 
 //headers
-dados_t *cria_lista();
+lista_t *ler_ficheiro();
 dados_t *ler_linha(char *letra);
 void inserir_dados(dados_t *dados, char *inicio_coluna, int coluna);
 yearWeek_t *parseYearWeek(char *data);
+lista_t *cria_lista();
+void inserir_elemento_final(lista_t *lista, dados_t *item);
+void destruir_dados(dados_t *dados);
+int selecao_inf(dados_t *atual, dados_t *comparacao);
 
-dados_t *cria_lista()
+lista_t *cria_lista()
+{
+    lista_t *novaLista = malloc(sizeof(lista_t));
+
+    novaLista->first = NULL;
+    novaLista->last = NULL;
+
+    return novaLista;
+}
+
+void inserir_elemento_final(lista_t *lista, dados_t *item)
+{
+    item->next = NULL;        //inicia o next como null porque é o ultimo elemento
+    item->prev = lista->last; //o item anterior é o "antigo" ultimo elemento da lista
+
+    if (lista->first == NULL) //se a lista estiver vazia
+    {
+        lista->first = item; //o novo elemento torna-se o primeiro
+    }
+    else
+    {
+        lista->last->next = item;
+    }
+    lista->last = item;
+}
+
+lista_t *ler_ficheiro()
 {
     FILE *ficheiro;
     char buffer[MAX_PALAVRAS_LINHAS];
-    dados_t *root = NULL;
-    dados_t *last = NULL;
+    lista_t *lista = cria_lista();
 
     ficheiro = fopen(FILEPATH_COVID, "r");
 
@@ -101,19 +138,11 @@ dados_t *cria_lista()
             continue;
         }
         dados_t *item = ler_linha(buffer);
-        if (root == NULL)
-        {
-            root = item;
-        }
-        else
-        {
-            last->next = item;
-        }
-        last = item;
-
-        linhas++;
+        inserir_elemento_final(lista, item);
     }
-    return root;
+
+    fclose(ficheiro);
+    return lista;
 }
 
 //passar da string para o elemento da lista
@@ -178,6 +207,12 @@ void inserir_dados(dados_t *dados, char *inicio_coluna, int coluna)
     }
 }
 
+/** \brief  converte o input dado (string) num int para facilitar a comparacao de datas
+ *
+ * \param data *char
+ * \return yearWeek_t
+ *
+ */
 yearWeek_t *parseYearWeek(char *data)
 {
     yearWeek_t *yearWeek = malloc(sizeof(yearWeek_t));
@@ -231,8 +266,8 @@ dados_t *remove_do_inicio(dados_t *headlist)
 
 void restricao_min(dados_t **right, dados_t **left, int *flag, int n)
 {
-    dados_t* aux;
-    if((*right)->population < n)
+    dados_t *aux;
+    if ((*right)->population < n)
     {
         aux = (*right);
         (*left)->next = remove_do_inicio(aux);
@@ -243,8 +278,8 @@ void restricao_min(dados_t **right, dados_t **left, int *flag, int n)
 
 void restricao_max(dados_t **right, dados_t **left, int *flag, int n)
 {
-    dados_t* aux;
-    if((*right)->population > n)
+    dados_t *aux;
+    if ((*right)->population > n)
     {
         aux = (*right);
         (*left)->next = remove_do_inicio(aux);
@@ -253,7 +288,7 @@ void restricao_max(dados_t **right, dados_t **left, int *flag, int n)
     }
 }
 
-dados_t* restricao_lista(dados_t *root, int n)
+dados_t *restricao_lista(dados_t *root, int n)
 {
     int flag = 1;
     dados_t *left, *right, *head, aux;
@@ -269,7 +304,7 @@ dados_t* restricao_lista(dados_t *root, int n)
             flag = 0;
             left = head;
             right = head->next;
-            while(right->next != NULL)
+            while (right->next != NULL)
             {
                 //restricao_min(&right, &left, &flag, n);
                 restricao_max(&right, &left, &flag, n);
@@ -284,38 +319,40 @@ dados_t* restricao_lista(dados_t *root, int n)
     return root;
 }
 
-void selecao_inf(dados_t **right, dados_t **left, int *flag)
+/** \brief selecionar, para cada pais, a semana com mais infetados
+ *
+ * \param atual dados_t*
+ * \param comparacao dados_t*
+ * \return int: 0,1,2
+ *
+ */
+int selecao_inf(dados_t *atual, dados_t *comparacao)
 {
-    dados_t *aux;
+    //se os paises forem diferentes
+    if (comparacao != NULL && strcmp(atual->country_code, comparacao->country_code) != 0)
+        return 0;
 
-    if (strcmp((*right)->indicator, "cases") == 0)
-    {
-        if (strcmp((*right)->country, (*right)->next->country) == 0)
-        {
-            if ((*right)->weekly_count < (*right)->next->weekly_count)
-            {
-                aux = (*right);
-                (*left)->next = remove_do_inicio(aux);
-                (*flag) = 1;
-            }
-            else
-            {
-                (*left) = (*right);
-                if ((*right)->next != NULL)
-                    (*right) = (*right)->next;
-                aux = (*right);
-                (*left)->next = remove_do_inicio(aux);
-                (*flag) = 1;
-            }
-        }
-    }
+    //se o elemento atual nao tiver o indicador "cases"
+    if (strcmp(atual->indicator, "cases") != 0)
+        return 2; //"discartar" o elemento atual
+
+    //se o elemento comparacao for nulo, ignoramo-lo
+    if (comparacao == NULL)
+        return 0;
+
+    //se o elemento de comparacao nao tiver o indicador "cases"
+    if (strcmp(comparacao->indicator, "cases") != 0)
+        return 1; //"discartar" o elemento de comparacao
+
+    if (atual->weekly_count > comparacao->weekly_count)
+        return 1; //discarta o elemento comparacao
     else
-    {
-        aux = (*right);
-        (*left)->next = remove_do_inicio(aux);
-        (*flag) = 1;
-    }
+        return 2; //discarta o elemento atual
 }
+
+//to do funcao que compara datas para, em caso de empate, escolher a semana mais recente
+
+// pegar no parseWeek e ver qual dos numeros é mais (pequeno? ou maior? dunno)
 
 void selecao_dea(dados_t **right, dados_t **left, int *flag)
 {
@@ -474,10 +511,10 @@ dados_t *ordenar_lista(dados_t *root)
     return root;
 }
 
-void imprime_lista(dados_t *root)
+void imprime_lista(lista_t *lista)
 {
-    dados_t *curr = root;
-    while (curr->next != NULL)
+    dados_t *curr = lista->first;
+    while (curr != NULL)
     {
         printf("%s - %s - %s - %d - %s - %d - %d-%d - %f - %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,
                curr->weekly_count, curr->year_week->year, curr->year_week->week, curr->rate_14_day, curr->cumulative_count);
@@ -485,14 +522,14 @@ void imprime_lista(dados_t *root)
     }
 }
 
-void cria_ficheiro(dados_t* root)
+void cria_ficheiro(dados_t *root)
 {
-    FILE* fp;
-    dados_t* curr;
+    FILE *fp;
+    dados_t *curr;
     fp = fopen("teste.csv", "w");
 
     curr = root;
-    while(curr->next != NULL)
+    while (curr->next != NULL)
     {
         fprintf(fp, "%s, %s, %s, %d, %s, %d, %d-%d, %f, %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,
                 curr->weekly_count, curr->year_week->year, curr->year_week->week, curr->rate_14_day, curr->cumulative_count);
@@ -501,15 +538,94 @@ void cria_ficheiro(dados_t* root)
     fclose(fp);
 }
 
-void liberta_lista(dados_t *head)
+void apagar_elemento_lista(lista_t *lista, dados_t *elemento)
+{
+
+    if (elemento->prev == NULL)
+    {
+        lista->first = elemento->next;
+    }
+    else
+    {
+        elemento->prev->next = elemento->next;
+    }
+
+    if (elemento->next == NULL)
+    {
+        lista->last = elemento->prev;
+    }
+    else
+    {
+        elemento->next->prev = elemento->prev;
+    }
+    destruir_dados(elemento);
+}
+
+void liberta_lista(lista_t *lista)
 {
     dados_t *curr;
+    dados_t *next = lista->first;
 
-    while (head != NULL)
+    while (next != NULL)
     {
-        curr = head;
-        head = head->next;
-        free(curr);
+        curr = next;
+        next = next->next;
+        destruir_dados(curr);
+    }
+    free(lista);
+}
+
+void destruir_dados(dados_t *dados)
+{
+    free(dados->year_week);
+    free(dados);
+}
+
+int criterio_selecao(settings_t *settings, dados_t *atual, dados_t *comparacao)
+{
+    if (settings->criterio_sel == D_INF)
+        return selecao_inf(atual, comparacao);
+    // else if (...)
+    return 0;
+}
+
+void selecionar(settings_t *settings, lista_t *lista)
+{
+    dados_t *el_atual = lista->first;
+    dados_t *el_comparacao;
+
+    while (el_atual != NULL)
+    {
+        dados_t *aux_atual = el_atual;
+        el_atual = el_atual->next;
+        el_comparacao = aux_atual->next;
+
+        while (el_comparacao != NULL)
+        {
+            int result = criterio_selecao(settings, aux_atual, el_comparacao); //0-ignorar, 1-apagar comparacao, 2-apagar atual
+            dados_t *aux_comparacao = el_comparacao;
+            el_comparacao = el_comparacao->next;
+            if (result == 1)
+            {
+                if (aux_comparacao == el_atual)
+                    el_atual = el_atual->next;
+                apagar_elemento_lista(lista, aux_comparacao);
+            }
+            else if (result == 2)
+            {
+                if (aux_atual == el_atual)
+                    el_atual = el_atual->next;
+                apagar_elemento_lista(lista, aux_atual);
+                aux_atual = aux_comparacao;
+            }
+        }
+
+        if (criterio_selecao(settings, aux_atual, NULL) == 2)
+        {
+            if (aux_atual == el_atual)
+                el_atual = el_atual->next;
+            apagar_elemento_lista(lista, aux_atual);
+        }
     }
 }
 
@@ -566,34 +682,36 @@ int main(int argc, char *argv[])
         case 'D':
             sscanf(optarg, "%s", criterio_D);
             if (strcmp(criterio_D, "inf") == 0)
-                settings->criterio_sel = INF;
+                settings->criterio_sel = D_INF;
 
             else if (strcmp(criterio_D, "dea") == 0)
-                settings->criterio_sel = DEA;
+                settings->criterio_sel = D_DEA;
 
             else if (strcmp(criterio_D, "dea") == 0)
-                settings->criterio_sel = RACIOINF;
+                settings->criterio_sel = D_RACIOINF;
 
             else if (strcmp(criterio_D, "dea") == 0)
-                settings->criterio_sel = RACIODEA;
+                settings->criterio_sel = D_RACIODEA;
+            else
+                settings->criterio_sel = D_NONE;
             break;
         case 'P': //nenhum destes ta a funcionar caralho
             sscanf(optarg, "%s", criterio_P);
             if (strcmp(criterio_P, "min") == 0)
-                settings->criterio_res = MIN;
+                settings->criterio_res = P_MIN;
 
             else if (strcmp(criterio_P, "max") == 0)
-                settings->criterio_res = MAX;
+                settings->criterio_res = P_MAX;
 
             else if (strcmp(criterio_P, "date") == 0)
             {
-                settings->criterio_res = DATE;
+                settings->criterio_res = P_DATE;
                 settings->restricao_date1 = parseYearWeek("2020-15");
             }
 
             else if (strcmp(criterio_P, "dates") == 0)
             {
-                settings->criterio_res = DATES;
+                settings->criterio_res = P_DATES;
                 settings->restricao_date1 = parseYearWeek("2020-14");
                 settings->restricao_date2 = parseYearWeek("2020-15");
             }
@@ -605,7 +723,10 @@ int main(int argc, char *argv[])
         }
     }
     int n = 10000;
-    dados_t *root_principal = cria_lista();
+
+    lista_t *root_principal = ler_ficheiro();
+    if (settings->criterio_sel != D_NONE)
+        selecionar(settings, root_principal);
     //root_principal = selecao_lista(root_principal);
     //root_principal = ordenar_lista(root_principal);
     root_principal = restricao_lista(root_principal, n);
