@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <unistd.h>
 
 #define MAX_PALAVRAS_LINHAS 110
 #define COUNTRY 35
@@ -83,7 +84,7 @@ typedef struct settings
 lista_t *ler_ficheiro();
 dados_t *ler_linha(char *letra);
 void inserir_dados(dados_t *dados, char *inicio_coluna, int coluna);
-yearWeek_t *parseYearWeek(char *data);
+yearWeek_t *parseYearWeek(char *dados);
 lista_t *cria_lista();
 void inserir_elemento_final(lista_t *lista, dados_t *item);
 void destruir_dados(dados_t *dados);
@@ -213,14 +214,27 @@ void inserir_dados(dados_t *dados, char *inicio_coluna, int coluna)
  * \return yearWeek_t
  *
  */
-yearWeek_t *parseYearWeek(char *data)
+yearWeek_t *parseYearWeek(char *dados)
 {
     yearWeek_t *yearWeek = malloc(sizeof(yearWeek_t));
 
-    data[4] = '\0';                  // yyyy-ww
-    yearWeek->year = atoi(data);     //int
-    yearWeek->week = atoi(data + 5); //int
+    dados[4] = '\0';
+    yearWeek->year = atoi(dados);        //int
+    yearWeek->week = atoi(dados + 5);     //int
+
     return yearWeek;
+}
+
+settings_t *trocadatas(settings_t *datas)
+{
+    settings_t *aux = NULL;
+    if(datas->restricao_date1 < datas->restricao_date2)
+    {
+        datas->restricao_date1 = aux->restricao_date2;
+        datas->restricao_date1 = datas->restricao_date2;
+        datas->restricao_date2 = aux->restricao_date1;
+    }
+    return datas;
 }
 
 dados_t *troca(dados_t *left, dados_t *right)
@@ -264,10 +278,12 @@ dados_t *remove_do_inicio(dados_t *headlist)
     return headlist;
 }
 
-void restricao_min(dados_t **right, dados_t **left, int *flag, int n)
+void restricao_min(dados_t **right, dados_t **left, int *flag, settings_t* anosemana)
 {
     dados_t *aux;
-    if ((*right)->population < n)
+
+    anosemana->restricao_n *= 1000;
+    if ((*right)->population < anosemana->restricao_n)
     {
         aux = (*right);
         (*left)->next = remove_do_inicio(aux);
@@ -276,10 +292,26 @@ void restricao_min(dados_t **right, dados_t **left, int *flag, int n)
     }
 }
 
-void restricao_max(dados_t **right, dados_t **left, int *flag, int n)
+void restricao_max(dados_t **right, dados_t **left, int *flag, settings_t* anosemana)
 {
     dados_t *aux;
-    if ((*right)->population > n)
+
+    anosemana->restricao_n *= 1000;
+    if ((*right)->population > anosemana->restricao_n)
+    {
+        aux = (*right);
+        (*left)->next = remove_do_inicio(aux);
+        (*flag) = 1;
+        (*right) = aux;
+    }
+}
+//--------------------------------------------------------------------------------------------
+void restricao_date(dados_t **right, dados_t **left, int *flag, settings_t* anosemana)
+{
+    dados_t *aux;
+
+
+    if ((*right)->year_week != anosemana->restricao_date1)
     {
         aux = (*right);
         (*left)->next = remove_do_inicio(aux);
@@ -288,12 +320,27 @@ void restricao_max(dados_t **right, dados_t **left, int *flag, int n)
     }
 }
 
-dados_t *restricao_lista(dados_t *root, int n)
+void restricao_dates(dados_t **right, dados_t **left, int *flag, settings_t* anosemana)
+{
+    dados_t *aux;
+
+    anosemana = trocadatas(anosemana);
+
+    if ((*right)->year_week > anosemana->restricao_date1 && (*right)->year_week < anosemana->restricao_date2)
+    {
+        aux = (*right);
+        (*left)->next = remove_do_inicio(aux);
+        (*flag) = 1;
+        (*right) = aux;
+    }
+}
+//--------------------------------------------------------------------------------------
+
+
+dados_t *restricao_lista(dados_t *root, settings_t* anosemana)
 {
     int flag = 1;
     dados_t *left, *right, *head, aux;
-
-    n *= 1000;
 
     head = &aux;
     head = root;
@@ -306,9 +353,10 @@ dados_t *restricao_lista(dados_t *root, int n)
             right = head->next;
             while (right->next != NULL)
             {
-                //restricao_min(&right, &left, &flag, n);
-                restricao_max(&right, &left, &flag, n);
-
+                //restricao_min(&right, &left, &flag, anosemana);
+                restricao_max(&right, &left, &flag, anosemana);
+                restricao_date(&right, &left, &flag, anosemana);
+                restricao_dates(&right, &left, &flag, anosemana);
                 left = right;
                 if (right->next != NULL)
                     right = right->next;
@@ -483,7 +531,7 @@ dados_t *selecao_lista(dados_t *root)
     return root;
 }
 
-dados_t *ordenar_lista(dados_t *root)
+dados_t *ordenar_lista(dados_t *root, settings_t *anosemana)
 {
     int flag = 1;
     dados_t *left, *right, *head, aux;
@@ -499,8 +547,9 @@ dados_t *ordenar_lista(dados_t *root)
             right = head->next;
             while (right->next != NULL)
             {
-                //ordenacao_pop(&right, &left, &flag);
-                ordenacao_alfa(&right, &left, &flag);
+                ordenacao_pop(&right, &left, &flag);
+                //ordenacao_alfa(&right, &left, &flag);
+
                 left = right;
                 if (right->next != NULL)
                     right = right->next;
@@ -629,15 +678,72 @@ void selecionar(settings_t *settings, lista_t *lista)
     }
 }
 
+void erros_ficheiro(lista_t *lista)
+{
+    dados_t *head = lista->first;
+
+    while (head != NULL)
+    {
+        if(head->population < 0)
+        {
+            printf("populacao impossivel");
+            exit(-1);
+        }
+        else if(head->cumulative_count < 0)
+        {
+            printf("valor impossivel");
+            exit(-1);
+        }
+        else if(head->rate_14_day < 0)
+        {
+            printf("valor impossivel");
+            exit(-1);
+        }
+        else if(head->weekly_count < 0)
+        {
+            printf("valor impossivel");
+            exit(-1);
+        }
+        else if(head->year_week->week <= 0 && head->year_week->week > 52 && head->year_week->year < 0)
+        {
+            printf("valor impossivel");
+            exit(-1);
+        }
+
+        head = head->next;
+    }
+}
+
+void utilizacao()
+{
+    printf("\t\tPROJETO FINAL\n\n");
+    printf("opcoes validas:\n");
+    printf("[-L all ou \"continente\"]\t  le o ficheiro inteiro ou dos paises em ralacao ao continente\n");
+    printf("[-S]\t\t\t\t  Ordenacao dos dados\n");
+    printf("[-D]\t\t\t\t  Selecao dos dados\n");
+    printf("[-P]\t\t\t\t  Restricicao dos dados\n");
+    printf("[-i]\t\t\t\t  Leitura do ficheiro\n");
+    printf("[-o]\t\t\t\t  Escrita do ficheiro\n");
+}
+
 int main(int argc, char *argv[])
 {
     settings_t *settings = malloc(sizeof(settings_t));
     int opt;
     opterr = 0;
+    char yearweek[8], yearweek2[8];
     char criterio_L[20];
     char criterio_S[20];
     char criterio_D[20];
     char criterio_P[20];
+    char criterio_FILE[100];
+    char criterio_WRITE[100];
+
+    settings->criterio_leitura = L_ALL;
+    settings->criterio_ord = S_ALFA;
+    settings->criterio_sel = D_NONE;
+    settings->criterio_res = D_NONE;
+
     while ((opt = getopt(argc, argv, "L:S:D:P:i:o:")) != -1)
     {
         switch (opt)
@@ -646,16 +752,13 @@ int main(int argc, char *argv[])
             sscanf(optarg, "%s", criterio_L);
             if (strcmp(criterio_L, "all") == 0)
                 settings->criterio_leitura = L_ALL;
-
             else
             {
                 settings->criterio_leitura = L_CONTINENTE;
                 settings->leitura_continente = malloc(sizeof(char) * (strlen(criterio_L) + 1));
                 strcpy(settings->leitura_continente, criterio_L);
             }
-
             break;
-
         case 'S':
             sscanf(optarg, "%s", criterio_S);
             if (strcmp(criterio_S, "alfa") == 0)
@@ -667,18 +770,19 @@ int main(int argc, char *argv[])
             else if (strcmp(criterio_S, "inf") == 0)
             {
                 settings->criterio_ord = S_INF;
-                settings->ord_date = parseYearWeek("2020-15");
+                strcpy(yearweek, argv[optind]);
+                optind++;
+                settings->ord_date = parseYearWeek(yearweek);
             }
-            //separar ano e semana
 
             else if (strcmp(criterio_S, "dea") == 0)
             {
                 settings->criterio_ord = S_DEA;
-                settings->ord_date = parseYearWeek("2020-15");
+                strcpy(yearweek, argv[optind]);
+                optind++;
+                settings->ord_date = parseYearWeek(yearweek);
             }
-            //separar ano e semana
             break;
-
         case 'D':
             sscanf(optarg, "%s", criterio_D);
             if (strcmp(criterio_D, "inf") == 0)
@@ -687,49 +791,65 @@ int main(int argc, char *argv[])
             else if (strcmp(criterio_D, "dea") == 0)
                 settings->criterio_sel = D_DEA;
 
-            else if (strcmp(criterio_D, "dea") == 0)
+            else if (strcmp(criterio_D, "racioinf") == 0)
                 settings->criterio_sel = D_RACIOINF;
 
-            else if (strcmp(criterio_D, "dea") == 0)
+            else if (strcmp(criterio_D, "raciodea") == 0)
                 settings->criterio_sel = D_RACIODEA;
-            else
-                settings->criterio_sel = D_NONE;
             break;
-        case 'P': //nenhum destes ta a funcionar caralho
+        case 'P':
             sscanf(optarg, "%s", criterio_P);
             if (strcmp(criterio_P, "min") == 0)
+            {
                 settings->criterio_res = P_MIN;
+                settings->restricao_n = atoi(argv[optind]);
+                optind++;
+            }
 
             else if (strcmp(criterio_P, "max") == 0)
+            {
                 settings->criterio_res = P_MAX;
+                settings->restricao_n = atoi(argv[optind]);
+                optind++;
+            }
 
             else if (strcmp(criterio_P, "date") == 0)
             {
                 settings->criterio_res = P_DATE;
-                settings->restricao_date1 = parseYearWeek("2020-15");
+                strcpy(yearweek, argv[optind]);
+                optind++;
+                settings->restricao_date1 = parseYearWeek(yearweek);
             }
-
             else if (strcmp(criterio_P, "dates") == 0)
             {
                 settings->criterio_res = P_DATES;
-                settings->restricao_date1 = parseYearWeek("2020-14");
-                settings->restricao_date2 = parseYearWeek("2020-15");
+                strcpy(yearweek, argv[optind]);
+                optind++;
+                strcpy(yearweek2, argv[optind]);
+                optind++;
+                settings->restricao_date1 = parseYearWeek(yearweek);
+                settings->restricao_date2 = parseYearWeek(yearweek2);
             }
             break;
         case 'i':
+            sscanf(optarg, "%s", criterio_FILE);
             break;
         case 'o':
+            sscanf(optarg, "%s", criterio_WRITE);
+            break;
+        default:
+            utilizacao(argv[0]);
+            return EXIT_FAILURE;
             break;
         }
     }
-    int n = 10000;
 
     lista_t *root_principal = ler_ficheiro();
     if (settings->criterio_sel != D_NONE)
         selecionar(settings, root_principal);
     //root_principal = selecao_lista(root_principal);
-    //root_principal = ordenar_lista(root_principal);
-    root_principal = restricao_lista(root_principal, n);
+    //root_principal = ordenar_lista(root_principal, settings);
+    //root_principal = restricao_lista(root_principal, settings);
     cria_ficheiro(root_principal);
     imprime_lista(root_principal);
     liberta_lista(root_principal);
