@@ -607,6 +607,11 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
     FILE *fp;
     dados_t *curr = root->first;
     fp = fopen(settings->criterio_write, settings->tipo_escrita);
+    if(fp == NULL)
+    {
+        printf("Erro a criar ficheiro");
+        exit(EXIT_FAILURE);
+    }
 
     while (curr->next != NULL)
     {
@@ -735,33 +740,35 @@ void erros_ficheiro(lista_t *lista)
         head = head->next;
     }
 }
-//esta a alterar o nome do ficheiro smr
+
 settings_t *verifica_tipo_ficheiro(settings_t *settings)
 {
     char *token, *file, *write;
-    file = settings->criterio_file;
-    write = settings->criterio_write;
+    settings_t *aux = settings;
+    file = strdup(aux->criterio_file);
+    write = strdup(aux->criterio_write);
 
     token = strtok(file, ".");
     token = strtok(NULL, ".");
     if(strcmp(token, "csv") == 0)
     {
-        settings->tipo_ficheiro = "r";
+        aux->tipo_ficheiro = "r";
     }
     else if(strcmp(token, "dat") == 0)
     {
-        settings->tipo_ficheiro = "rb";
+        aux->tipo_ficheiro = "rb";
     }
     token = strtok(write, ".");
     token = strtok(NULL, ".");
     if(strcmp(token, "csv") == 0)
     {
-        settings->tipo_escrita = "r";
+        aux->tipo_escrita = "w";
     }
     else if(strcmp(token, "dat") == 0)
     {
-        settings->tipo_escrita = "rb";
+        aux->tipo_escrita = "wb";
     }
+    settings = aux;
     return settings;
 }
 
@@ -897,7 +904,7 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
     }
-    //nao funciona por causa do verifica_tipo_ficheiro
+
     settings = verifica_tipo_ficheiro(settings);
 
     lista_t *root_principal = ler_ficheiro(settings);
