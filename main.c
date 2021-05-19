@@ -743,32 +743,26 @@ void erros_ficheiro(lista_t *lista)
 
 settings_t *verifica_tipo_ficheiro(settings_t *settings)
 {
-    char *token, *file, *write;
-    settings_t *aux = settings;
-    file = strdup(aux->criterio_file);
-    write = strdup(aux->criterio_write);
+    char *file, *write;
+    file = strdup(settings->criterio_file);
+    write = strdup(settings->criterio_write);
 
-    token = strtok(file, ".");
-    token = strtok(NULL, ".");
-    if(strcmp(token, "csv") == 0)
+    if(strstr(file, "csv") == 0)
     {
-        aux->tipo_ficheiro = "r";
+        settings->tipo_ficheiro = "r";
     }
-    else if(strcmp(token, "dat") == 0)
+    else if(strstr(file, "dat") == 0)
     {
-        aux->tipo_ficheiro = "rb";
+        settings->tipo_ficheiro = "rb";
     }
-    token = strtok(write, ".");
-    token = strtok(NULL, ".");
-    if(strcmp(token, "csv") == 0)
+    if(strstr(write, "csv") == 0)
     {
-        aux->tipo_escrita = "w";
+        settings->tipo_escrita = "w";
     }
-    else if(strcmp(token, "dat") == 0)
+    else if(strstr(write, "dat") == 0)
     {
-        aux->tipo_escrita = "wb";
+        settings->tipo_escrita = "wb";
     }
-    settings = aux;
     return settings;
 }
 
