@@ -70,18 +70,18 @@ enum restricao
 typedef struct settings
 {
     enum leitura criterio_leitura; // -L
-    char *leitura_continente; //continente escolhido
-    enum ordenacao criterio_ord; //-S
+    char *leitura_continente;      //continente escolhido
+    enum ordenacao criterio_ord;   //-S
     yearWeek_t *ord_date;
     enum selecao criterio_sel;   //-D
     enum restricao criterio_res; //-P
-    short restricao_n; //numero de habitantes
+    short restricao_n;           //numero de habitantes
     yearWeek_t *restricao_date1; //data 1
     yearWeek_t *restricao_date2; //data 2
-    char *criterio_file; //nome do ficheiro a ler
-    char *criterio_write; //nome do ficheiro a escrever
-    char *tipo_ficheiro; //tipo de ficheiro a ler(.csv ou .dat)
-    char *tipo_escrita; //tipo de ficheiro a escrever(.csv ou .dat)
+    char *criterio_file;         //nome do ficheiro a ler
+    char *criterio_write;        //nome do ficheiro a escrever
+    char *tipo_ficheiro;         //tipo de ficheiro a ler(.csv ou .dat)
+    char *tipo_escrita;          //tipo de ficheiro a escrever(.csv ou .dat)
 } settings_t;
 
 //headers
@@ -223,8 +223,8 @@ yearWeek_t *parseYearWeek(char *dados)
     yearWeek_t *yearWeek = malloc(sizeof(yearWeek_t));
 
     dados[4] = '\0';
-    yearWeek->year = atoi(dados);        //int
-    yearWeek->week = atoi(dados + 5);    //int
+    yearWeek->year = atoi(dados);     //int
+    yearWeek->week = atoi(dados + 5); //int
 
     return yearWeek;
 }
@@ -232,15 +232,15 @@ yearWeek_t *parseYearWeek(char *dados)
 settings_t *trocadatas(settings_t *datas)
 {
     settings_t *aux = NULL;
-    if(datas->restricao_date1->year < datas->restricao_date2->year)
+    if (datas->restricao_date1->year < datas->restricao_date2->year)
     {
         datas->restricao_date1 = aux->restricao_date1;
         datas->restricao_date1 = datas->restricao_date2;
         datas->restricao_date2 = aux->restricao_date1;
     }
-    else if(datas->restricao_date1->year == datas->restricao_date2->year)
+    else if (datas->restricao_date1->year == datas->restricao_date2->year)
     {
-        if(datas->restricao_date1->week < datas->restricao_date2->week)
+        if (datas->restricao_date1->week < datas->restricao_date2->week)
         {
             datas->restricao_date1 = aux->restricao_date1;
             datas->restricao_date1 = datas->restricao_date2;
@@ -322,7 +322,7 @@ dados_t *ordenar_lista(dados_t *root, settings_t *anosemana)
 }
 
 //--------------------------------------------------------------------------------------------
-void restricao_min(dados_t **right, dados_t **left, int *flag, settings_t* settings)
+void restricao_min(dados_t **right, dados_t **left, int *flag, settings_t *settings)
 {
     dados_t *aux;
 
@@ -337,7 +337,7 @@ void restricao_min(dados_t **right, dados_t **left, int *flag, settings_t* setti
     }
 }
 
-void restricao_max(dados_t **right, dados_t **left, int *flag, settings_t* settings)
+void restricao_max(dados_t **right, dados_t **left, int *flag, settings_t *settings)
 {
     dados_t *aux;
 
@@ -352,7 +352,7 @@ void restricao_max(dados_t **right, dados_t **left, int *flag, settings_t* setti
     }
 }
 
-void restricao_date(dados_t **right, dados_t **left, int *flag, settings_t* anosemana)
+void restricao_date(dados_t **right, dados_t **left, int *flag, settings_t *anosemana)
 {
     dados_t *aux;
 
@@ -365,7 +365,7 @@ void restricao_date(dados_t **right, dados_t **left, int *flag, settings_t* anos
     }
 }
 
-void restricao_dates(dados_t **right, dados_t **left, int *flag, settings_t* anosemana)
+void restricao_dates(dados_t **right, dados_t **left, int *flag, settings_t *anosemana)
 {
     dados_t *aux;
 
@@ -380,27 +380,27 @@ void restricao_dates(dados_t **right, dados_t **left, int *flag, settings_t* ano
     }
 }
 
-void menu_restricao(dados_t **right, dados_t **left, int *flag, settings_t* settings)
+void menu_restricao(dados_t **right, dados_t **left, int *flag, settings_t *settings)
 {
-    if(settings->criterio_res == P_MIN)
+    if (settings->criterio_res == P_MIN)
     {
         restricao_min(right, left, flag, settings);
     }
-    else if(settings->criterio_res == P_MAX)
+    else if (settings->criterio_res == P_MAX)
     {
         restricao_max(right, left, flag, settings);
     }
-    else if(settings->criterio_res == P_DATE)
+    else if (settings->criterio_res == P_DATE)
     {
         restricao_date(right, left, flag, settings);
     }
-    else if(settings->criterio_res == P_DATES)
+    else if (settings->criterio_res == P_DATES)
     {
         restricao_dates(right, left, flag, settings);
     }
 }
 
-dados_t *restricao_lista(dados_t *root, settings_t* anosemana)
+dados_t *restricao_lista(dados_t *root, settings_t *anosemana)
 {
     int flag = 1;
     dados_t *left, *right, *head, aux;
@@ -457,11 +457,28 @@ int selecao_inf(dados_t *atual, dados_t *comparacao)
         return 1; //discarta o elemento comparacao
     else
         return 2; //discarta o elemento atual
+
+    //no caso de empate, para desempatar escolhe-se a semana mais recente
+    if (atual->weekly_count == comparacao->weekly_count)
+    {
+
+        if (atual->year_week->year == comparacao->year_week->year) //se for o mesmo ano
+        {
+
+            if (atual->year_week->week > comparacao->year_week->week)
+                return 2;
+
+            else
+                return 1;
+        }
+        if (atual->year_week->year > comparacao->year_week->year)
+        {
+            return 1; //o elemento atual é mais recente, discartamos o elemento comparacao
+        }
+        else
+            return 2;
+    }
 }
-
-//to do funcao que compara datas para, em caso de empate, escolher a semana mais recente
-
-// pegar no parseWeek e ver qual dos numeros é mais (pequeno? ou maior? dunno)
 
 void selecao_dea(dados_t **right, dados_t **left, int *flag)
 {
@@ -608,7 +625,7 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
     FILE *fp;
     dados_t *curr = root->first;
     fp = fopen(settings->criterio_write, settings->tipo_escrita);
-    if(fp == NULL)
+    if (fp == NULL)
     {
         printf("Erro a criar ficheiro");
         exit(EXIT_FAILURE);
@@ -720,19 +737,19 @@ void erros_ficheiro(lista_t *lista)
 
     while (head != NULL)
     {
-        if(head->population < 0 || head->cumulative_count < 0 || head->rate_14_day < 0 || head->weekly_count < 0)
+        if (head->population < 0 || head->cumulative_count < 0 || head->rate_14_day < 0 || head->weekly_count < 0)
         {
             printf("valor impossivel");
             exit(-1);
         }
-        else if(head->year_week->week <= 0 && head->year_week->week > 52 && head->year_week->year < 0)
+        else if (head->year_week->week <= 0 && head->year_week->week > 52 && head->year_week->year < 0)
         {
             printf("valor impossivel");
             exit(-1);
         }
-        for(i = 0; i <= 9; i++)
+        for (i = 0; i <= 9; i++)
         {
-            if(strchr(head->country, i) == 0 || strchr(head->continent, i) == 0 || strchr(head->country_code, i) == 0 || strchr(head->indicator, i) == 0)
+            if (strchr(head->country, i) == 0 || strchr(head->continent, i) == 0 || strchr(head->country_code, i) == 0 || strchr(head->indicator, i) == 0)
             {
                 printf("valor impossivel");
                 exit(-1);
@@ -746,19 +763,19 @@ settings_t *verifica_tipo_ficheiro(settings_t *settings)
 {
     char csv[4] = "csv";
     char dat[4] = "dat";
-    if(strstr(settings->criterio_file, csv) == 0)
+    if (strstr(settings->criterio_file, csv) == 0)
     {
         settings->tipo_ficheiro = "r";
     }
-    else if(strstr(settings->criterio_file, dat) == 0)
+    else if (strstr(settings->criterio_file, dat) == 0)
     {
         settings->tipo_ficheiro = "rb";
     }
-    if(strstr(settings->criterio_write, csv) == 0)
+    if (strstr(settings->criterio_write, csv) == 0)
     {
         settings->tipo_escrita = "w";
     }
-    else if(strstr(settings->criterio_write, dat) == 0)
+    else if (strstr(settings->criterio_write, dat) == 0)
     {
         settings->tipo_escrita = "wb";
     }
