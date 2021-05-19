@@ -4,12 +4,11 @@
 #include <getopt.h>
 #include <unistd.h>
 
-#define MAX_PALAVRAS_LINHAS 110
+#define MAX_PALAVRAS_LINHAS 150
 #define COUNTRY 35
 #define COUNTRY_CODE 4
 #define CONTINENT 8
 #define INDICATOR 7
-#define FILEPATH_COVID "covid19_w_t01.csv"
 
 typedef struct yearWeek
 {
@@ -70,14 +69,18 @@ enum restricao
 typedef struct settings
 {
     enum leitura criterio_leitura; // -L
-    char *leitura_continente;
+    char *leitura_continente; //continente escolhido
     enum ordenacao criterio_ord; //-S
     yearWeek_t *ord_date;
     enum selecao criterio_sel;   //-D
     enum restricao criterio_res; //-P
-    short restricao_n;
-    yearWeek_t *restricao_date1;
-    yearWeek_t *restricao_date2;
+    short restricao_n; //numero de habitantes
+    yearWeek_t *restricao_date1; //data 1
+    yearWeek_t *restricao_date2; //data 2
+    char *criterio_file; //nome do ficheiro a ler
+    char *criterio_write; //nome do ficheiro a escrever
+    char *tipo_ficheiro; //tipo de ficheiro a ler(.csv ou .dat)
+    char *tipo_escrita; //tipo de ficheiro a escrever(.csv ou .dat)
 } settings_t;
 
 //headers
@@ -116,13 +119,13 @@ void inserir_elemento_final(lista_t *lista, dados_t *item)
     lista->last = item;
 }
 
-lista_t *ler_ficheiro()
+lista_t *ler_ficheiro(settings_t *settings)
 {
     FILE *ficheiro;
     char buffer[MAX_PALAVRAS_LINHAS];
     lista_t *lista = cria_lista();
 
-    ficheiro = fopen(FILEPATH_COVID, "r");
+    ficheiro = fopen(settings->criterio_file, settings->tipo_ficheiro);
 
     if (ficheiro == NULL)
     {
@@ -220,7 +223,7 @@ yearWeek_t *parseYearWeek(char *dados)
 
     dados[4] = '\0';
     yearWeek->year = atoi(dados);        //int
-    yearWeek->week = atoi(dados + 5);     //int
+    yearWeek->week = atoi(dados + 5);    //int
 
     return yearWeek;
 }
@@ -228,11 +231,20 @@ yearWeek_t *parseYearWeek(char *dados)
 settings_t *trocadatas(settings_t *datas)
 {
     settings_t *aux = NULL;
-    if(datas->restricao_date1 < datas->restricao_date2)
+    if(datas->restricao_date1->year < datas->restricao_date2->year)
     {
-        datas->restricao_date1 = aux->restricao_date2;
+        datas->restricao_date1 = aux->restricao_date1;
         datas->restricao_date1 = datas->restricao_date2;
         datas->restricao_date2 = aux->restricao_date1;
+    }
+    else if(datas->restricao_date1->year == datas->restricao_date2->year)
+    {
+        if(datas->restricao_date1->week < datas->restricao_date2->week)
+        {
+            datas->restricao_date1 = aux->restricao_date1;
+            datas->restricao_date1 = datas->restricao_date2;
+            datas->restricao_date2 = aux->restricao_date1;
+        }
     }
     return datas;
 }
@@ -242,24 +254,6 @@ dados_t *troca(dados_t *left, dados_t *right)
     left->next = right->next;
     right->next = left;
     return right;
-}
-
-void ordenacao_pop(dados_t **right, dados_t **left, int *flag)
-{
-    if ((*right)->population < (*right)->next->population)
-    {
-        (*left)->next = troca((*right), (*right)->next);
-        (*flag) = 1;
-    }
-}
-
-void ordenacao_alfa(dados_t **right, dados_t **left, int *flag)
-{
-    if (strcmp((*right)->country, (*right)->next->country) > 0)
-    {
-        (*left)->next = troca((*right), (*right)->next);
-        (*flag) = 1;
-    }
 }
 
 dados_t *remove_do_inicio(dados_t *headlist)
@@ -278,38 +272,88 @@ dados_t *remove_do_inicio(dados_t *headlist)
     return headlist;
 }
 
-void restricao_min(dados_t **right, dados_t **left, int *flag, settings_t* anosemana)
+//-------------------------------------------------------------------------------------
+void ordenacao_pop(dados_t **right, dados_t **left, int *flag)
 {
-    dados_t *aux;
-
-    anosemana->restricao_n *= 1000;
-    if ((*right)->population < anosemana->restricao_n)
+    if ((*right)->population < (*right)->next->population)
     {
-        aux = (*right);
-        (*left)->next = remove_do_inicio(aux);
+        (*left)->next = troca((*right), (*right)->next);
         (*flag) = 1;
-        (*right) = aux;
     }
 }
 
-void restricao_max(dados_t **right, dados_t **left, int *flag, settings_t* anosemana)
+void ordenacao_alfa(dados_t **right, dados_t **left, int *flag)
 {
-    dados_t *aux;
-
-    anosemana->restricao_n *= 1000;
-    if ((*right)->population > anosemana->restricao_n)
+    if (strcmp((*right)->country, (*right)->next->country) > 0)
     {
-        aux = (*right);
-        (*left)->next = remove_do_inicio(aux);
+        (*left)->next = troca((*right), (*right)->next);
         (*flag) = 1;
-        (*right) = aux;
     }
 }
+
+dados_t *ordenar_lista(dados_t *root, settings_t *anosemana)
+{
+    int flag = 1;
+    dados_t *left, *right, *head, aux;
+
+    head = &aux;
+    head = root;
+    if (root != NULL && root->next != NULL)
+    {
+        while (flag)
+        {
+            flag = 0;
+            left = head;
+            right = head->next;
+            while (right->next != NULL)
+            {
+                ordenacao_pop(&right, &left, &flag);
+                //ordenacao_alfa(&right, &left, &flag);
+
+                left = right;
+                if (right->next != NULL)
+                    right = right->next;
+            }
+        }
+    }
+    root = head->next;
+    return root;
+}
+
 //--------------------------------------------------------------------------------------------
+void restricao_min(dados_t **right, dados_t **left, int *flag, settings_t* settings)
+{
+    dados_t *aux;
+
+    settings_t *aux_set = settings;
+    aux_set->restricao_n *= 1000;
+    if ((*right)->population < aux_set->restricao_n)
+    {
+        aux = (*right);
+        (*left)->next = remove_do_inicio(aux);
+        (*flag) = 1;
+        (*right) = aux;
+    }
+}
+
+void restricao_max(dados_t **right, dados_t **left, int *flag, settings_t* settings)
+{
+    dados_t *aux;
+
+    settings_t *aux_set = settings;
+    aux_set->restricao_n *= 1000;
+    if ((*right)->population > aux_set->restricao_n)
+    {
+        aux = (*right);
+        (*left)->next = remove_do_inicio(aux);
+        (*flag) = 1;
+        (*right) = aux;
+    }
+}
+
 void restricao_date(dados_t **right, dados_t **left, int *flag, settings_t* anosemana)
 {
     dados_t *aux;
-
 
     if ((*right)->year_week != anosemana->restricao_date1)
     {
@@ -334,8 +378,26 @@ void restricao_dates(dados_t **right, dados_t **left, int *flag, settings_t* ano
         (*right) = aux;
     }
 }
-//--------------------------------------------------------------------------------------
 
+void menu_restricao(dados_t **right, dados_t **left, int *flag, settings_t* settings)
+{
+    if(settings->criterio_res == P_MIN)
+    {
+        restricao_min(right, left, flag, settings);
+    }
+    else if(settings->criterio_res == P_MAX)
+    {
+        restricao_max(right, left, flag, settings);
+    }
+    else if(settings->criterio_res == P_DATE)
+    {
+        restricao_date(right, left, flag, settings);
+    }
+    else if(settings->criterio_res == P_DATES)
+    {
+        restricao_dates(right, left, flag, settings);
+    }
+}
 
 dados_t *restricao_lista(dados_t *root, settings_t* anosemana)
 {
@@ -353,10 +415,7 @@ dados_t *restricao_lista(dados_t *root, settings_t* anosemana)
             right = head->next;
             while (right->next != NULL)
             {
-                //restricao_min(&right, &left, &flag, anosemana);
-                restricao_max(&right, &left, &flag, anosemana);
-                restricao_date(&right, &left, &flag, anosemana);
-                restricao_dates(&right, &left, &flag, anosemana);
+                menu_restricao(&right, &left, &flag, anosemana);
                 left = right;
                 if (right->next != NULL)
                     right = right->next;
@@ -366,6 +425,7 @@ dados_t *restricao_lista(dados_t *root, settings_t* anosemana)
     root = head->next;
     return root;
 }
+//--------------------------------------------------------------------------------------
 
 /** \brief selecionar, para cada pais, a semana com mais infetados
  *
@@ -530,36 +590,7 @@ dados_t *selecao_lista(dados_t *root)
     root = head->next;
     return root;
 }
-
-dados_t *ordenar_lista(dados_t *root, settings_t *anosemana)
-{
-    int flag = 1;
-    dados_t *left, *right, *head, aux;
-
-    head = &aux;
-    head = root;
-    if (root != NULL && root->next != NULL)
-    {
-        while (flag)
-        {
-            flag = 0;
-            left = head;
-            right = head->next;
-            while (right->next != NULL)
-            {
-                ordenacao_pop(&right, &left, &flag);
-                //ordenacao_alfa(&right, &left, &flag);
-
-                left = right;
-                if (right->next != NULL)
-                    right = right->next;
-            }
-        }
-    }
-    root = head->next;
-    return root;
-}
-
+//----------------------------------------------------------------------------------
 void imprime_lista(lista_t *lista)
 {
     dados_t *curr = lista->first;
@@ -571,13 +602,12 @@ void imprime_lista(lista_t *lista)
     }
 }
 
-void cria_ficheiro(dados_t *root)
+void cria_ficheiro(lista_t *root, settings_t *settings)
 {
     FILE *fp;
-    dados_t *curr;
-    fp = fopen("teste.csv", "w");
+    dados_t *curr = root->first;
+    fp = fopen(settings->criterio_write, settings->tipo_escrita);
 
-    curr = root;
     while (curr->next != NULL)
     {
         fprintf(fp, "%s, %s, %s, %d, %s, %d, %d-%d, %f, %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,
@@ -589,7 +619,6 @@ void cria_ficheiro(dados_t *root)
 
 void apagar_elemento_lista(lista_t *lista, dados_t *elemento)
 {
-
     if (elemento->prev == NULL)
     {
         lista->first = elemento->next;
@@ -681,25 +710,11 @@ void selecionar(settings_t *settings, lista_t *lista)
 void erros_ficheiro(lista_t *lista)
 {
     dados_t *head = lista->first;
+    int i;
 
     while (head != NULL)
     {
-        if(head->population < 0)
-        {
-            printf("populacao impossivel");
-            exit(-1);
-        }
-        else if(head->cumulative_count < 0)
-        {
-            printf("valor impossivel");
-            exit(-1);
-        }
-        else if(head->rate_14_day < 0)
-        {
-            printf("valor impossivel");
-            exit(-1);
-        }
-        else if(head->weekly_count < 0)
+        if(head->population < 0 || head->cumulative_count < 0 || head->rate_14_day < 0 || head->weekly_count < 0)
         {
             printf("valor impossivel");
             exit(-1);
@@ -709,9 +724,45 @@ void erros_ficheiro(lista_t *lista)
             printf("valor impossivel");
             exit(-1);
         }
-
+        for(i = 0; i <= 9; i++)
+        {
+            if(strchr(head->country, i) == 0 || strchr(head->continent, i) == 0 || strchr(head->country_code, i) == 0 || strchr(head->indicator, i) == 0)
+            {
+                printf("valor impossivel");
+                exit(-1);
+            }
+        }
         head = head->next;
     }
+}
+//esta a alterar o nome do ficheiro smr
+settings_t *verifica_tipo_ficheiro(settings_t *settings)
+{
+    char *token, *file, *write;
+    file = settings->criterio_file;
+    write = settings->criterio_write;
+
+    token = strtok(file, ".");
+    token = strtok(NULL, ".");
+    if(strcmp(token, "csv") == 0)
+    {
+        settings->tipo_ficheiro = "r";
+    }
+    else if(strcmp(token, "dat") == 0)
+    {
+        settings->tipo_ficheiro = "rb";
+    }
+    token = strtok(write, ".");
+    token = strtok(NULL, ".");
+    if(strcmp(token, "csv") == 0)
+    {
+        settings->tipo_escrita = "r";
+    }
+    else if(strcmp(token, "dat") == 0)
+    {
+        settings->tipo_escrita = "rb";
+    }
+    return settings;
 }
 
 void utilizacao()
@@ -833,24 +884,30 @@ int main(int argc, char *argv[])
             break;
         case 'i':
             sscanf(optarg, "%s", criterio_FILE);
+            settings->criterio_file = malloc(sizeof(char) * (strlen(criterio_FILE) + 1));
+            strcpy(settings->criterio_file, criterio_FILE);
             break;
         case 'o':
             sscanf(optarg, "%s", criterio_WRITE);
+            settings->criterio_write = malloc(sizeof(char) * (strlen(criterio_WRITE) + 1));
+            strcpy(settings->criterio_write, criterio_WRITE);
             break;
         default:
             utilizacao(argv[0]);
             return EXIT_FAILURE;
-            break;
         }
     }
+    //nao funciona por causa do verifica_tipo_ficheiro
+    settings = verifica_tipo_ficheiro(settings);
 
-    lista_t *root_principal = ler_ficheiro();
+    lista_t *root_principal = ler_ficheiro(settings);
     if (settings->criterio_sel != D_NONE)
         selecionar(settings, root_principal);
+    //erros_ficheiro(root_principal);
     //root_principal = selecao_lista(root_principal);
-    //root_principal = ordenar_lista(root_principal, settings);
     //root_principal = restricao_lista(root_principal, settings);
-    cria_ficheiro(root_principal);
+    //root_principal = ordenar_lista(root_principal, settings);
+    cria_ficheiro(root_principal, settings);
     imprime_lista(root_principal);
     liberta_lista(root_principal);
     return 0;
