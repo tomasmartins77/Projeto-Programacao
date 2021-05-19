@@ -60,6 +60,7 @@ enum selecao
 };
 enum restricao
 {
+    P_NONE,
     P_MIN,
     P_MAX,
     P_DATE,
@@ -743,23 +744,21 @@ void erros_ficheiro(lista_t *lista)
 
 settings_t *verifica_tipo_ficheiro(settings_t *settings)
 {
-    char *file, *write;
-    file = strdup(settings->criterio_file);
-    write = strdup(settings->criterio_write);
-
-    if(strstr(file, "csv") == 0)
+    char csv[4] = "csv";
+    char dat[4] = "dat";
+    if(strstr(settings->criterio_file, csv) == 0)
     {
         settings->tipo_ficheiro = "r";
     }
-    else if(strstr(file, "dat") == 0)
+    else if(strstr(settings->criterio_file, dat) == 0)
     {
         settings->tipo_ficheiro = "rb";
     }
-    if(strstr(write, "csv") == 0)
+    if(strstr(settings->criterio_write, csv) == 0)
     {
         settings->tipo_escrita = "w";
     }
-    else if(strstr(write, "dat") == 0)
+    else if(strstr(settings->criterio_write, dat) == 0)
     {
         settings->tipo_escrita = "wb";
     }
@@ -794,7 +793,7 @@ int main(int argc, char *argv[])
     settings->criterio_leitura = L_ALL;
     settings->criterio_ord = S_ALFA;
     settings->criterio_sel = D_NONE;
-    settings->criterio_res = D_NONE;
+    settings->criterio_res = P_NONE;
 
     while ((opt = getopt(argc, argv, "L:S:D:P:i:o:")) != -1)
     {
@@ -906,6 +905,7 @@ int main(int argc, char *argv[])
         selecionar(settings, root_principal);
     //erros_ficheiro(root_principal);
     //root_principal = selecao_lista(root_principal);
+    //if(settings->criterio_res != P_NONE)
     //root_principal = restricao_lista(root_principal, settings);
     //root_principal = ordenar_lista(root_principal, settings);
     cria_ficheiro(root_principal, settings);
