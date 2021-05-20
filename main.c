@@ -84,15 +84,37 @@ typedef struct settings
     char *tipo_escrita;          //tipo de ficheiro a escrever(.csv ou .dat)
 } settings_t;
 
-//headers
-lista_t *ler_ficheiro();
+//headers para o .h?
+lista_t *cria_lista();
+void inserir_elemento_final(lista_t *lista, dados_t *item);
+lista_t *ler_ficheiro(settings_t *settings);
 dados_t *ler_linha(char *letra);
 void inserir_dados(dados_t *dados, char *inicio_coluna, int coluna);
 yearWeek_t *parseYearWeek(char *dados);
-lista_t *cria_lista();
-void inserir_elemento_final(lista_t *lista, dados_t *item);
-void destruir_dados(dados_t *dados);
+void troca_datas(settings_t** datas);
+settings_t *verifica_datas(settings_t *datas);
+dados_t *troca(dados_t *left, dados_t *right);
+dados_t *remove_do_inicio(dados_t *headlist);
+void ordenacao_pop(dados_t **right, dados_t **left, int *flag);
+void ordenacao_alfa(dados_t **right, dados_t **left, int *flag);
+void menu_ordenacao(dados_t **right, dados_t **left, int *flag, settings_t *settings);
+dados_t *ordenar_lista(dados_t *root, settings_t *anosemana);
+void restricao_min(dados_t **right, dados_t **left, int *flag, settings_t *settings);
+void restricao_max(dados_t **right, dados_t **left, int *flag, settings_t *settings);
+void restricao_date(dados_t **right, dados_t **left, int *flag, settings_t *anosemana);
+void restricao_dates(dados_t **right, dados_t **left, int *flag, settings_t *anosemana);
+void menu_restricao(dados_t **right, dados_t **left, int *flag, settings_t *settings);
+dados_t *restricao_lista(dados_t *root, settings_t *anosemana);
 int selecao_inf(dados_t *atual, dados_t *comparacao);
+void cria_ficheiro(lista_t *root, settings_t *settings);
+void apagar_elemento_lista(lista_t *lista, dados_t *elemento);
+void liberta_lista(lista_t *lista);
+void destruir_dados(dados_t *dados);
+int criterio_selecao(settings_t *settings, dados_t *atual, dados_t *comparacao);
+void selecionar(settings_t *settings, lista_t *lista);
+void erros_ficheiro(lista_t *lista);
+settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario);
+void utilizacao();
 
 lista_t *cria_lista()
 {
@@ -142,8 +164,23 @@ lista_t *ler_ficheiro(settings_t *settings)
             linhas++;
             continue;
         }
-        dados_t *item = ler_linha(buffer);
-        inserir_elemento_final(lista, item);
+        if(settings->criterio_leitura == L_ALL)
+        {
+            dados_t *item = ler_linha(buffer);
+            inserir_elemento_final(lista, item);
+        }
+        else
+        {
+            if(strstr(buffer, settings->leitura_continente) != 0)
+            {
+                dados_t *item = ler_linha(buffer);
+                inserir_elemento_final(lista, item);
+            }
+            else
+            {
+                continue;
+            }
+        }
     }
 
     fclose(ficheiro);
@@ -229,22 +266,26 @@ yearWeek_t *parseYearWeek(char *dados)
     return yearWeek;
 }
 
-settings_t *trocadatas(settings_t *datas)
+void troca_datas(settings_t** datas)
 {
-    settings_t *aux = NULL;
+    settings_t *aux = malloc(sizeof(settings_t));
+    (*datas)->restricao_date1 = aux->restricao_date1;
+    (*datas)->restricao_date1 = (*datas)->restricao_date2;
+    (*datas)->restricao_date2 = aux->restricao_date1;
+    free(aux);
+}
+
+settings_t *verifica_datas(settings_t *datas)
+{
     if (datas->restricao_date1->year < datas->restricao_date2->year)
     {
-        datas->restricao_date1 = aux->restricao_date1;
-        datas->restricao_date1 = datas->restricao_date2;
-        datas->restricao_date2 = aux->restricao_date1;
+        troca_datas(&datas);
     }
     else if (datas->restricao_date1->year == datas->restricao_date2->year)
     {
         if (datas->restricao_date1->week < datas->restricao_date2->week)
         {
-            datas->restricao_date1 = aux->restricao_date1;
-            datas->restricao_date1 = datas->restricao_date2;
-            datas->restricao_date2 = aux->restricao_date1;
+            troca_datas(&datas);
         }
     }
     return datas;
@@ -292,6 +333,19 @@ void ordenacao_alfa(dados_t **right, dados_t **left, int *flag)
     }
 }
 
+void menu_ordenacao(dados_t **right, dados_t **left, int *flag, settings_t *settings)
+{
+    if (settings->criterio_ord == S_ALFA)
+    {
+        ordenacao_alfa(right, left, flag);
+    }
+    else if (settings->criterio_ord == S_POP)
+    {
+        ordenacao_pop(right, left, flag);
+    }
+//elseif(...)
+}
+
 dados_t *ordenar_lista(dados_t *root, settings_t *anosemana)
 {
     int flag = 1;
@@ -308,8 +362,7 @@ dados_t *ordenar_lista(dados_t *root, settings_t *anosemana)
             right = head->next;
             while (right->next != NULL)
             {
-                ordenacao_pop(&right, &left, &flag);
-                //ordenacao_alfa(&right, &left, &flag);
+                menu_ordenacao(&right, &left, &flag, anosemana);
 
                 left = right;
                 if (right->next != NULL)
@@ -369,7 +422,7 @@ void restricao_dates(dados_t **right, dados_t **left, int *flag, settings_t *ano
 {
     dados_t *aux;
 
-    anosemana = trocadatas(anosemana);
+    anosemana = verifica_datas(anosemana);
 
     if ((*right)->year_week > anosemana->restricao_date1 && (*right)->year_week < anosemana->restricao_date2)
     {
@@ -479,7 +532,7 @@ int selecao_inf(dados_t *atual, dados_t *comparacao)
             return 2;
     }
 }
-
+/*
 void selecao_dea(dados_t **right, dados_t **left, int *flag)
 {
     dados_t *aux;
@@ -607,7 +660,7 @@ dados_t *selecao_lista(dados_t *root)
     }
     root = head->next;
     return root;
-}
+}*/
 //----------------------------------------------------------------------------------
 void imprime_lista(lista_t *lista)
 {
@@ -630,7 +683,10 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
         printf("Erro a criar ficheiro");
         exit(EXIT_FAILURE);
     }
-
+    if(strcmp(settings->tipo_escrita, "w") != 0)
+    {
+        fprintf(fp, "country,country_code,continent,population,indicator,weekly_count,year_week,rate_14_day,cumulative_count\n");
+    }
     while (curr->next != NULL)
     {
         fprintf(fp, "%s, %s, %s, %d, %s, %d, %d-%d, %f, %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,
@@ -650,7 +706,6 @@ void apagar_elemento_lista(lista_t *lista, dados_t *elemento)
     {
         elemento->prev->next = elemento->next;
     }
-
     if (elemento->next == NULL)
     {
         lista->last = elemento->prev;
@@ -759,7 +814,7 @@ void erros_ficheiro(lista_t *lista)
     }
 }
 
-settings_t *verifica_tipo_ficheiro(settings_t *settings)
+settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario)
 {
     char csv[4] = "csv";
     char dat[4] = "dat";
@@ -770,6 +825,7 @@ settings_t *verifica_tipo_ficheiro(settings_t *settings)
     else if (strstr(settings->criterio_file, dat) == 0)
     {
         settings->tipo_ficheiro = "rb";
+        (*binario) = 1;
     }
     if (strstr(settings->criterio_write, csv) == 0)
     {
@@ -797,7 +853,7 @@ void utilizacao()
 int main(int argc, char *argv[])
 {
     settings_t *settings = malloc(sizeof(settings_t));
-    int opt;
+    int opt, binario = 0;
     opterr = 0;
     char yearweek[8], yearweek2[8];
     char criterio_L[20];
@@ -915,16 +971,19 @@ int main(int argc, char *argv[])
         }
     }
 
-    settings = verifica_tipo_ficheiro(settings);
+    settings = verifica_tipo_ficheiro(settings, &binario);
 
     lista_t *root_principal = ler_ficheiro(settings);
-    if (settings->criterio_sel != D_NONE)
-        selecionar(settings, root_principal);
     //erros_ficheiro(root_principal);
-    //root_principal = selecao_lista(root_principal);
-    //if(settings->criterio_res != P_NONE)
-    //root_principal = restricao_lista(root_principal, settings);
-    //root_principal = ordenar_lista(root_principal, settings);
+    if(binario == 0)
+    {
+        //if (settings->criterio_sel != D_NONE)
+        //  selecionar(settings, root_principal);
+        //root_principal = selecao_lista(root_principal);
+        //if(settings->criterio_res != P_NONE)
+        //root_principal = restricao_lista(root_principal, settings);
+        //root_principal = ordenar_lista(root_principal, settings);
+    }
     cria_ficheiro(root_principal, settings);
     imprime_lista(root_principal);
     liberta_lista(root_principal);
