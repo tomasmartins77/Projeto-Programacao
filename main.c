@@ -677,25 +677,22 @@ void selecionar(settings_t *settings, lista_t *lista)
 void erros_ficheiro(lista_t *lista)
 {
     dados_t *head = lista->first;
-    int i;
+    char i;
 
     while (head != NULL)
     {
         if (head->population < 0 || head->cumulative_count < 0 || head->rate_14_day < 0 || head->weekly_count < 0)
         {
-            printf("valor impossivel");
             exit(-1);
         }
-        else if (head->year_week->week <= 0 && head->year_week->week > 52 && head->year_week->year < 0)
+        else if (head->year_week->week <= 0 || head->year_week->week > 53 || head->year_week->year < 0)
         {
-            printf("valor impossivel");
             exit(-1);
         }
-        for (i = 0; i <= 9; i++)
+        for (i = '0'; i <= '9'; i++)
         {
-            if (strchr(head->country, i) == 0 || strchr(head->continent, i) == 0 || strchr(head->country_code, i) == 0 || strchr(head->indicator, i) == 0)
+            if (strchr(head->country, i) != NULL || strchr(head->continent, i) != NULL || strchr(head->country_code, i) != NULL || strchr(head->indicator, i) != NULL)
             {
-                printf("valor impossivel");
                 exit(-1);
             }
         }
@@ -861,9 +858,8 @@ int main(int argc, char *argv[])
     }
 
     settings = verifica_tipo_ficheiro(settings, &binario);
-
     lista_t *root_principal = ler_ficheiro(settings);
-    //erros_ficheiro(root_principal);
+    erros_ficheiro(root_principal);
     if(binario == 0)
     {
         //if (settings->criterio_sel != D_NONE)
