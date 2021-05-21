@@ -5,6 +5,11 @@
 #include <unistd.h>
 #include "headers.h"
 
+/** \brief cria a lista principal
+ *
+ * \return lista_t* lista vazia
+ *
+ */
 lista_t *cria_lista()
 {
     lista_t *novaLista = malloc(sizeof(lista_t));
@@ -15,6 +20,13 @@ lista_t *cria_lista()
     return novaLista;
 }
 
+/** \brief insere um node no final da lista
+ *
+ * \param lista lista_t* lista na qual vamos adicionar o elemento
+ * \param item dados_t* elemento a adicionar na lista
+ * \return void
+ *
+ */
 void inserir_elemento_final(lista_t *lista, dados_t *item)
 {
     item->next = NULL;        //inicia o next como null porque é o ultimo elemento
@@ -31,43 +43,50 @@ void inserir_elemento_final(lista_t *lista, dados_t *item)
     lista->last = item;
 }
 
+/** \brief funcao que le o ficheiro e o coloca por completo numa lista, no caso de se ter
+ *         escolhido a opcao -L "continente", cria a lista apenas para esse continente
+ *
+ * \param settings settings_t* definicoes para saber se a lista é ALL ou "continente"
+ * \return lista_t* lista criada de acordo com os argumentos da linha de comando
+ *
+ */
 lista_t *ler_ficheiro(settings_t *settings)
 {
     FILE *ficheiro;
     char buffer[MAX_PALAVRAS_LINHAS];
-    lista_t *lista = cria_lista();
+    lista_t *lista = cria_lista(); //cria lista vazia
 
-    ficheiro = fopen(settings->criterio_file, settings->tipo_ficheiro);
+    ficheiro = fopen(settings->criterio_file, settings->tipo_ficheiro); // abre o ficheiro
 
-    if (ficheiro == NULL)
+    if (ficheiro == NULL) // verifica se ouve algum erro na abertura do ficheiro
     {
         printf("Erro a abrir ficheiro\n");
         exit(EXIT_FAILURE);
     }
 
-    int linhas = 0;
+    int linhas = 0; // contador de linhas, para nao ler a primeira, pois e o cabecalho
     while (fgets(buffer, MAX_PALAVRAS_LINHAS, ficheiro) != NULL)
     {
-        if (linhas == 0)
+        if (linhas == 0) 
         {
             linhas++;
-            continue;
+            continue; // primeira linha queremos ignorar
         }
-        if(settings->criterio_leitura == L_ALL)
+        if(settings->criterio_leitura == L_ALL) // se for ALL queremos uma lista do ficheiro completo
         {
             dados_t *item = ler_linha(buffer);
             inserir_elemento_final(lista, item);
         }
         else
         {
-            if(strstr(buffer, settings->leitura_continente) != 0)
+            if(strstr(buffer, settings->leitura_continente) != 0) // so queremos lista com um determinado continente
             {
                 dados_t *item = ler_linha(buffer);
                 inserir_elemento_final(lista, item);
             }
             else
             {
-                continue;
+                continue; // se nao for o continente passa para a linha seguinte
             }
         }
     }
@@ -76,7 +95,12 @@ lista_t *ler_ficheiro(settings_t *settings)
     return lista;
 }
 
-//passar da string para o elemento da lista
+/** \brief le a linha, divide-a em varias strings e coloca-as nas diferentes variaveis de um node
+ *
+ * \param letra char* linha lida do ficheiro
+ * \return dados_t* node com os elementos da linha nas suas variaveis
+ *
+ */
 dados_t *ler_linha(char *letra)
 {
     char *inicio_coluna = letra;
@@ -87,7 +111,7 @@ dados_t *ler_linha(char *letra)
 
     while (*letra != '\0' && *letra != '\n')
     {
-        if (*letra == ',')
+        if (*letra == ',') // troca as "," por \0 para melhor divisao de elementos
         {
             *letra = '\0';
 
@@ -104,6 +128,14 @@ dados_t *ler_linha(char *letra)
     return dados;
 }
 
+/** \brief insere um determinado dado na variavel correta da lista
+ *
+ * \param dados dados_t* lista para onde vao os dados do ficheiro
+ * \param inicio_coluna char* palavra que vai entrar em cada variavel
+ * \param coluna int indica em que coluna estamos de modo a colocar o valor na variavel correta
+ * \return void
+ *
+ */
 void inserir_dados(dados_t *dados, char *inicio_coluna, int coluna)
 {
     switch (coluna)
@@ -140,8 +172,8 @@ void inserir_dados(dados_t *dados, char *inicio_coluna, int coluna)
 
 /** \brief  converte o input dado (string) num int para facilitar a comparacao de datas
  *
- * \param data *char
- * \return yearWeek_t
+ * \param dados *char string com a data
+ * \return yearWeek_t data convertida em dois ints
  *
  */
 yearWeek_t *parseYearWeek(char *dados)
@@ -155,31 +187,50 @@ yearWeek_t *parseYearWeek(char *dados)
     return yearWeek;
 }
 
-void troca_datas(settings_t** datas)
+/** \brief troca as datas
+ *
+ * \param datas settings_t* data a ser trocada
+ * \return settings_t* datas data trocada
+ *
+ */
+void troca_datas(settings_t* datas)
 {
-    settings_t *aux = malloc(sizeof(settings_t));
-    (*datas)->restricao_date1 = aux->restricao_date1;
-    (*datas)->restricao_date1 = (*datas)->restricao_date2;
-    (*datas)->restricao_date2 = aux->restricao_date1;
-    free(aux);
+    settings_t *aux = NULL;
+    datas->restricao_date1 = aux->restricao_date1;
+    datas->restricao_date1 = datas->restricao_date2;
+    datas->restricao_date2 = aux->restricao_date1;
+    return datas;
 }
 
+/** \brief verifica se a data precisa ser trocada
+ *
+ * \param datas settings_t* data a ser verificada
+ * \return settings_t* data trocada
+ *
+ */
 settings_t *verifica_datas(settings_t *datas)
 {
     if (datas->restricao_date1->year < datas->restricao_date2->year)
     {
-        troca_datas(&datas);
+        datas = troca_datas(datas);
     }
     else if (datas->restricao_date1->year == datas->restricao_date2->year)
     {
         if (datas->restricao_date1->week < datas->restricao_date2->week)
         {
-            troca_datas(&datas);
+            datas = troca_datas(datas);
         }
     }
     return datas;
 }
 
+/** \brief troca determinados nodes da lista
+ *
+ * \param left dados_t* 
+ * \param right dados_t*
+ * \return dados_t* nodes trocados
+ *
+ */
 dados_t *troca(dados_t *left, dados_t *right)
 {
     left->next = right->next;
@@ -187,6 +238,12 @@ dados_t *troca(dados_t *left, dados_t *right)
     return right;
 }
 
+/** \brief nao sei se vamos precisar desta funcao
+ *
+ * \param headlist dados_t*
+ * \return dados_t*
+ *
+ */
 dados_t *remove_do_inicio(dados_t *headlist)
 {
     if (headlist == NULL)
@@ -204,37 +261,70 @@ dados_t *remove_do_inicio(dados_t *headlist)
 }
 
 //-------------------------------------------------------------------------------------
+/** \brief ordena dois nodes de acordo com a populacao decrescente, se a populacao do node right for menor
+ *          que a do node right->next, trocam
+ *
+ * \param right dados_t**
+ * \param left dados_t**
+ * \param flag int* flag que mantem o loop a verificar a lista inteira
+ * \return void
+ *
+ */
 void ordenacao_pop(dados_t **right, dados_t **left, int *flag)
 {
-    if ((*right)->population < (*right)->next->population)
+    if ((*right)->population < (*right)->next->population) // se menor, troca
     {
         (*left)->next = troca((*right), (*right)->next);
         (*flag) = 1;
     }
 }
 
+/** \brief ordena a lista por ordem alfabetica
+ *
+ * \param right dados_t**
+ * \param left dados_t**
+ * \param flag int* flag que mantem o loop a verificar a lista inteira
+ * \return void
+ *
+ */
 void ordenacao_alfa(dados_t **right, dados_t **left, int *flag)
 {
-    if (strcmp((*right)->country, (*right)->next->country) > 0)
-    {
-        (*left)->next = troca((*right), (*right)->next);
+    if (strcmp((*right)->country, (*right)->next->country) > 0) // se > 0, o node right->next tem uma letra 
+    {                                                           // mais abaixo no alfabeto
+        (*left)->next = troca((*right), (*right)->next); // logo trocam
         (*flag) = 1;
     }
 }
 
+/** \brief menu que verifica qual a ordenacao escolhida
+ *
+ * \param right dados_t**
+ * \param left dados_t**
+ * \param flag int*
+ * \param settings settings_t* onde esta guardado o tipo de ordenacao
+ * \return void
+ *
+ */
 void menu_ordenacao(dados_t **right, dados_t **left, int *flag, settings_t *settings)
 {
-    if (settings->criterio_ord == S_ALFA)
+    if (settings->criterio_ord == S_ALFA) // ordenacao por ordem alfabetica
     {
         ordenacao_alfa(right, left, flag);
     }
-    else if (settings->criterio_ord == S_POP)
+    else if (settings->criterio_ord == S_POP) // ordenacao por populacao
     {
         ordenacao_pop(right, left, flag);
     }
 //elseif(...)
 }
 
+/** \brief ordena a lista inteira
+ *
+ * \param root dados_t*
+ * \param anosemana settings_t*
+ * \return dados_t*
+ *
+ */
 dados_t *ordenar_lista(dados_t *root, settings_t *anosemana)
 {
     int flag = 1;
@@ -264,6 +354,15 @@ dados_t *ordenar_lista(dados_t *root, settings_t *anosemana)
 }
 
 //--------------------------------------------------------------------------------------------
+/** \brief
+ *
+ * \param right dados_t**
+ * \param left dados_t**
+ * \param flag int*
+ * \param settings settings_t*
+ * \return void
+ *
+ */
 void restricao_min(dados_t **right, dados_t **left, int *flag, settings_t *settings)
 {
     dados_t *aux;
@@ -279,6 +378,15 @@ void restricao_min(dados_t **right, dados_t **left, int *flag, settings_t *setti
     }
 }
 
+/** \brief
+ *
+ * \param right dados_t**
+ * \param left dados_t**
+ * \param flag int*
+ * \param settings settings_t*
+ * \return void
+ *
+ */
 void restricao_max(dados_t **right, dados_t **left, int *flag, settings_t *settings)
 {
     dados_t *aux;
@@ -294,6 +402,15 @@ void restricao_max(dados_t **right, dados_t **left, int *flag, settings_t *setti
     }
 }
 
+/** \brief
+ *
+ * \param right dados_t**
+ * \param left dados_t**
+ * \param flag int*
+ * \param anosemana settings_t*
+ * \return void
+ *
+ */
 void restricao_date(dados_t **right, dados_t **left, int *flag, settings_t *anosemana)
 {
     dados_t *aux;
@@ -307,6 +424,15 @@ void restricao_date(dados_t **right, dados_t **left, int *flag, settings_t *anos
     }
 }
 
+/** \brief
+ *
+ * \param right dados_t**
+ * \param left dados_t**
+ * \param flag int*
+ * \param anosemana settings_t*
+ * \return void
+ *
+ */
 void restricao_dates(dados_t **right, dados_t **left, int *flag, settings_t *anosemana)
 {
     dados_t *aux;
@@ -322,6 +448,15 @@ void restricao_dates(dados_t **right, dados_t **left, int *flag, settings_t *ano
     }
 }
 
+/** \brief
+ *
+ * \param right dados_t**
+ * \param left dados_t**
+ * \param flag int*
+ * \param settings settings_t*
+ * \return void
+ *
+ */
 void menu_restricao(dados_t **right, dados_t **left, int *flag, settings_t *settings)
 {
     if (settings->criterio_res == P_MIN)
@@ -342,6 +477,13 @@ void menu_restricao(dados_t **right, dados_t **left, int *flag, settings_t *sett
     }
 }
 
+/** \brief
+ *
+ * \param root dados_t*
+ * \param anosemana settings_t*
+ * \return dados_t*
+ *
+ */
 dados_t *restricao_lista(dados_t *root, settings_t *anosemana)
 {
     int flag = 1;
@@ -562,6 +704,13 @@ void imprime_lista(lista_t *lista)
     }
 }
 //----------------------------------^^^^eliminar no final^^^^-------------------------------------------------
+/** \brief cria um ficheiro csv
+ *
+ * \param root lista_t* lista que vai criar o ficheiro
+ * \param settings settings_t* saber qual o nome do ficheiro
+ * \return void
+ *
+ */
 void cria_ficheiro(lista_t *root, settings_t *settings)
 {
     FILE *fp;
@@ -585,6 +734,13 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
     fclose(fp);
 }
 
+/** \brief apaga um certo elemento da lista
+ *
+ * \param lista lista_t*
+ * \param elemento dados_t*
+ * \return void
+ *
+ */
 void apagar_elemento_lista(lista_t *lista, dados_t *elemento)
 {
     if (elemento->prev == NULL)
@@ -606,12 +762,18 @@ void apagar_elemento_lista(lista_t *lista, dados_t *elemento)
     destruir_dados(elemento);
 }
 
+/** \brief liberta a lista da memoria
+ *
+ * \param lista lista_t*
+ * \return void
+ *
+ */
 void liberta_lista(lista_t *lista)
 {
     dados_t *curr;
     dados_t *next = lista->first;
 
-    while (next != NULL)
+    while (next != NULL) // loop que liberta linha a linha
     {
         curr = next;
         next = next->next;
@@ -620,20 +782,41 @@ void liberta_lista(lista_t *lista)
     free(lista);
 }
 
+/** \brief liberta um determinado node
+ *
+ * \param dados dados_t*
+ * \return void
+ *
+ */
 void destruir_dados(dados_t *dados)
 {
     free(dados->year_week);
     free(dados);
 }
 
+/** \brief menu que verifica qual a selecao a fazer
+ *
+ * \param settings settings_t* para saber qual o tipo de selecao
+ * \param atual dados_t*
+ * \param comparacao dados_t*
+ * \return int
+ *
+ */
 int criterio_selecao(settings_t *settings, dados_t *atual, dados_t *comparacao)
 {
-    if (settings->criterio_sel == D_INF)
+    if (settings->criterio_sel == D_INF) // selecao inf
         return selecao_inf(atual, comparacao);
     // else if (...)
     return 0;
 }
 
+/** \brief
+ *
+ * \param settings settings_t*
+ * \param lista lista_t*
+ * \return void
+ *
+ */
 void selecionar(settings_t *settings, lista_t *lista)
 {
     dados_t *el_atual = lista->first;
@@ -664,7 +847,6 @@ void selecionar(settings_t *settings, lista_t *lista)
                 aux_atual = aux_comparacao;
             }
         }
-
         if (criterio_selecao(settings, aux_atual, NULL) == 2)
         {
             if (aux_atual == el_atual)
@@ -674,6 +856,12 @@ void selecionar(settings_t *settings, lista_t *lista)
     }
 }
 
+/** \brief verifica se existe algum erro de escrita no ficheiro lido
+ *
+ * \param lista lista_t*
+ * \return void
+ *
+ */
 void erros_ficheiro(lista_t *lista)
 {
     dados_t *head = lista->first;
@@ -700,6 +888,13 @@ void erros_ficheiro(lista_t *lista)
     }
 }
 
+/** \brief verifica se o ficheiro e .dat ou .csv
+ *
+ * \param settings settings_t*
+ * \param binario int* flag para saber se o ficheiro e binario
+ * \return settings_t*
+ *
+ */
 settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario)
 {
     char csv[4] = "csv";
@@ -724,6 +919,11 @@ settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario)
     return settings;
 }
 
+/** \brief menu de utilizacao
+ *
+ * \return void
+ *
+ */
 void utilizacao()
 {
     printf("\t\tPROJETO FINAL\n\n");
@@ -754,38 +954,35 @@ int main(int argc, char *argv[])
     settings->criterio_sel = D_NONE;
     settings->criterio_res = P_NONE;
 
-    while ((opt = getopt(argc, argv, "L:S:D:P:i:o:")) != -1)
+    while ((opt = getopt(argc, argv, "L:S:D:P:i:o:")) != -1) // ve ate ao final da linha de comando
     {
         switch (opt)
         {
-        case 'L':
+        case 'L': // verifica se le o ficheiro inteiro ou apenas num certo continente
             sscanf(optarg, "%s", criterio_L);
             if (strcmp(criterio_L, "all") == 0)
-                settings->criterio_leitura = L_ALL;
+                settings->criterio_leitura = L_ALL; // ficheiro inteiro
             else
             {
                 settings->criterio_leitura = L_CONTINENTE;
                 settings->leitura_continente = malloc(sizeof(char) * (strlen(criterio_L) + 1));
-                strcpy(settings->leitura_continente, criterio_L);
+                strcpy(settings->leitura_continente, criterio_L); // continente especifico
             }
             break;
         case 'S':
             sscanf(optarg, "%s", criterio_S);
             if (strcmp(criterio_S, "alfa") == 0)
-                settings->criterio_ord = S_ALFA;
-
-            else if (strcmp(criterio_S, "pop") == 0)
+                settings->criterio_ord = S_ALFA; // ordenacao por ordem alfabetica
+            else if (strcmp(criterio_S, "pop") == 0) // ordenacao por populacao
                 settings->criterio_ord = S_POP;
-
-            else if (strcmp(criterio_S, "inf") == 0)
+            else if (strcmp(criterio_S, "inf") == 0) // ordenacao por ordem decrescente de casos numa determinada data
             {
                 settings->criterio_ord = S_INF;
                 strcpy(yearweek, argv[optind]);
                 optind++;
                 settings->ord_date = parseYearWeek(yearweek);
             }
-
-            else if (strcmp(criterio_S, "dea") == 0)
+            else if (strcmp(criterio_S, "dea") == 0) //ordenacao por ordem decrescente de mortes numa determinada data
             {
                 settings->criterio_ord = S_DEA;
                 strcpy(yearweek, argv[optind]);
@@ -793,44 +990,39 @@ int main(int argc, char *argv[])
                 settings->ord_date = parseYearWeek(yearweek);
             }
             break;
-        case 'D':
+        case 'D': // selecao
             sscanf(optarg, "%s", criterio_D);
-            if (strcmp(criterio_D, "inf") == 0)
+            if (strcmp(criterio_D, "inf") == 0) // semana com mais infetados
                 settings->criterio_sel = D_INF;
-
-            else if (strcmp(criterio_D, "dea") == 0)
+            else if (strcmp(criterio_D, "dea") == 0) // semana com mais mortes
                 settings->criterio_sel = D_DEA;
-
-            else if (strcmp(criterio_D, "racioinf") == 0)
+            else if (strcmp(criterio_D, "racioinf") == 0) // semana com maior racio de infetados
                 settings->criterio_sel = D_RACIOINF;
-
-            else if (strcmp(criterio_D, "raciodea") == 0)
+            else if (strcmp(criterio_D, "raciodea") == 0) // semana com maior racio de mortes
                 settings->criterio_sel = D_RACIODEA;
             break;
-        case 'P':
+        case 'P': // restricao
             sscanf(optarg, "%s", criterio_P);
-            if (strcmp(criterio_P, "min") == 0)
+            if (strcmp(criterio_P, "min") == 0) // apenas dados de países com mais de n mil habitantes
             {
                 settings->criterio_res = P_MIN;
                 settings->restricao_n = atoi(argv[optind]);
                 optind++;
             }
-
-            else if (strcmp(criterio_P, "max") == 0)
+            else if (strcmp(criterio_P, "max") == 0) // apenas dados de países com menos de n mil habitantes
             {
                 settings->criterio_res = P_MAX;
                 settings->restricao_n = atoi(argv[optind]);
                 optind++;
             }
-
-            else if (strcmp(criterio_P, "date") == 0)
+            else if (strcmp(criterio_P, "date") == 0) // apenas dados relativos à semana indicada
             {
                 settings->criterio_res = P_DATE;
                 strcpy(yearweek, argv[optind]);
                 optind++;
                 settings->restricao_date1 = parseYearWeek(yearweek);
             }
-            else if (strcmp(criterio_P, "dates") == 0)
+            else if (strcmp(criterio_P, "dates") == 0) // apenas dados entre as semanas indicadas
             {
                 settings->criterio_res = P_DATES;
                 strcpy(yearweek, argv[optind]);
@@ -841,12 +1033,12 @@ int main(int argc, char *argv[])
                 settings->restricao_date2 = parseYearWeek(yearweek2);
             }
             break;
-        case 'i':
+        case 'i': // leitura do ficheiro
             sscanf(optarg, "%s", criterio_FILE);
             settings->criterio_file = malloc(sizeof(char) * (strlen(criterio_FILE) + 1));
             strcpy(settings->criterio_file, criterio_FILE);
             break;
-        case 'o':
+        case 'o': // escrita do ficheiro
             sscanf(optarg, "%s", criterio_WRITE);
             settings->criterio_write = malloc(sizeof(char) * (strlen(criterio_WRITE) + 1));
             strcpy(settings->criterio_write, criterio_WRITE);
@@ -860,7 +1052,7 @@ int main(int argc, char *argv[])
     settings = verifica_tipo_ficheiro(settings, &binario);
     lista_t *root_principal = ler_ficheiro(settings);
     erros_ficheiro(root_principal);
-    if(binario == 0)
+    if(binario == 0)// nao e binario
     {
         //if (settings->criterio_sel != D_NONE)
         //  selecionar(settings, root_principal);
