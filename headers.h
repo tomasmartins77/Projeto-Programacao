@@ -72,7 +72,8 @@ typedef struct settings
     yearWeek_t *ord_date;
     enum selecao criterio_sel;   //-D
     enum restricao criterio_res; //-P
-    short restricao_n;           //numero de habitantes
+    int restricao_nmin;           //numero de habitantes
+    int restricao_nmax;
     yearWeek_t *restricao_date1; //data 1
     yearWeek_t *restricao_date2; //data 2
     char *criterio_file;         //nome do ficheiro a ler
@@ -87,20 +88,20 @@ lista_t *ler_ficheiro(settings_t *settings);
 dados_t *ler_linha(char *letra);
 void inserir_dados(dados_t *dados, char *inicio_coluna, int coluna);
 yearWeek_t *parseYearWeek(char *dados);
-void troca_datas(settings_t** datas);
+settings_t *troca_datas(settings_t* datas);
 settings_t *verifica_datas(settings_t *datas);
 dados_t *troca(dados_t *left, dados_t *right);
 dados_t *remove_do_inicio(dados_t *headlist);
 void ordenacao_pop(dados_t **right, dados_t **left, int *flag);
 void ordenacao_alfa(dados_t **right, dados_t **left, int *flag);
 void menu_ordenacao(dados_t **right, dados_t **left, int *flag, settings_t *settings);
-dados_t *ordenar_lista(dados_t *root, settings_t *anosemana);
+lista_t *ordenar_lista(lista_t *root, settings_t *anosemana);
 void restricao_min(dados_t **right, dados_t **left, int *flag, settings_t *settings);
 void restricao_max(dados_t **right, dados_t **left, int *flag, settings_t *settings);
 void restricao_date(dados_t **right, dados_t **left, int *flag, settings_t *anosemana);
 void restricao_dates(dados_t **right, dados_t **left, int *flag, settings_t *anosemana);
 void menu_restricao(dados_t **right, dados_t **left, int *flag, settings_t *settings);
-dados_t *restricao_lista(dados_t *root, settings_t *anosemana);
+lista_t *restricao_lista(lista_t *root, settings_t *anosemana);
 int selecao_inf(dados_t *atual, dados_t *comparacao);
 void cria_ficheiro(lista_t *root, settings_t *settings);
 void apagar_elemento_lista(lista_t *lista, dados_t *elemento);

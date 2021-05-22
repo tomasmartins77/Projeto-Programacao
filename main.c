@@ -67,7 +67,7 @@ lista_t *ler_ficheiro(settings_t *settings)
     int linhas = 0; // contador de linhas, para nao ler a primeira, pois e o cabecalho
     while (fgets(buffer, MAX_PALAVRAS_LINHAS, ficheiro) != NULL)
     {
-        if (linhas == 0) 
+        if (linhas == 0)
         {
             linhas++;
             continue; // primeira linha queremos ignorar
@@ -193,7 +193,7 @@ yearWeek_t *parseYearWeek(char *dados)
  * \return settings_t* datas data trocada
  *
  */
-void troca_datas(settings_t* datas)
+settings_t *troca_datas(settings_t* datas)
 {
     settings_t *aux = NULL;
     datas->restricao_date1 = aux->restricao_date1;
@@ -226,7 +226,7 @@ settings_t *verifica_datas(settings_t *datas)
 
 /** \brief troca determinados nodes da lista
  *
- * \param left dados_t* 
+ * \param left dados_t*
  * \param right dados_t*
  * \return dados_t* nodes trocados
  *
@@ -289,9 +289,10 @@ void ordenacao_pop(dados_t **right, dados_t **left, int *flag)
  */
 void ordenacao_alfa(dados_t **right, dados_t **left, int *flag)
 {
-    if (strcmp((*right)->country, (*right)->next->country) > 0) // se > 0, o node right->next tem uma letra 
-    {                                                           // mais abaixo no alfabeto
-        (*left)->next = troca((*right), (*right)->next); // logo trocam
+    if (strcmp((*right)->country, (*right)->next->country) > 0) // se > 0, o node right->next tem uma letra
+    {
+        // mais abaixo no alfabeto
+        (*left)->next = troca((*right), (*right)->next);
         (*flag) = 1;
     }
 }
@@ -325,14 +326,14 @@ void menu_ordenacao(dados_t **right, dados_t **left, int *flag, settings_t *sett
  * \return dados_t*
  *
  */
-dados_t *ordenar_lista(dados_t *root, settings_t *anosemana)
+lista_t *ordenar_lista(lista_t *root, settings_t *settings)
 {
     int flag = 1;
     dados_t *left, *right, *head, aux;
 
     head = &aux;
-    head = root;
-    if (root != NULL && root->next != NULL)
+    head = root->first;
+    if (root != NULL && root->first->next != NULL)
     {
         while (flag)
         {
@@ -341,7 +342,11 @@ dados_t *ordenar_lista(dados_t *root, settings_t *anosemana)
             right = head->next;
             while (right->next != NULL)
             {
-                menu_ordenacao(&right, &left, &flag, anosemana);
+                //menu_ordenacao(&right, &left, &flag, anosemana);
+                if (settings->criterio_ord == S_ALFA)
+                    ordenacao_alfa(&right, &left, &flag);
+                else if (settings->criterio_ord == S_POP)
+                    ordenacao_pop(&right, &left, &flag);
 
                 left = right;
                 if (right->next != NULL)
@@ -349,34 +354,11 @@ dados_t *ordenar_lista(dados_t *root, settings_t *anosemana)
             }
         }
     }
-    root = head->next;
+    root->first = head->next;
     return root;
 }
 
 //--------------------------------------------------------------------------------------------
-/** \brief
- *
- * \param right dados_t**
- * \param left dados_t**
- * \param flag int*
- * \param settings settings_t*
- * \return void
- *
- */
-void restricao_min(dados_t **right, dados_t **left, int *flag, settings_t *settings)
-{
-    dados_t *aux;
-
-    settings_t *aux_set = settings;
-    aux_set->restricao_n *= 1000;
-    if ((*right)->population < aux_set->restricao_n)
-    {
-        aux = (*right);
-        (*left)->next = remove_do_inicio(aux);
-        (*flag) = 1;
-        (*right) = aux;
-    }
-}
 
 /** \brief
  *
@@ -391,9 +373,7 @@ void restricao_max(dados_t **right, dados_t **left, int *flag, settings_t *setti
 {
     dados_t *aux;
 
-    settings_t *aux_set = settings;
-    aux_set->restricao_n *= 1000;
-    if ((*right)->population > aux_set->restricao_n)
+    if ((*right)->population > aux_set->restricao_nmax)
     {
         aux = (*right);
         (*left)->next = remove_do_inicio(aux);
@@ -479,35 +459,58 @@ void menu_restricao(dados_t **right, dados_t **left, int *flag, settings_t *sett
 
 /** \brief
  *
+ * \param right dados_t**
+ * \param left dados_t**
+ * \param flag int*
+ * \param settings settings_t*
+ * \return void
+ *
+ */
+void restricao_min(dados_t **atual, int *flag, settings_t *settings)
+{
+    if ((*atual)->population < settings->restricao_nmin)
+    {
+        apagar_elemento_lista(atual);
+        (*flag) = 1;
+    }
+}
+
+/** \brief
+ *
  * \param root dados_t*
  * \param anosemana settings_t*
  * \return dados_t*
  *
  */
-dados_t *restricao_lista(dados_t *root, settings_t *anosemana)
+
+lista_t *restricao_lista(lista_t *root, settings_t *anosemana)
 {
     int flag = 1;
-    dados_t *left, *right, *head, aux;
+    dados_t *temp, *head, aux;
+
+    aux_set->restricao_nmin *= 1000;
+    aux_set->restricao_nmax *= 1000;
 
     head = &aux;
-    head = root;
-    if (root != NULL && root->next != NULL)
+    head = root->first;
+    if (root != NULL && root->first->next != NULL)
     {
         while (flag)
         {
             flag = 0;
-            left = head;
-            right = head->next;
-            while (right->next != NULL)
+            temp = head;
+            while (temp->next != NULL)
             {
-                menu_restricao(&right, &left, &flag, anosemana);
-                left = right;
-                if (right->next != NULL)
-                    right = right->next;
+                //menu_restricao(&right, &left, &flag, anosemana);
+
+                restricao_min(&temp, &flag, settings);
+
+                if (temp->next != NULL)
+                    temp = temp->next;
             }
         }
     }
-    root = head->next;
+    root->first = head->next;
     return root;
 }
 //--------------------------------------------------------------------------------------
@@ -725,7 +728,7 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
     {
         fprintf(fp, "country,country_code,continent,population,indicator,weekly_count,year_week,rate_14_day,cumulative_count\n");
     }
-    while (curr->next != NULL)
+    while (curr != NULL)
     {
         fprintf(fp, "%s, %s, %s, %d, %s, %d, %d-%d, %f, %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,
                 curr->weekly_count, curr->year_week->year, curr->year_week->week, curr->rate_14_day, curr->cumulative_count);
@@ -899,20 +902,20 @@ settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario)
 {
     char csv[4] = "csv";
     char dat[4] = "dat";
-    if (strstr(settings->criterio_file, csv) == 0)
+    if (strstr(settings->criterio_file, csv) != 0)
     {
         settings->tipo_ficheiro = "r";
     }
-    else if (strstr(settings->criterio_file, dat) == 0)
+    else if (strstr(settings->criterio_file, dat) != 0)
     {
         settings->tipo_ficheiro = "rb";
         (*binario) = 1;
     }
-    if (strstr(settings->criterio_write, csv) == 0)
+    if (strstr(settings->criterio_write, csv) != 0)
     {
         settings->tipo_escrita = "w";
     }
-    else if (strstr(settings->criterio_write, dat) == 0)
+    else if (strstr(settings->criterio_write, dat) != 0)
     {
         settings->tipo_escrita = "wb";
     }
@@ -1006,13 +1009,13 @@ int main(int argc, char *argv[])
             if (strcmp(criterio_P, "min") == 0) // apenas dados de países com mais de n mil habitantes
             {
                 settings->criterio_res = P_MIN;
-                settings->restricao_n = atoi(argv[optind]);
+                settings->restricao_nmin = atoi(argv[optind]);
                 optind++;
             }
             else if (strcmp(criterio_P, "max") == 0) // apenas dados de países com menos de n mil habitantes
             {
                 settings->criterio_res = P_MAX;
-                settings->restricao_n = atoi(argv[optind]);
+                settings->restricao_nmax = atoi(argv[optind]);
                 optind++;
             }
             else if (strcmp(criterio_P, "date") == 0) // apenas dados relativos à semana indicada
@@ -1059,7 +1062,7 @@ int main(int argc, char *argv[])
         //root_principal = selecao_lista(root_principal);
         //if(settings->criterio_res != P_NONE)
         //root_principal = restricao_lista(root_principal, settings);
-        //root_principal = ordenar_lista(root_principal, settings);
+        root_principal = ordenar_lista(root_principal, settings);
     }
     cria_ficheiro(root_principal, settings);
     imprime_lista(root_principal);
