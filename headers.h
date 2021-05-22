@@ -9,8 +9,8 @@
 
 typedef struct yearWeek
 {
-    short year;
-    short week;
+    int year;
+    int week;
 } yearWeek_t;
 
 typedef struct dados
@@ -96,10 +96,10 @@ void ordenacao_pop(dados_t **right, dados_t **left, int *flag);
 void ordenacao_alfa(dados_t **right, dados_t **left, int *flag);
 void menu_ordenacao(dados_t **right, dados_t **left, int *flag, settings_t *settings);
 lista_t *ordenar_lista(lista_t *root, settings_t *anosemana);
-void restricao_min(dados_t **right, dados_t **left, int *flag, settings_t *settings);
-void restricao_max(dados_t **right, dados_t **left, int *flag, settings_t *settings);
-void restricao_date(dados_t **right, dados_t **left, int *flag, settings_t *anosemana);
-void restricao_dates(dados_t **right, dados_t **left, int *flag, settings_t *anosemana);
+void restricao_min(lista_t *lista, dados_t **head, settings_t *settings);
+void restricao_max(lista_t *lista, dados_t **head, settings_t *settings);
+void restricao_date(lista_t *lista, dados_t **head, settings_t *settings);
+void restricao_dates(lista_t *lista, dados_t **head, settings_t *settings);
 void menu_restricao(dados_t **right, dados_t **left, int *flag, settings_t *settings);
 lista_t *restricao_lista(lista_t *root, settings_t *anosemana);
 int selecao_inf(dados_t *atual, dados_t *comparacao);

@@ -195,10 +195,10 @@ yearWeek_t *parseYearWeek(char *dados)
  */
 settings_t *troca_datas(settings_t* datas)
 {
-    settings_t *aux = NULL;
-    datas->restricao_date1 = aux->restricao_date1;
+    yearWeek_t *aux;
+    aux = datas->restricao_date1;
     datas->restricao_date1 = datas->restricao_date2;
-    datas->restricao_date2 = aux->restricao_date1;
+    datas->restricao_date2 = aux;
     return datas;
 }
 
@@ -210,13 +210,13 @@ settings_t *troca_datas(settings_t* datas)
  */
 settings_t *verifica_datas(settings_t *datas)
 {
-    if (datas->restricao_date1->year < datas->restricao_date2->year)
+    if (datas->restricao_date1->year > datas->restricao_date2->year)
     {
         datas = troca_datas(datas);
     }
     else if (datas->restricao_date1->year == datas->restricao_date2->year)
     {
-        if (datas->restricao_date1->week < datas->restricao_date2->week)
+        if (datas->restricao_date1->week > datas->restricao_date2->week)
         {
             datas = troca_datas(datas);
         }
@@ -369,16 +369,21 @@ lista_t *ordenar_lista(lista_t *root, settings_t *settings)
  * \return void
  *
  */
-void restricao_max(dados_t **right, dados_t **left, int *flag, settings_t *settings)
+void restricao_max(lista_t *lista, dados_t **head, settings_t *settings)
 {
-    dados_t *aux;
+    dados_t *temp;
 
-    if ((*right)->population > aux_set->restricao_nmax)
+    if ((*head)->population > settings->restricao_nmax)
     {
-        aux = (*right);
-        (*left)->next = remove_do_inicio(aux);
-        (*flag) = 1;
-        (*right) = aux;
+        temp = (*head)->next;
+
+        apagar_elemento_lista(lista, (*head));
+
+        (*head) = temp;
+    }
+    else
+    {
+        (*head) = (*head)->next;
     }
 }
 
@@ -391,16 +396,21 @@ void restricao_max(dados_t **right, dados_t **left, int *flag, settings_t *setti
  * \return void
  *
  */
-void restricao_date(dados_t **right, dados_t **left, int *flag, settings_t *anosemana)
+void restricao_date(lista_t *lista, dados_t **head, settings_t *anosemana)
 {
-    dados_t *aux;
+    dados_t *temp;
 
-    if ((*right)->year_week != anosemana->restricao_date1)
+    if ((*head)->year_week->week != anosemana->restricao_date1->week || (*head)->year_week->year != anosemana->restricao_date1->year)
     {
-        aux = (*right);
-        (*left)->next = remove_do_inicio(aux);
-        (*flag) = 1;
-        (*right) = aux;
+        temp = (*head)->next;
+
+        apagar_elemento_lista(lista, (*head));
+
+        (*head) = temp;
+    }
+    else
+    {
+        (*head) = (*head)->next;
     }
 }
 
@@ -413,19 +423,44 @@ void restricao_date(dados_t **right, dados_t **left, int *flag, settings_t *anos
  * \return void
  *
  */
-void restricao_dates(dados_t **right, dados_t **left, int *flag, settings_t *anosemana)
+void restricao_dates(lista_t *lista, dados_t **head, settings_t *anosemana)
 {
-    dados_t *aux;
+    dados_t *temp;
 
-    anosemana = verifica_datas(anosemana);
-
-    if ((*right)->year_week > anosemana->restricao_date1 && (*right)->year_week < anosemana->restricao_date2)
+    if((*head)->year_week->year <= anosemana->restricao_date1->year || (*head)->year_week->year >= anosemana->restricao_date2->year)
     {
-        aux = (*right);
-        (*left)->next = remove_do_inicio(aux);
-        (*flag) = 1;
-        (*right) = aux;
+        if((*head)->year_week->year == anosemana->restricao_date1->year  && (*head)->year_week->year == anosemana->restricao_date2->year)
+        {
+            if((*head)->year_week->week >= anosemana->restricao_date1->week && (*head)->year_week->week <= anosemana->restricao_date2->week)
+            {
+                (*head) = (*head)->next;
+                return;
+            }
+        }
+        else if((*head)->year_week->year == anosemana->restricao_date1->year)
+        {
+            if((*head)->year_week->week >= anosemana->restricao_date1->week)
+            {
+                (*head) = (*head)->next;
+                return;
+            }
+        }
+        else if((*head)->year_week->year == anosemana->restricao_date2->year)
+        {
+            if((*head)->year_week->week <= anosemana->restricao_date2->week)
+            {
+                (*head) = (*head)->next;
+                return;
+            }
+        }
+        temp = (*head)->next;
+
+        apagar_elemento_lista(lista, (*head));
+
+        (*head) = temp;
+        return;
     }
+    (*head) = (*head)->next;
 }
 
 /** \brief
@@ -441,77 +476,79 @@ void menu_restricao(dados_t **right, dados_t **left, int *flag, settings_t *sett
 {
     if (settings->criterio_res == P_MIN)
     {
-        restricao_min(right, left, flag, settings);
+        //restricao_min(right, flag, settings);
     }
     else if (settings->criterio_res == P_MAX)
     {
-        restricao_max(right, left, flag, settings);
+//        restricao_max(right, left, flag, settings);
     }
     else if (settings->criterio_res == P_DATE)
     {
-        restricao_date(right, left, flag, settings);
+        //   restricao_date(right, left, flag, settings);
     }
     else if (settings->criterio_res == P_DATES)
     {
-        restricao_dates(right, left, flag, settings);
+        // restricao_dates(right, left, flag, settings);
     }
 }
 
-/** \brief
- *
- * \param right dados_t**
- * \param left dados_t**
- * \param flag int*
- * \param settings settings_t*
- * \return void
- *
- */
-void restricao_min(dados_t **atual, int *flag, settings_t *settings)
+void restricao_min(lista_t *lista, dados_t **head, settings_t *settings)
 {
-    if ((*atual)->population < settings->restricao_nmin)
+    dados_t *temp;
+
+    if ((*head)->population < settings->restricao_nmin)
     {
-        apagar_elemento_lista(atual);
-        (*flag) = 1;
+        temp = (*head)->next;
+
+        apagar_elemento_lista(lista, (*head));
+
+        (*head) = temp;
+    }
+    else
+    {
+        (*head) = (*head)->next;
     }
 }
 
 /** \brief
  *
  * \param root dados_t*
- * \param anosemana settings_t*
+ * \param settings settings_t*
  * \return dados_t*
  *
  */
 
-lista_t *restricao_lista(lista_t *root, settings_t *anosemana)
+lista_t *restricao_lista(lista_t *lista, settings_t *settings)
 {
-    int flag = 1;
-    dados_t *temp, *head, aux;
+    dados_t *head, aux;
 
-    aux_set->restricao_nmin *= 1000;
-    aux_set->restricao_nmax *= 1000;
+    settings->restricao_nmin *= 1000;
+    settings->restricao_nmax *= 1000;
 
     head = &aux;
-    head = root->first;
-    if (root != NULL && root->first->next != NULL)
+    head = lista->first;
+
+    settings = verifica_datas(settings);
+
+    printf("%d %d\n", settings->restricao_date2->year, settings->restricao_date2->week);
+    printf("%d %d\n", settings->restricao_date1->year, settings->restricao_date1->week);
+
+    if (lista != NULL && lista->first->next != NULL)
     {
-        while (flag)
+        while (head != NULL)
         {
-            flag = 0;
-            temp = head;
-            while (temp->next != NULL)
-            {
-                //menu_restricao(&right, &left, &flag, anosemana);
-
-                restricao_min(&temp, &flag, settings);
-
-                if (temp->next != NULL)
-                    temp = temp->next;
-            }
+            if(settings->criterio_res == P_MIN)
+                restricao_min(lista, &head, settings);
+            else if(settings->criterio_res == P_MAX)
+                restricao_max(lista, &head, settings);
+            else if (settings->criterio_res == P_DATE)
+                restricao_date(lista, &head, settings);
+            else if (settings->criterio_res == P_DATES)
+                restricao_dates(lista, &head, settings);
         }
     }
-    root->first = head->next;
-    return root;
+    lista->last = head;
+    return lista;
 }
 //--------------------------------------------------------------------------------------
 
@@ -1055,13 +1092,12 @@ int main(int argc, char *argv[])
     settings = verifica_tipo_ficheiro(settings, &binario);
     lista_t *root_principal = ler_ficheiro(settings);
     erros_ficheiro(root_principal);
-    if(binario == 0)// nao e binario
+    if(binario == 0)// e binario
     {
-        //if (settings->criterio_sel != D_NONE)
-        //  selecionar(settings, root_principal);
-        //root_principal = selecao_lista(root_principal);
-        //if(settings->criterio_res != P_NONE)
-        //root_principal = restricao_lista(root_principal, settings);
+        if (settings->criterio_sel != D_NONE)
+            selecionar(settings, root_principal);
+        if(settings->criterio_res != P_NONE)
+            root_principal = restricao_lista(root_principal, settings);
         root_principal = ordenar_lista(root_principal, settings);
     }
     cria_ficheiro(root_principal, settings);
