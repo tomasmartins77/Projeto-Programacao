@@ -238,28 +238,6 @@ dados_t *troca(dados_t *left, dados_t *right)
     return right;
 }
 
-/** \brief nao sei se vamos precisar desta funcao
- *
- * \param headlist dados_t*
- * \return dados_t*
- *
- */
-dados_t *remove_do_inicio(dados_t *headlist)
-{
-    if (headlist == NULL)
-    {
-        printf("A lista esta vazia");
-    }
-    else
-    {
-        dados_t *temp = headlist;
-        headlist = headlist->next;
-        free(temp);
-        temp = NULL;
-    }
-    return headlist;
-}
-
 //-------------------------------------------------------------------------------------
 /** \brief ordena dois nodes de acordo com a populacao decrescente, se a populacao do node right for menor
  *          que a do node right->next, trocam
@@ -295,28 +273,6 @@ void ordenacao_alfa(dados_t **right, dados_t **left, int *flag)
         (*left)->next = troca((*right), (*right)->next);
         (*flag) = 1;
     }
-}
-
-/** \brief menu que verifica qual a ordenacao escolhida
- *
- * \param right dados_t**
- * \param left dados_t**
- * \param flag int*
- * \param settings settings_t* onde esta guardado o tipo de ordenacao
- * \return void
- *
- */
-void menu_ordenacao(dados_t **right, dados_t **left, int *flag, settings_t *settings)
-{
-    if (settings->criterio_ord == S_ALFA) // ordenacao por ordem alfabetica
-    {
-        ordenacao_alfa(right, left, flag);
-    }
-    else if (settings->criterio_ord == S_POP) // ordenacao por populacao
-    {
-        ordenacao_pop(right, left, flag);
-    }
-//elseif(...)
 }
 
 /** \brief ordena a lista inteira
@@ -472,26 +428,6 @@ void restricao_dates(lista_t *lista, dados_t **head, settings_t *anosemana)
  * \return void
  *
  */
-void menu_restricao(dados_t **right, dados_t **left, int *flag, settings_t *settings)
-{
-    if (settings->criterio_res == P_MIN)
-    {
-        //restricao_min(right, flag, settings);
-    }
-    else if (settings->criterio_res == P_MAX)
-    {
-//        restricao_max(right, left, flag, settings);
-    }
-    else if (settings->criterio_res == P_DATE)
-    {
-        //   restricao_date(right, left, flag, settings);
-    }
-    else if (settings->criterio_res == P_DATES)
-    {
-        // restricao_dates(right, left, flag, settings);
-    }
-}
-
 void restricao_min(lista_t *lista, dados_t **head, settings_t *settings)
 {
     dados_t *temp;
@@ -529,9 +465,6 @@ lista_t *restricao_lista(lista_t *lista, settings_t *settings)
     head = lista->first;
 
     settings = verifica_datas(settings);
-
-    printf("%d %d\n", settings->restricao_date2->year, settings->restricao_date2->week);
-    printf("%d %d\n", settings->restricao_date1->year, settings->restricao_date1->week);
 
     if (lista != NULL && lista->first->next != NULL)
     {
@@ -603,135 +536,6 @@ int selecao_inf(dados_t *atual, dados_t *comparacao)
             return 2;
     }
 }
-/*
-void selecao_dea(dados_t **right, dados_t **left, int *flag)
-{
-    dados_t *aux;
-
-    if (strcmp((*right)->indicator, "deaths") == 0)
-    {
-        if (strcmp((*right)->country, (*right)->next->country) == 0)
-        {
-            if ((*right)->weekly_count < (*right)->next->weekly_count)
-            {
-                aux = (*right);
-                (*left)->next = remove_do_inicio(aux);
-                (*flag) = 1;
-            }
-            else
-            {
-                (*left) = (*right);
-                if ((*right)->next != NULL)
-                    (*right) = (*right)->next;
-                aux = (*right);
-                (*left)->next = remove_do_inicio(aux);
-                (*flag) = 1;
-            }
-        }
-    }
-    else
-    {
-        aux = (*right);
-        (*left)->next = remove_do_inicio(aux);
-        (*flag) = 1;
-    }
-}
-
-void selecao_racioinf(dados_t **right, dados_t **left, int *flag)
-{
-    dados_t *aux;
-
-    if (strcmp((*right)->indicator, "cases") == 0)
-    {
-        if (strcmp((*right)->country, (*right)->next->country) == 0)
-        {
-            if ((*right)->rate_14_day < (*right)->next->rate_14_day)
-            {
-                aux = (*right);
-                (*left)->next = remove_do_inicio(aux);
-                (*flag) = 1;
-            }
-            else
-            {
-                (*left) = (*right);
-                if ((*right)->next != NULL)
-                    (*right) = (*right)->next;
-                aux = (*right);
-                (*left)->next = remove_do_inicio(aux);
-                (*flag) = 1;
-            }
-        }
-    }
-    else
-    {
-        aux = (*right);
-        (*left)->next = remove_do_inicio(aux);
-        (*flag) = 1;
-    }
-}
-
-void selecao_raciodea(dados_t **right, dados_t **left, int *flag)
-{
-    dados_t *aux;
-
-    if (strcmp((*right)->indicator, "deaths") == 0)
-    {
-        if (strcmp((*right)->country, (*right)->next->country) == 0)
-        {
-            if ((*right)->rate_14_day < (*right)->next->rate_14_day)
-            {
-                aux = (*right);
-                (*left)->next = remove_do_inicio(aux);
-                (*flag) = 1;
-            }
-            else
-            {
-                (*left) = (*right);
-                if ((*right)->next != NULL)
-                    (*right) = (*right)->next;
-                aux = (*right);
-                (*left)->next = remove_do_inicio(aux);
-                (*flag) = 1;
-            }
-        }
-    }
-    else
-    {
-        aux = (*right);
-        (*left)->next = remove_do_inicio(aux);
-        (*flag) = 1;
-    }
-}
-
-dados_t *selecao_lista(dados_t *root)
-{
-    int flag = 1;
-    dados_t *left, *right, *head, aux;
-
-    head = &aux;
-    head = root;
-    if (root != NULL && root->next != NULL)
-    {
-        while (flag)
-        {
-            flag = 0;
-            left = head;
-            right = head->next;
-            while (right->next != NULL)
-            {
-                //selecao_inf(&right, &left, &flag);
-                //selecao_dea(&right, &left, &flag);
-                selecao_racioinf(&right, &left, &flag);
-                //selecao_raciodea(&right, &left, &flag);
-                left = right;
-                if (right->next != NULL)
-                    right = right->next;
-            }
-        }
-    }
-    root = head->next;
-    return root;
-}*/
 //----------------------------------------------------------------------------------
 void imprime_lista(lista_t *lista)
 {
