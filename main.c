@@ -18,8 +18,8 @@ int main(int argc, char *argv[])
     char criterio_FILE[100];
     char criterio_WRITE[100];
 
-    settings->criterio_leitura = L_ALL;
-    settings->criterio_ord = S_ALFA;
+    settings->criterio_leitura = L_ALL; //predefinicao all
+    settings->criterio_ord = S_ALFA; // predefinicao alfa
     settings->criterio_sel = D_NONE;
     settings->criterio_res = P_NONE;
 
@@ -418,9 +418,8 @@ lista_t *ordenar_lista(lista_t *root, settings_t *settings)
 {
     int flag = 1;
     dados_t *left, *right, *head, aux;
-
     head = &aux;
-    head = root->first;
+    head->next = root->first;
     if (root != NULL && root->first->next != NULL)
     {
         while (flag)
