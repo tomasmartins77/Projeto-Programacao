@@ -275,11 +275,11 @@ void ordenacao_alfa(dados_t **right, dados_t **left, int *flag)
     }
 }
 
-/** \brief ordena a lista inteira
+/** \brief ordena a lista
  *
- * \param root dados_t*
- * \param anosemana settings_t*
- * \return dados_t*
+ * \param root lista_t*
+ * \param settings settings_t*
+ * \return lista_t*
  *
  */
 lista_t *ordenar_lista(lista_t *root, settings_t *settings)
@@ -298,7 +298,6 @@ lista_t *ordenar_lista(lista_t *root, settings_t *settings)
             right = head->next;
             while (right->next != NULL)
             {
-                //menu_ordenacao(&right, &left, &flag, anosemana);
                 if (settings->criterio_ord == S_ALFA)
                     ordenacao_alfa(&right, &left, &flag);
                 else if (settings->criterio_ord == S_POP)
@@ -316,26 +315,56 @@ lista_t *ordenar_lista(lista_t *root, settings_t *settings)
 
 //--------------------------------------------------------------------------------------------
 
-/** \brief
+/** \brief apaga o elemento que nao pretendemos para a lista
  *
- * \param right dados_t**
- * \param left dados_t**
- * \param flag int*
- * \param settings settings_t*
+ * \param lista lista_t* primeiro ou ultimo elemento da lista
+ * \param head dados_t** elemento a apagar
+ * \return dados_t* lista sem elemento
+ *
+ */
+dados_t* apagar_elemento_restricao(lista_t *lista, dados_t **head)
+{
+    dados_t *temp;
+
+    temp = (*head)->next;
+    apagar_elemento_lista(lista, (*head));
+    (*head) = temp;
+    return (*head);
+}
+
+/** \brief apenas dados de países com mais de n mil habitantes
+ *
+ * \param lista lista_t* primeiro ou ultimo elemento da lista
+ * \param head dados_t** elemento que estamos neste momento
+ * \param settings settings_t* numero de habitantes
+ * \return void
+ *
+ */
+void restricao_min(lista_t *lista, dados_t **head, settings_t *settings)
+{
+    if ((*head)->population < settings->restricao_nmin)// se menor que o minimo, apaga
+    {
+        (*head) = apagar_elemento_restricao(lista, head);
+    }
+    else
+    {
+        (*head) = (*head)->next;
+    }
+}
+
+/** \brief apenas dados de países com menos de n mil habitantes
+ *
+ * \param lista lista_t* primeiro ou ultimo elemento da lista
+ * \param head dados_t** elemento que estamos neste momento
+ * \param settings settings_t* n maximo
  * \return void
  *
  */
 void restricao_max(lista_t *lista, dados_t **head, settings_t *settings)
 {
-    dados_t *temp;
-
-    if ((*head)->population > settings->restricao_nmax)
+    if ((*head)->population > settings->restricao_nmax)// se maior que o maximo, apaga
     {
-        temp = (*head)->next;
-
-        apagar_elemento_lista(lista, (*head));
-
-        (*head) = temp;
+        (*head) = apagar_elemento_restricao(lista, head);
     }
     else
     {
@@ -343,26 +372,19 @@ void restricao_max(lista_t *lista, dados_t **head, settings_t *settings)
     }
 }
 
-/** \brief
+/** \brief  apenas dados relativos à semana indicada
  *
- * \param right dados_t**
- * \param left dados_t**
- * \param flag int*
- * \param anosemana settings_t*
+ * \param lista lista_t* primeiro ou ultimo elemento da lista
+ * \param head dados_t** elemento que estamos neste momento
+ * \param anosemana settings_t* semana especificada pelo utilizador
  * \return void
  *
  */
 void restricao_date(lista_t *lista, dados_t **head, settings_t *anosemana)
 {
-    dados_t *temp;
-
     if ((*head)->year_week->week != anosemana->restricao_date1->week || (*head)->year_week->year != anosemana->restricao_date1->year)
     {
-        temp = (*head)->next;
-
-        apagar_elemento_lista(lista, (*head));
-
-        (*head) = temp;
+        (*head) = apagar_elemento_restricao(lista, head);// se nao for a semana indicada, apaga
     }
     else
     {
@@ -370,114 +392,87 @@ void restricao_date(lista_t *lista, dados_t **head, settings_t *anosemana)
     }
 }
 
-/** \brief
+/** \brief apenas dados entre as semanas indicadas
  *
- * \param right dados_t**
- * \param left dados_t**
- * \param flag int*
- * \param anosemana settings_t*
+ * \param lista lista_t* primeiro ou ultimo elemento da lista
+ * \param head dados_t** elemento que estamos neste momento
+ * \param anosemana settings_t* semanas que restringem os dados
  * \return void
  *
  */
 void restricao_dates(lista_t *lista, dados_t **head, settings_t *anosemana)
 {
-    dados_t *temp;
-
     if((*head)->year_week->year <= anosemana->restricao_date1->year || (*head)->year_week->year >= anosemana->restricao_date2->year)
     {
+        // se nao e um ano dentro do intervalo, nao entra
         if((*head)->year_week->year == anosemana->restricao_date1->year  && (*head)->year_week->year == anosemana->restricao_date2->year)
         {
+            // se tiver no mesmo ano
             if((*head)->year_week->week >= anosemana->restricao_date1->week && (*head)->year_week->week <= anosemana->restricao_date2->week)
             {
+                // se tiver dentro do intervalo indicado, retorna
                 (*head) = (*head)->next;
                 return;
             }
         }
         else if((*head)->year_week->year == anosemana->restricao_date1->year)
         {
+            // ano da data 1 e diferente do da data 2
             if((*head)->year_week->week >= anosemana->restricao_date1->week)
             {
+                // se tiver dentro do intervalo, retorna
                 (*head) = (*head)->next;
                 return;
             }
         }
         else if((*head)->year_week->year == anosemana->restricao_date2->year)
         {
+            // ano da data 2 e diferente do da data 1
             if((*head)->year_week->week <= anosemana->restricao_date2->week)
             {
+                // se tiver dentro do intervalo, retorna
                 (*head) = (*head)->next;
                 return;
             }
         }
-        temp = (*head)->next;
-
-        apagar_elemento_lista(lista, (*head));
-
-        (*head) = temp;
-        return;
+        (*head) = apagar_elemento_restricao(lista, head);// se nao entrar nos outros ifs, entao e para apagar pq
+        return;                                          // nao esta no intervalo
     }
     (*head) = (*head)->next;
 }
 
-/** \brief
+/** \brief restringe a lista de acordo com varias especificacoes referidas pelo utilizador
  *
- * \param right dados_t**
- * \param left dados_t**
- * \param flag int*
- * \param settings settings_t*
- * \return void
+ * \param lista lista_t* lista a ser restringida
+ * \param settings settings_t* para saber qual o tipo de restricao
+ * \return lista_t* lista restringida
  *
  */
-void restricao_min(lista_t *lista, dados_t **head, settings_t *settings)
-{
-    dados_t *temp;
-
-    if ((*head)->population < settings->restricao_nmin)
-    {
-        temp = (*head)->next;
-
-        apagar_elemento_lista(lista, (*head));
-
-        (*head) = temp;
-    }
-    else
-    {
-        (*head) = (*head)->next;
-    }
-}
-
-/** \brief
- *
- * \param root dados_t*
- * \param settings settings_t*
- * \return dados_t*
- *
- */
-
 lista_t *restricao_lista(lista_t *lista, settings_t *settings)
 {
     dados_t *head, aux;
 
-    settings->restricao_nmin *= 1000;
+    settings->restricao_nmin *= 1000; // n mil habitantes
     settings->restricao_nmax *= 1000;
 
     head = &aux;
     head = lista->first;
 
-    settings = verifica_datas(settings);
-
     if (lista != NULL && lista->first->next != NULL)
     {
-        while (head != NULL)
+        while (head != NULL) // loop que verifica a lista inteira
         {
-            if(settings->criterio_res == P_MIN)
+            if(settings->criterio_res == P_MIN) //apenas dados de países com mais de n mil habitantes
                 restricao_min(lista, &head, settings);
-            else if(settings->criterio_res == P_MAX)
+            else if(settings->criterio_res == P_MAX) //apenas dados de países com menos de n mil habitantes
                 restricao_max(lista, &head, settings);
-            else if (settings->criterio_res == P_DATE)
+            else if (settings->criterio_res == P_DATE) //apenas dados relativos à semana indicada
                 restricao_date(lista, &head, settings);
-            else if (settings->criterio_res == P_DATES)
+            else if (settings->criterio_res == P_DATES) //apenas dados entre as semanas indicadas
+            {
+                settings = verifica_datas(settings);
                 restricao_dates(lista, &head, settings);
+            }
         }
     }
     lista->last = head;
@@ -902,9 +897,11 @@ int main(int argc, char *argv[])
             selecionar(settings, root_principal);
         if(settings->criterio_res != P_NONE)
             root_principal = restricao_lista(root_principal, settings);
+
         root_principal = ordenar_lista(root_principal, settings);
     }
     cria_ficheiro(root_principal, settings);
+    free(settings);
     imprime_lista(root_principal);
     liberta_lista(root_principal);
     return 0;
