@@ -5,6 +5,138 @@
 #include <unistd.h>
 #include "headers.h"
 
+int main(int argc, char *argv[])
+{
+    settings_t *settings = (settings_t*)malloc(sizeof(settings_t));
+    int opt, binario = 0;
+    opterr = 0;
+    char yearweek[8], yearweek2[8];
+    char criterio_L[20];
+    char criterio_S[20];
+    char criterio_D[20];
+    char criterio_P[20];
+    char criterio_FILE[100];
+    char criterio_WRITE[100];
+
+    settings->criterio_leitura = L_ALL;
+    settings->criterio_ord = S_ALFA;
+    settings->criterio_sel = D_NONE;
+    settings->criterio_res = P_NONE;
+
+    while ((opt = getopt(argc, argv, "L:S:D:P:i:o:")) != -1) // ve ate ao final da linha de comando
+    {
+        switch (opt)
+        {
+        case 'L': // verifica se le o ficheiro inteiro ou apenas num certo continente
+            sscanf(optarg, "%s", criterio_L);
+            if (strcmp(criterio_L, "all") == 0)
+                settings->criterio_leitura = L_ALL; // ficheiro inteiro
+            else
+            {
+                settings->criterio_leitura = L_CONTINENTE;
+                settings->leitura_continente = (char*)malloc(sizeof(char) * (strlen(criterio_L) + 1));
+                strcpy(settings->leitura_continente, criterio_L); // continente especifico
+            }
+            break;
+        case 'S':
+            sscanf(optarg, "%s", criterio_S);
+            if (strcmp(criterio_S, "alfa") == 0)
+                settings->criterio_ord = S_ALFA; // ordenacao por ordem alfabetica
+            else if (strcmp(criterio_S, "pop") == 0) // ordenacao por populacao
+                settings->criterio_ord = S_POP;
+            else if (strcmp(criterio_S, "inf") == 0) // ordenacao por ordem decrescente de casos numa determinada data
+            {
+                settings->criterio_ord = S_INF;
+                strcpy(yearweek, argv[optind]);
+                optind++;
+                settings->ord_date = parseYearWeek(yearweek);
+            }
+            else if (strcmp(criterio_S, "dea") == 0) //ordenacao por ordem decrescente de mortes numa determinada data
+            {
+                settings->criterio_ord = S_DEA;
+                strcpy(yearweek, argv[optind]);
+                optind++;
+                settings->ord_date = parseYearWeek(yearweek);
+            }
+            break;
+        case 'D': // selecao
+            sscanf(optarg, "%s", criterio_D);
+            if (strcmp(criterio_D, "inf") == 0) // semana com mais infetados
+                settings->criterio_sel = D_INF;
+            else if (strcmp(criterio_D, "dea") == 0) // semana com mais mortes
+                settings->criterio_sel = D_DEA;
+            else if (strcmp(criterio_D, "racioinf") == 0) // semana com maior racio de infetados
+                settings->criterio_sel = D_RACIOINF;
+            else if (strcmp(criterio_D, "raciodea") == 0) // semana com maior racio de mortes
+                settings->criterio_sel = D_RACIODEA;
+            break;
+        case 'P': // restricao
+            sscanf(optarg, "%s", criterio_P);
+            if (strcmp(criterio_P, "min") == 0) // apenas dados de países com mais de n mil habitantes
+            {
+                settings->criterio_res = P_MIN;
+                settings->restricao_nmin = atoi(argv[optind]);
+                optind++;
+            }
+            else if (strcmp(criterio_P, "max") == 0) // apenas dados de países com menos de n mil habitantes
+            {
+                settings->criterio_res = P_MAX;
+                settings->restricao_nmax = atoi(argv[optind]);
+                optind++;
+            }
+            else if (strcmp(criterio_P, "date") == 0) // apenas dados relativos à semana indicada
+            {
+                settings->criterio_res = P_DATE;
+                strcpy(yearweek, argv[optind]);
+                optind++;
+                settings->restricao_date1 = parseYearWeek(yearweek);
+            }
+            else if (strcmp(criterio_P, "dates") == 0) // apenas dados entre as semanas indicadas
+            {
+                settings->criterio_res = P_DATES;
+                strcpy(yearweek, argv[optind]);
+                optind++;
+                strcpy(yearweek2, argv[optind]);
+                optind++;
+                settings->restricao_date1 = parseYearWeek(yearweek);
+                settings->restricao_date2 = parseYearWeek(yearweek2);
+            }
+            break;
+        case 'i': // leitura do ficheiro
+            sscanf(optarg, "%s", criterio_FILE);
+            settings->criterio_file = (char*)malloc(sizeof(char) * (strlen(criterio_FILE) + 1));
+            strcpy(settings->criterio_file, criterio_FILE);
+            break;
+        case 'o': // escrita do ficheiro
+            sscanf(optarg, "%s", criterio_WRITE);
+            settings->criterio_write = (char*)malloc(sizeof(char) * (strlen(criterio_WRITE) + 1));
+            strcpy(settings->criterio_write, criterio_WRITE);
+            break;
+        default:
+            utilizacao(argv[0]);
+            return EXIT_FAILURE;
+        }
+    }
+
+    settings = verifica_tipo_ficheiro(settings, &binario);
+    lista_t *root_principal = ler_ficheiro(settings);
+    erros_ficheiro(root_principal);
+    if(binario == 0)// e binario
+    {
+        if (settings->criterio_sel != D_NONE)
+            selecionar(settings, root_principal);
+        if(settings->criterio_res != P_NONE)
+            root_principal = restricao_lista(root_principal, settings);
+
+        root_principal = ordenar_lista(root_principal, settings);
+    }
+    cria_ficheiro(root_principal, settings);
+
+    imprime_lista(root_principal);
+    liberta_lista(root_principal);
+    return 0;
+}
+
 /** \brief cria a lista principal
  *
  * \return lista_t* lista vazia
@@ -12,7 +144,7 @@
  */
 lista_t *cria_lista()
 {
-    lista_t *novaLista = malloc(sizeof(lista_t));
+    lista_t *novaLista = (lista_t*)malloc(sizeof(lista_t));
 
     novaLista->first = NULL;
     novaLista->last = NULL;
@@ -633,6 +765,20 @@ void destruir_dados(dados_t *dados)
     free(dados);
 }
 
+/** \brief liberta memoria das settings
+ *
+ * \param settings settings_t*
+ * \return void
+ *
+ */
+void liberta_settings(settings_t* settings)//---------------------------------nao sei se e isto-------------------------------------
+{
+    free(settings->criterio_file);
+    free(settings->criterio_write);
+    free(settings->leitura_continente);
+    free(settings);
+}
+
 /** \brief menu que verifica qual a selecao a fazer
  *
  * \param settings settings_t* para saber qual o tipo de selecao
@@ -773,136 +919,4 @@ void utilizacao()
     printf("[-P]\t\t\t\t  Restricicao dos dados\n");
     printf("[-i]\t\t\t\t  Leitura do ficheiro\n");
     printf("[-o]\t\t\t\t  Escrita do ficheiro\n");
-}
-
-int main(int argc, char *argv[])
-{
-    settings_t *settings = malloc(sizeof(settings_t));
-    int opt, binario = 0;
-    opterr = 0;
-    char yearweek[8], yearweek2[8];
-    char criterio_L[20];
-    char criterio_S[20];
-    char criterio_D[20];
-    char criterio_P[20];
-    char criterio_FILE[100];
-    char criterio_WRITE[100];
-
-    settings->criterio_leitura = L_ALL;
-    settings->criterio_ord = S_ALFA;
-    settings->criterio_sel = D_NONE;
-    settings->criterio_res = P_NONE;
-
-    while ((opt = getopt(argc, argv, "L:S:D:P:i:o:")) != -1) // ve ate ao final da linha de comando
-    {
-        switch (opt)
-        {
-        case 'L': // verifica se le o ficheiro inteiro ou apenas num certo continente
-            sscanf(optarg, "%s", criterio_L);
-            if (strcmp(criterio_L, "all") == 0)
-                settings->criterio_leitura = L_ALL; // ficheiro inteiro
-            else
-            {
-                settings->criterio_leitura = L_CONTINENTE;
-                settings->leitura_continente = malloc(sizeof(char) * (strlen(criterio_L) + 1));
-                strcpy(settings->leitura_continente, criterio_L); // continente especifico
-            }
-            break;
-        case 'S':
-            sscanf(optarg, "%s", criterio_S);
-            if (strcmp(criterio_S, "alfa") == 0)
-                settings->criterio_ord = S_ALFA; // ordenacao por ordem alfabetica
-            else if (strcmp(criterio_S, "pop") == 0) // ordenacao por populacao
-                settings->criterio_ord = S_POP;
-            else if (strcmp(criterio_S, "inf") == 0) // ordenacao por ordem decrescente de casos numa determinada data
-            {
-                settings->criterio_ord = S_INF;
-                strcpy(yearweek, argv[optind]);
-                optind++;
-                settings->ord_date = parseYearWeek(yearweek);
-            }
-            else if (strcmp(criterio_S, "dea") == 0) //ordenacao por ordem decrescente de mortes numa determinada data
-            {
-                settings->criterio_ord = S_DEA;
-                strcpy(yearweek, argv[optind]);
-                optind++;
-                settings->ord_date = parseYearWeek(yearweek);
-            }
-            break;
-        case 'D': // selecao
-            sscanf(optarg, "%s", criterio_D);
-            if (strcmp(criterio_D, "inf") == 0) // semana com mais infetados
-                settings->criterio_sel = D_INF;
-            else if (strcmp(criterio_D, "dea") == 0) // semana com mais mortes
-                settings->criterio_sel = D_DEA;
-            else if (strcmp(criterio_D, "racioinf") == 0) // semana com maior racio de infetados
-                settings->criterio_sel = D_RACIOINF;
-            else if (strcmp(criterio_D, "raciodea") == 0) // semana com maior racio de mortes
-                settings->criterio_sel = D_RACIODEA;
-            break;
-        case 'P': // restricao
-            sscanf(optarg, "%s", criterio_P);
-            if (strcmp(criterio_P, "min") == 0) // apenas dados de países com mais de n mil habitantes
-            {
-                settings->criterio_res = P_MIN;
-                settings->restricao_nmin = atoi(argv[optind]);
-                optind++;
-            }
-            else if (strcmp(criterio_P, "max") == 0) // apenas dados de países com menos de n mil habitantes
-            {
-                settings->criterio_res = P_MAX;
-                settings->restricao_nmax = atoi(argv[optind]);
-                optind++;
-            }
-            else if (strcmp(criterio_P, "date") == 0) // apenas dados relativos à semana indicada
-            {
-                settings->criterio_res = P_DATE;
-                strcpy(yearweek, argv[optind]);
-                optind++;
-                settings->restricao_date1 = parseYearWeek(yearweek);
-            }
-            else if (strcmp(criterio_P, "dates") == 0) // apenas dados entre as semanas indicadas
-            {
-                settings->criterio_res = P_DATES;
-                strcpy(yearweek, argv[optind]);
-                optind++;
-                strcpy(yearweek2, argv[optind]);
-                optind++;
-                settings->restricao_date1 = parseYearWeek(yearweek);
-                settings->restricao_date2 = parseYearWeek(yearweek2);
-            }
-            break;
-        case 'i': // leitura do ficheiro
-            sscanf(optarg, "%s", criterio_FILE);
-            settings->criterio_file = malloc(sizeof(char) * (strlen(criterio_FILE) + 1));
-            strcpy(settings->criterio_file, criterio_FILE);
-            break;
-        case 'o': // escrita do ficheiro
-            sscanf(optarg, "%s", criterio_WRITE);
-            settings->criterio_write = malloc(sizeof(char) * (strlen(criterio_WRITE) + 1));
-            strcpy(settings->criterio_write, criterio_WRITE);
-            break;
-        default:
-            utilizacao(argv[0]);
-            return EXIT_FAILURE;
-        }
-    }
-
-    settings = verifica_tipo_ficheiro(settings, &binario);
-    lista_t *root_principal = ler_ficheiro(settings);
-    erros_ficheiro(root_principal);
-    if(binario == 0)// e binario
-    {
-        if (settings->criterio_sel != D_NONE)
-            selecionar(settings, root_principal);
-        if(settings->criterio_res != P_NONE)
-            root_principal = restricao_lista(root_principal, settings);
-
-        root_principal = ordenar_lista(root_principal, settings);
-    }
-    cria_ficheiro(root_principal, settings);
-    free(settings);
-    imprime_lista(root_principal);
-    liberta_lista(root_principal);
-    return 0;
 }
