@@ -692,7 +692,7 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
         printf("Erro a criar ficheiro");
         exit(EXIT_FAILURE);
     }
-    if(strcmp(settings->tipo_escrita, "w") != 0)
+    if(strcmp(settings->tipo_escrita, "w") == 0)
     {
         fprintf(fp, "country,country_code,continent,population,indicator,weekly_count,year_week,rate_14_day,cumulative_count\n");
     }
