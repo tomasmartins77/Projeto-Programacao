@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[])
 {
-    settings_t *settings = (settings_t*)malloc(sizeof(settings_t));
+    settings_t *settings = init_settings();
     int opt, binario = 0;
     opterr = 0;
     char yearweek[8], yearweek2[8];
@@ -17,11 +17,6 @@ int main(int argc, char *argv[])
     char criterio_P[20];
     char criterio_FILE[100];
     char criterio_WRITE[100];
-
-    settings->criterio_leitura = L_ALL; //predefinicao all
-    settings->criterio_ord = S_ALFA; // predefinicao alfa
-    settings->criterio_sel = D_NONE;
-    settings->criterio_res = P_NONE;
 
     while ((opt = getopt(argc, argv, "L:S:D:P:i:o:")) != -1) // ve ate ao final da linha de comando
     {
@@ -133,6 +128,7 @@ int main(int argc, char *argv[])
     cria_ficheiro(root_principal, settings);
 
     imprime_lista(root_principal);
+    liberta_settings(settings);
     liberta_lista(root_principal);
     return 0;
 }
@@ -150,6 +146,28 @@ lista_t *cria_lista()
     novaLista->last = NULL;
 
     return novaLista;
+}
+
+settings_t *init_settings()
+{
+    settings_t *settings = malloc(sizeof(settings_t));
+
+    settings->criterio_leitura = L_ALL; //predefinicao all
+    settings->criterio_ord = S_ALFA; // predefinicao alfa
+    settings->criterio_sel = D_NONE;
+    settings->criterio_res = P_NONE;
+    settings->criterio_file = NULL;
+    settings->criterio_write = NULL;
+    settings->leitura_continente = NULL;
+    settings->ord_date = NULL;
+    settings->restricao_date1 = NULL;
+    settings->restricao_date2 = NULL;
+    settings->restricao_nmax = 0;
+    settings->restricao_nmin = 0;
+    settings->tipo_escrita = NULL;
+    settings->tipo_ficheiro = NULL;
+
+    return settings;
 }
 
 /** \brief insere um node no final da lista
@@ -453,14 +471,14 @@ lista_t *ordenar_lista(lista_t *root, settings_t *settings)
  * \return dados_t* lista sem elemento
  *
  */
-dados_t* apagar_elemento_restricao(lista_t *lista, dados_t **head)
+dados_t* apagar_elemento_restricao(lista_t *lista, dados_t *head)
 {
     dados_t *temp;
 
-    temp = (*head)->next;
-    apagar_elemento_lista(lista, (*head));
-    (*head) = temp;
-    return (*head);
+    temp = head->next;
+    apagar_elemento_lista(lista, head);
+    head = temp;
+    return head;
 }
 
 /** \brief apenas dados de países com mais de n mil habitantes
@@ -475,7 +493,7 @@ void restricao_min(lista_t *lista, dados_t **head, settings_t *settings)
 {
     if ((*head)->population < settings->restricao_nmin)// se menor que o minimo, apaga
     {
-        (*head) = apagar_elemento_restricao(lista, head);
+        (*head) = apagar_elemento_restricao(lista, (*head));
     }
     else
     {
@@ -495,7 +513,7 @@ void restricao_max(lista_t *lista, dados_t **head, settings_t *settings)
 {
     if ((*head)->population > settings->restricao_nmax)// se maior que o maximo, apaga
     {
-        (*head) = apagar_elemento_restricao(lista, head);
+        (*head) = apagar_elemento_restricao(lista, (*head));
     }
     else
     {
@@ -515,7 +533,7 @@ void restricao_date(lista_t *lista, dados_t **head, settings_t *anosemana)
 {
     if ((*head)->year_week->week != anosemana->restricao_date1->week || (*head)->year_week->year != anosemana->restricao_date1->year)
     {
-        (*head) = apagar_elemento_restricao(lista, head);// se nao for a semana indicada, apaga
+        (*head) = apagar_elemento_restricao(lista, (*head));// se nao for a semana indicada, apaga
     }
     else
     {
@@ -566,8 +584,8 @@ void restricao_dates(lista_t *lista, dados_t **head, settings_t *anosemana)
                 return;
             }
         }
-        (*head) = apagar_elemento_restricao(lista, head);// se nao entrar nos outros ifs, entao e para apagar pq
-        return;                                          // nao esta no intervalo
+        (*head) = apagar_elemento_restricao(lista, (*head));// se nao entrar nos outros ifs, entao e para apagar pq
+        return;                                             // nao esta no intervalo
     }
     (*head) = (*head)->next;
 }
@@ -770,11 +788,17 @@ void destruir_dados(dados_t *dados)
  * \return void
  *
  */
-void liberta_settings(settings_t* settings)//---------------------------------nao sei se e isto-------------------------------------
+void liberta_settings(settings_t* settings)
 {
     free(settings->criterio_file);
     free(settings->criterio_write);
     free(settings->leitura_continente);
+    if(settings->ord_date != NULL)
+        free(settings->ord_date);
+    if(settings->restricao_date1 != NULL)
+        free(settings->restricao_date1);
+    if(settings->restricao_date2 != NULL)
+        free(settings->restricao_date2);
     free(settings);
 }
 

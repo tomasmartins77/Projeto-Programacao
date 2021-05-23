@@ -81,7 +81,7 @@ typedef struct settings
     char *tipo_ficheiro;         //tipo de ficheiro a ler(.csv ou .dat)
     char *tipo_escrita;          //tipo de ficheiro a escrever(.csv ou .dat)
 } settings_t;
-
+//listas--------------------
 lista_t *cria_lista();
 void inserir_elemento_final(lista_t *lista, dados_t *item);
 lista_t *ler_ficheiro(settings_t *settings);
@@ -92,28 +92,29 @@ settings_t *troca_datas(settings_t* datas);
 settings_t *verifica_datas(settings_t *datas);
 dados_t *troca(dados_t *left, dados_t *right);
 dados_t *remove_do_inicio(dados_t *headlist);
+void cria_ficheiro(lista_t *root, settings_t *settings);
+void apagar_elemento_lista(lista_t *lista, dados_t *elemento);
+void liberta_lista(lista_t *lista);
+void destruir_dados(dados_t *dados);
+//funcionalidades------------
 void ordenacao_pop(dados_t **right, dados_t **left, int *flag);
 void ordenacao_alfa(dados_t **right, dados_t **left, int *flag);
-void menu_ordenacao(dados_t **right, dados_t **left, int *flag, settings_t *settings);
 lista_t *ordenar_lista(lista_t *root, settings_t *anosemana);
 void restricao_min(lista_t *lista, dados_t **head, settings_t *settings);
 void restricao_max(lista_t *lista, dados_t **head, settings_t *settings);
 void restricao_date(lista_t *lista, dados_t **head, settings_t *settings);
 void restricao_dates(lista_t *lista, dados_t **head, settings_t *settings);
-void menu_restricao(dados_t **right, dados_t **left, int *flag, settings_t *settings);
 lista_t *restricao_lista(lista_t *root, settings_t *anosemana);
 int selecao_inf(dados_t *atual, dados_t *comparacao);
-void cria_ficheiro(lista_t *root, settings_t *settings);
-void apagar_elemento_lista(lista_t *lista, dados_t *elemento);
-void liberta_lista(lista_t *lista);
-void destruir_dados(dados_t *dados);
-void liberta_settings(settings_t* settings);
 int criterio_selecao(settings_t *settings, dados_t *atual, dados_t *comparacao);
 void selecionar(settings_t *settings, lista_t *lista);
+//main-----------------------
+void liberta_settings(settings_t* settings);
 void erros_ficheiro(lista_t *lista);
 settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario);
 void utilizacao();
-
+settings_t *init_settings();
+//---------------------------
 void imprime_lista(lista_t *lista);//para apagar
 
 #endif
