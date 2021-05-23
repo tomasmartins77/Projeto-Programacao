@@ -38,7 +38,7 @@ typedef struct lista
 enum leitura
 {
     L_ALL,
-    L_CONTINENTE
+    L_CONTINENTE//---------------------nao estamos a utilizar----------------------------
 };
 enum ordenacao
 {

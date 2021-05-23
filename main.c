@@ -28,8 +28,13 @@ int main(int argc, char *argv[])
                 settings->criterio_leitura = L_ALL; // ficheiro inteiro
             else
             {
-                settings->criterio_leitura = L_CONTINENTE;
+                settings->criterio_leitura = L_CONTINENTE;//---------------------------
                 settings->leitura_continente = (char*)malloc(sizeof(char) * (strlen(criterio_L) + 1));
+                if(settings->leitura_continente)
+                {
+                    fprintf(stderr, "Erro a alocar memoria para leitura continente");
+                    exit(EXIT_FAILURE);
+                }
                 strcpy(settings->leitura_continente, criterio_L); // continente especifico
             }
             break;
@@ -100,11 +105,21 @@ int main(int argc, char *argv[])
         case 'i': // leitura do ficheiro
             sscanf(optarg, "%s", criterio_FILE);
             settings->criterio_file = (char*)malloc(sizeof(char) * (strlen(criterio_FILE) + 1));
+            if(settings->criterio_file == NULL)
+            {
+                fprintf(stderr, "Erro a alocar memoria para criterio file");
+                exit(EXIT_FAILURE);
+            }
             strcpy(settings->criterio_file, criterio_FILE);
             break;
         case 'o': // escrita do ficheiro
             sscanf(optarg, "%s", criterio_WRITE);
             settings->criterio_write = (char*)malloc(sizeof(char) * (strlen(criterio_WRITE) + 1));
+            if(settings->criterio_write == NULL)
+            {
+                fprintf(stderr, "Erro a alocar memoria para criterio write");
+                exit(EXIT_FAILURE);
+            }
             strcpy(settings->criterio_write, criterio_WRITE);
             break;
         default:
@@ -124,9 +139,12 @@ int main(int argc, char *argv[])
             root_principal = restricao_lista(root_principal, settings);
 
         root_principal = ordenar_lista(root_principal, settings);
+        cria_ficheiro(root_principal, settings);
     }
-    cria_ficheiro(root_principal, settings);
-
+    if(binario == 1)
+    {
+        // cria_ficheiro_binario()
+    }
     imprime_lista(root_principal);
     liberta_settings(settings);
     liberta_lista(root_principal);
@@ -141,7 +159,11 @@ int main(int argc, char *argv[])
 lista_t *cria_lista()
 {
     lista_t *novaLista = (lista_t*)malloc(sizeof(lista_t));
-
+    if(novaLista == NULL)
+    {
+        fprintf(stderr, "Erro a alocar memoria para novalista");
+        exit(EXIT_FAILURE);
+    }
     novaLista->first = NULL;
     novaLista->last = NULL;
 
@@ -150,8 +172,12 @@ lista_t *cria_lista()
 
 settings_t *init_settings()
 {
-    settings_t *settings = malloc(sizeof(settings_t));
-
+    settings_t *settings = (settings_t*)malloc(sizeof(settings_t));
+    if( settings == NULL)
+    {
+        fprintf(stderr, "Erro a alocar memoria a settings");
+        exit(EXIT_FAILURE);
+    }
     settings->criterio_leitura = L_ALL; //predefinicao all
     settings->criterio_ord = S_ALFA; // predefinicao alfa
     settings->criterio_sel = D_NONE;
@@ -207,13 +233,11 @@ lista_t *ler_ficheiro(settings_t *settings)
     lista_t *lista = cria_lista(); //cria lista vazia
 
     ficheiro = fopen(settings->criterio_file, settings->tipo_ficheiro); // abre o ficheiro
-
     if (ficheiro == NULL) // verifica se ouve algum erro na abertura do ficheiro
     {
-        printf("Erro a abrir ficheiro\n");
+        fprintf(stderr, "Erro a abrir ficheiro\n");
         exit(EXIT_FAILURE);
     }
-
     int linhas = 0; // contador de linhas, para nao ler a primeira, pois e o cabecalho
     while (fgets(buffer, MAX_PALAVRAS_LINHAS, ficheiro) != NULL)
     {
@@ -256,7 +280,11 @@ dados_t *ler_linha(char *letra)
     char *inicio_coluna = letra;
     int coluna = 0;
     dados_t *dados = malloc(sizeof(dados_t));
-
+    if(dados == NULL)
+    {
+        fprintf(stderr, "Erro a alocar memoria para dados");
+        exit(EXIT_FAILURE);
+    }
     dados->next = NULL;
 
     while (*letra != '\0' && *letra != '\n')
@@ -329,7 +357,11 @@ void inserir_dados(dados_t *dados, char *inicio_coluna, int coluna)
 yearWeek_t *parseYearWeek(char *dados)
 {
     yearWeek_t *yearWeek = malloc(sizeof(yearWeek_t));
-
+    if( yearWeek == NULL)
+    {
+        fprintf(stderr, "Erro a alocar memoria a yearweek");
+        exit(EXIT_FAILURE);
+    }
     dados[4] = '\0';
     yearWeek->year = atoi(dados);     //int
     yearWeek->week = atoi(dados + 5); //int
@@ -706,7 +738,7 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
     fp = fopen(settings->criterio_write, settings->tipo_escrita);
     if (fp == NULL)
     {
-        printf("Erro a criar ficheiro");
+        fprintf(stderr, "Erro a criar ficheiro");
         exit(EXIT_FAILURE);
     }
     if(strcmp(settings->tipo_escrita, "w") == 0)
@@ -717,6 +749,26 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
     {
         fprintf(fp, "%s, %s, %s, %d, %s, %d, %d-%d, %f, %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,
                 curr->weekly_count, curr->year_week->year, curr->year_week->week, curr->rate_14_day, curr->cumulative_count);
+        curr = curr->next;
+    }
+    fclose(fp);
+}
+
+void cria_ficheiro_binario(lista_t *root, settings_t *settings)
+{
+    FILE *fp;
+    dados_t *curr = root->first;
+    fp = fopen(settings->criterio_write, settings->tipo_escrita);
+    if (fp == NULL)
+    {
+        fprintf(stderr, "Erro a criar ficheiro");
+        exit(EXIT_FAILURE);
+    }
+
+    while (curr != NULL)
+    {
+
+        fwrite(curr->country, sizeof(curr->country), 1, fp);
         curr = curr->next;
     }
     fclose(fp);
@@ -879,17 +931,20 @@ void erros_ficheiro(lista_t *lista)
     {
         if (head->population < 0 || head->cumulative_count < 0 || head->rate_14_day < 0 || head->weekly_count < 0)
         {
-            exit(-1);
+            fprintf(stderr, "dados de ficheiros com numero(s) negativo(s)");
+            exit(EXIT_FAILURE);
         }
         else if (head->year_week->week <= 0 || head->year_week->week > 53 || head->year_week->year < 0)
         {
-            exit(-1);
+            fprintf(stderr, "dados de ficheiros com semana(s) impossivei(s)");
+            exit(EXIT_FAILURE);
         }
         for (i = '0'; i <= '9'; i++)
         {
             if (strchr(head->country, i) != NULL || strchr(head->continent, i) != NULL || strchr(head->country_code, i) != NULL || strchr(head->indicator, i) != NULL)
             {
-                exit(-1);
+                fprintf(stderr, "dados de ficheiros com numero(s) em nome(s)");
+                exit(EXIT_FAILURE);
             }
         }
         head = head->next;
