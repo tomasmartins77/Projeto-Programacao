@@ -28,9 +28,9 @@ int main(int argc, char *argv[])
                 settings->criterio_leitura = L_ALL; // ficheiro inteiro
             else
             {
-                settings->criterio_leitura = L_CONTINENTE;//-------------------nao utilizado------------------
-                settings->leitura_continente = (char*)malloc(sizeof(char) * (strlen(criterio_L) + 1));
-                if(settings->leitura_continente == NULL)
+                settings->criterio_leitura = L_CONTINENTE; //-------------------nao utilizado------------------
+                settings->leitura_continente = (char *)malloc(sizeof(char) * (strlen(criterio_L) + 1));
+                if (settings->leitura_continente == NULL)
                 {
                     fprintf(stderr, "Erro a alocar memoria para leitura continente");
                     exit(EXIT_FAILURE);
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         case 'S':
             sscanf(optarg, "%s", criterio_S);
             if (strcmp(criterio_S, "alfa") == 0)
-                settings->criterio_ord = S_ALFA; // ordenacao por ordem alfabetica
+                settings->criterio_ord = S_ALFA;     // ordenacao por ordem alfabetica
             else if (strcmp(criterio_S, "pop") == 0) // ordenacao por populacao
                 settings->criterio_ord = S_POP;
             else if (strcmp(criterio_S, "inf") == 0) // ordenacao por ordem decrescente de casos numa determinada data
@@ -104,8 +104,8 @@ int main(int argc, char *argv[])
             break;
         case 'i': // leitura do ficheiro
             sscanf(optarg, "%s", criterio_FILE);
-            settings->criterio_file = (char*)malloc(sizeof(char) * (strlen(criterio_FILE) + 1));
-            if(settings->criterio_file == NULL)
+            settings->criterio_file = (char *)malloc(sizeof(char) * (strlen(criterio_FILE) + 1));
+            if (settings->criterio_file == NULL)
             {
                 fprintf(stderr, "Erro a alocar memoria para criterio file");
                 exit(EXIT_FAILURE);
@@ -114,8 +114,8 @@ int main(int argc, char *argv[])
             break;
         case 'o': // escrita do ficheiro
             sscanf(optarg, "%s", criterio_WRITE);
-            settings->criterio_write = (char*)malloc(sizeof(char) * (strlen(criterio_WRITE) + 1));
-            if(settings->criterio_write == NULL)
+            settings->criterio_write = (char *)malloc(sizeof(char) * (strlen(criterio_WRITE) + 1));
+            if (settings->criterio_write == NULL)
             {
                 fprintf(stderr, "Erro a alocar memoria para criterio write");
                 exit(EXIT_FAILURE);
@@ -130,33 +130,33 @@ int main(int argc, char *argv[])
 
     settings = verifica_tipo_ficheiro(settings, &binario);
     lista_t *root_principal = ler_ficheiro(settings);
-    erros_ficheiro(root_principal);
-    if(binario == 0)// e binario
+    //  erros_ficheiro(root_principal);
+    if (binario == 0) // e binario
     {
         if (settings->criterio_sel != D_NONE)
             selecionar(settings, root_principal);
-        if(settings->criterio_res != P_NONE)
+        /*  if (settings->criterio_res != P_NONE)
             root_principal = restricao_lista(root_principal, settings);
-
-        root_principal = ordenar_lista(root_principal, settings);
+ */
+        // root_principal = ordenar_lista(root_principal, settings);
     }
 
-    cria_ficheiro(root_principal, settings);
-    imprime_lista(root_principal);
-    liberta_settings(settings);
-    liberta_lista(root_principal);
+    //  cria_ficheiro(root_principal, settings);
+    imprime_lista_paises(root_principal);
+    /*   liberta_settings(settings);
+    liberta_lista(root_principal, destruir_pais); */
     return 0;
 }
 
-/** \brief cria a lista principal
+/** \brief cria uma lista vazia
  *
  * \return lista_t* lista vazia
  *
  */
 lista_t *cria_lista()
 {
-    lista_t *novaLista = (lista_t*)malloc(sizeof(lista_t));
-    if(novaLista == NULL)
+    lista_t *novaLista = (lista_t *)malloc(sizeof(lista_t));
+    if (novaLista == NULL)
     {
         fprintf(stderr, "Erro a alocar memoria para novalista");
         exit(EXIT_FAILURE);
@@ -169,14 +169,14 @@ lista_t *cria_lista()
 
 settings_t *init_settings()
 {
-    settings_t *settings = (settings_t*)malloc(sizeof(settings_t));
-    if( settings == NULL)
+    settings_t *settings = (settings_t *)malloc(sizeof(settings_t));
+    if (settings == NULL)
     {
         fprintf(stderr, "Erro a alocar memoria a settings");
         exit(EXIT_FAILURE);
     }
     settings->criterio_leitura = L_ALL; //predefinicao all
-    settings->criterio_ord = S_ALFA; // predefinicao alfa
+    settings->criterio_ord = S_ALFA;    // predefinicao alfa
     settings->criterio_sel = D_NONE;
     settings->criterio_res = P_NONE;
     settings->criterio_file = NULL;
@@ -193,27 +193,72 @@ settings_t *init_settings()
     return settings;
 }
 
+pais_t *cria_pais()
+{
+    pais_t *pais = (pais_t *)malloc(sizeof(pais_t));
+    if (pais == NULL)
+    {
+        fprintf(stderr, "Erro a alocar memoria a pais");
+        exit(EXIT_FAILURE);
+    }
+    pais->country = NULL;
+    pais->country_code = NULL;
+    pais->continent = NULL;
+    pais->population = 0;
+    pais->dados = NULL;
+    return pais;
+}
+
+void insere_pais_dados_lista(lista_t *lista, pais_t *pais, dados_t *dados)
+{
+    node_t *aux = lista->first;
+
+    while (aux != NULL && strcmp(pais->country_code, ((pais_t *)aux->value)->country_code) != 0)
+    {
+        aux = aux->next;
+    }
+    if (aux == NULL)
+    {
+        inserir_elemento_final(lista, pais);
+        pais->dados = cria_lista();
+        aux = lista->last;
+    }
+    else //se ja existir pais
+    {
+        destruir_pais(pais);
+    }
+    inserir_elemento_final(((pais_t *)aux->value)->dados, dados); //inserir os novos dados na lista do pais
+}
+
 /** \brief insere um node no final da lista
  *
  * \param lista lista_t* lista na qual vamos adicionar o elemento
- * \param item dados_t* elemento a adicionar na lista
+ * \param item void* elemento a adicionar na lista
  * \return void
  *
  */
-void inserir_elemento_final(lista_t *lista, dados_t *item)
+void inserir_elemento_final(lista_t *lista, void *item)
 {
-    item->next = NULL;        //inicia o next como null porque é o ultimo elemento
-    item->prev = lista->last; //o item anterior é o "antigo" ultimo elemento da lista
+    node_t *node = (node_t *)malloc(sizeof(node_t));
 
+    if (node == NULL)
+    {
+        fprintf(stderr, "Erro a alocar memoria a node");
+        exit(EXIT_FAILURE);
+    }
+
+    node->next = NULL;        //inicia o next como null porque é o ultimo elemento
+    node->prev = lista->last; //o item anterior é o "antigo" ultimo elemento da lista
+    node->value = item;
     if (lista->first == NULL) //se a lista estiver vazia
     {
-        lista->first = item; //o novo elemento torna-se o primeiro
+        lista->first = node; //o novo elemento torna-se o primeiro
     }
     else
     {
-        lista->last->next = item;
+        lista->last->next = node;
     }
-    lista->last = item;
+    lista->last = node;
 }
 
 /** \brief funcao que le o ficheiro e o coloca por completo numa lista, no caso de se ter
@@ -230,7 +275,7 @@ lista_t *ler_ficheiro(settings_t *settings)
     lista_t *lista = cria_lista(); //cria lista vazia
 
     ficheiro = fopen(settings->criterio_file, settings->tipo_ficheiro); // abre o ficheiro
-    if (ficheiro == NULL) // verifica se ouve algum erro na abertura do ficheiro
+    if (ficheiro == NULL)                                               // verifica se ouve algum erro na abertura do ficheiro
     {
         fprintf(stderr, "Erro a abrir ficheiro\n");
         exit(EXIT_FAILURE);
@@ -243,20 +288,7 @@ lista_t *ler_ficheiro(settings_t *settings)
             linhas++;
             continue; // primeira linha queremos ignorar
         }
-        if(settings->criterio_leitura == L_ALL) // se for ALL queremos uma lista do ficheiro completo
-        {
-            dados_t *item = ler_linha(buffer);
-            inserir_elemento_final(lista, item);
-        }
-        else
-        {
-            if(strstr(buffer, settings->leitura_continente) != 0) // so queremos lista com um determinado continente
-            {
-                dados_t *item = ler_linha(buffer);
-                inserir_elemento_final(lista, item);
-            }
-             // se nao for o continente passa para a linha seguinte
-        }
+        ler_linha(settings, lista, buffer);
     }
 
     fclose(ficheiro);
@@ -269,25 +301,26 @@ lista_t *ler_ficheiro(settings_t *settings)
  * \return dados_t* node com os elementos da linha nas suas variaveis
  *
  */
-dados_t *ler_linha(char *letra)
+void ler_linha(settings_t *settings, lista_t *lista, char *letra)
 {
     char *inicio_coluna = letra;
     int coluna = 0;
+    pais_t *pais = cria_pais();
+
     dados_t *dados = malloc(sizeof(dados_t));
-    if(dados == NULL)
+    if (dados == NULL)
     {
         fprintf(stderr, "Erro a alocar memoria para dados");
         exit(EXIT_FAILURE);
     }
-    dados->next = NULL;
 
     while (*letra != '\0' && *letra != '\n')
     {
-        if (*letra == ',') // troca as "," por \0 para melhor divisao de elementos
+        if (*letra == ',') // troca as "," por "\0" para dividir a string em varias substrings
         {
             *letra = '\0';
 
-            inserir_dados(dados, inicio_coluna, coluna);
+            inserir_dados(pais, dados, inicio_coluna, coluna);
 
             coluna++;
             inicio_coluna = letra + 1;
@@ -296,8 +329,18 @@ dados_t *ler_linha(char *letra)
     }
 
     *letra = '\0';
-    inserir_dados(dados, inicio_coluna, coluna);
-    return dados;
+    inserir_dados(pais, dados, inicio_coluna, coluna);
+
+    if (settings->criterio_leitura == L_CONTINENTE && strcmp(pais->country, settings->leitura_continente) != 0)
+    {
+        //descartar linha
+        destruir_pais(pais);
+        destruir_dados(dados);
+    }
+    else
+    {
+        insere_pais_dados_lista(lista, pais, dados);
+    }
 }
 
 /** \brief insere um determinado dado na variavel correta da lista
@@ -308,23 +351,28 @@ dados_t *ler_linha(char *letra)
  * \return void
  *
  */
-void inserir_dados(dados_t *dados, char *inicio_coluna, int coluna)
+void inserir_dados(pais_t *pais, dados_t *dados, char *inicio_coluna, int coluna)
 {
     switch (coluna)
     {
     case 0:
-        strcpy(dados->country, inicio_coluna);
+        pais->country = malloc(sizeof(char) * (strlen(inicio_coluna) + 1));
+        strcpy(pais->country, inicio_coluna);
         break;
     case 1:
-        strcpy(dados->country_code, inicio_coluna);
+        pais->country_code = malloc(sizeof(char) * (strlen(inicio_coluna) + 1));
+        strcpy(pais->country_code, inicio_coluna);
+
         break;
     case 2:
-        strcpy(dados->continent, inicio_coluna);
+        pais->continent = malloc(sizeof(char) * (strlen(inicio_coluna) + 1));
+        strcpy(pais->continent, inicio_coluna);
         break;
     case 3:
-        dados->population = atoi(inicio_coluna);
+        pais->population = atoi(inicio_coluna);
         break;
     case 4:
+        dados->indicator = malloc(sizeof(char) * (strlen(inicio_coluna) + 1));
         strcpy(dados->indicator, inicio_coluna);
         break;
     case 5:
@@ -351,7 +399,7 @@ void inserir_dados(dados_t *dados, char *inicio_coluna, int coluna)
 yearWeek_t *parseYearWeek(char *dados)
 {
     yearWeek_t *yearWeek = malloc(sizeof(yearWeek_t));
-    if( yearWeek == NULL)
+    if (yearWeek == NULL)
     {
         fprintf(stderr, "Erro a alocar memoria a yearweek");
         exit(EXIT_FAILURE);
@@ -369,7 +417,7 @@ yearWeek_t *parseYearWeek(char *dados)
  * \return settings_t* datas data trocada
  *
  */
-settings_t *troca_datas(settings_t* datas)
+settings_t *troca_datas(settings_t *datas)
 {
     yearWeek_t *aux;
     aux = datas->restricao_date1;
@@ -402,12 +450,12 @@ settings_t *verifica_datas(settings_t *datas)
 
 /** \brief troca determinados nodes da lista
  *
- * \param left dados_t*
- * \param right dados_t*
- * \return dados_t* nodes trocados
+ * \param left node_t*
+ * \param right node_t*
+ * \return node_t* nodes trocados
  *
  */
-dados_t *troca(dados_t *left, dados_t *right)
+node_t *troca(node_t *left, node_t *right)
 {
     left->next = right->next;
     right->next = left;
@@ -424,7 +472,7 @@ dados_t *troca(dados_t *left, dados_t *right)
  * \return void
  *
  */
-void ordenacao_pop(dados_t **right, dados_t **left, int *flag)
+/* void ordenacao_pop(dados_t **right, dados_t **left, int *flag)
 {
     if ((*right)->population < (*right)->next->population) // se menor, troca
     {
@@ -432,7 +480,7 @@ void ordenacao_pop(dados_t **right, dados_t **left, int *flag)
         (*flag) = 1;
     }
 }
-
+ */
 /** \brief ordena a lista por ordem alfabetica
  *
  * \param right dados_t**
@@ -441,7 +489,7 @@ void ordenacao_pop(dados_t **right, dados_t **left, int *flag)
  * \return void
  *
  */
-void ordenacao_alfa(dados_t **right, dados_t **left, int *flag)
+/* void ordenacao_alfa(dados_t **right, dados_t **left, int *flag)
 {
     if (strcmp((*right)->country, (*right)->next->country) > 0) // se > 0, o node right->next tem uma letra
     {
@@ -449,7 +497,7 @@ void ordenacao_alfa(dados_t **right, dados_t **left, int *flag)
         (*left)->next = troca((*right), (*right)->next);
         (*flag) = 1;
     }
-}
+} */
 
 /** \brief ordena a lista
  *
@@ -458,7 +506,7 @@ void ordenacao_alfa(dados_t **right, dados_t **left, int *flag)
  * \return lista_t*
  *
  */
-lista_t *ordenar_lista(lista_t *root, settings_t *settings)
+/* lista_t *ordenar_lista(lista_t *root, settings_t *settings)
 {
     int flag = 1;
     dados_t *left, *right, *head, aux;
@@ -486,7 +534,7 @@ lista_t *ordenar_lista(lista_t *root, settings_t *settings)
     }
     root->first = head->next;
     return root;
-}
+} */
 
 //--------------------------------------------------------------------------------------------
 
@@ -497,7 +545,7 @@ lista_t *ordenar_lista(lista_t *root, settings_t *settings)
  * \return dados_t* lista sem elemento
  *
  */
-dados_t* apagar_elemento_restricao(lista_t *lista, dados_t *head)
+/* dados_t *apagar_elemento_restricao(lista_t *lista, dados_t *head)
 {
     dados_t *temp;
 
@@ -505,7 +553,7 @@ dados_t* apagar_elemento_restricao(lista_t *lista, dados_t *head)
     apagar_elemento_lista(lista, head);
     head = temp;
     return head;
-}
+} */
 
 /** \brief apenas dados de países com mais de n mil habitantes
  *
@@ -515,9 +563,9 @@ dados_t* apagar_elemento_restricao(lista_t *lista, dados_t *head)
  * \return void
  *
  */
-void restricao_min(lista_t *lista, dados_t **head, settings_t *settings)
+/* void restricao_min(lista_t *lista, dados_t **head, settings_t *settings)
 {
-    if ((*head)->population < settings->restricao_nmin)// se menor que o minimo, apaga
+    if ((*head)->population < settings->restricao_nmin) // se menor que o minimo, apaga
     {
         (*head) = apagar_elemento_restricao(lista, (*head));
     }
@@ -525,7 +573,7 @@ void restricao_min(lista_t *lista, dados_t **head, settings_t *settings)
     {
         (*head) = (*head)->next;
     }
-}
+} */
 
 /** \brief apenas dados de países com menos de n mil habitantes
  *
@@ -535,9 +583,9 @@ void restricao_min(lista_t *lista, dados_t **head, settings_t *settings)
  * \return void
  *
  */
-void restricao_max(lista_t *lista, dados_t **head, settings_t *settings)
+/* void restricao_max(lista_t *lista, dados_t **head, settings_t *settings)
 {
-    if ((*head)->population > settings->restricao_nmax)// se maior que o maximo, apaga
+    if ((*head)->population > settings->restricao_nmax) // se maior que o maximo, apaga
     {
         (*head) = apagar_elemento_restricao(lista, (*head));
     }
@@ -545,7 +593,7 @@ void restricao_max(lista_t *lista, dados_t **head, settings_t *settings)
     {
         (*head) = (*head)->next;
     }
-}
+} */
 
 /** \brief  apenas dados relativos à semana indicada
  *
@@ -555,17 +603,17 @@ void restricao_max(lista_t *lista, dados_t **head, settings_t *settings)
  * \return void
  *
  */
-void restricao_date(lista_t *lista, dados_t **head, settings_t *anosemana)
+/* void restricao_date(lista_t *lista, dados_t **head, settings_t *anosemana)
 {
     if ((*head)->year_week->week != anosemana->restricao_date1->week || (*head)->year_week->year != anosemana->restricao_date1->year)
     {
-        (*head) = apagar_elemento_restricao(lista, (*head));// se nao for a semana indicada, apaga
+        (*head) = apagar_elemento_restricao(lista, (*head)); // se nao for a semana indicada, apaga
     }
     else
     {
         (*head) = (*head)->next;
     }
-}
+} */
 
 /** \brief apenas dados entre as semanas indicadas
  *
@@ -575,46 +623,46 @@ void restricao_date(lista_t *lista, dados_t **head, settings_t *anosemana)
  * \return void
  *
  */
-void restricao_dates(lista_t *lista, dados_t **head, settings_t *anosemana)
+/* void restricao_dates(lista_t *lista, dados_t **head, settings_t *anosemana)
 {
-    if((*head)->year_week->year <= anosemana->restricao_date1->year || (*head)->year_week->year >= anosemana->restricao_date2->year)
+    if ((*head)->year_week->year <= anosemana->restricao_date1->year || (*head)->year_week->year >= anosemana->restricao_date2->year)
     {
         // se nao e um ano dentro do intervalo, nao entra
-        if((*head)->year_week->year == anosemana->restricao_date1->year  && (*head)->year_week->year == anosemana->restricao_date2->year)
+        if ((*head)->year_week->year == anosemana->restricao_date1->year && (*head)->year_week->year == anosemana->restricao_date2->year)
         {
             // se tiver no mesmo ano
-            if((*head)->year_week->week >= anosemana->restricao_date1->week && (*head)->year_week->week <= anosemana->restricao_date2->week)
+            if ((*head)->year_week->week >= anosemana->restricao_date1->week && (*head)->year_week->week <= anosemana->restricao_date2->week)
             {
                 // se tiver dentro do intervalo indicado, retorna
                 (*head) = (*head)->next;
                 return;
             }
         }
-        else if((*head)->year_week->year == anosemana->restricao_date1->year)
+        else if ((*head)->year_week->year == anosemana->restricao_date1->year)
         {
             // ano da data 1 e diferente do da data 2
-            if((*head)->year_week->week >= anosemana->restricao_date1->week)
+            if ((*head)->year_week->week >= anosemana->restricao_date1->week)
             {
                 // se tiver dentro do intervalo, retorna
                 (*head) = (*head)->next;
                 return;
             }
         }
-        else if((*head)->year_week->year == anosemana->restricao_date2->year)
+        else if ((*head)->year_week->year == anosemana->restricao_date2->year)
         {
             // ano da data 2 e diferente do da data 1
-            if((*head)->year_week->week <= anosemana->restricao_date2->week)
+            if ((*head)->year_week->week <= anosemana->restricao_date2->week)
             {
                 // se tiver dentro do intervalo, retorna
                 (*head) = (*head)->next;
                 return;
             }
         }
-        (*head) = apagar_elemento_restricao(lista, (*head));// se nao entrar nos outros ifs, entao e para apagar pq
-        return;                                             // nao esta no intervalo
+        (*head) = apagar_elemento_restricao(lista, (*head)); // se nao entrar nos outros ifs, entao e para apagar pq
+        return;                                              // nao esta no intervalo
     }
     (*head) = (*head)->next;
-}
+} */
 
 /** \brief restringe a lista de acordo com varias especificacoes referidas pelo utilizador
  *
@@ -623,7 +671,7 @@ void restricao_dates(lista_t *lista, dados_t **head, settings_t *anosemana)
  * \return lista_t* lista restringida
  *
  */
-lista_t *restricao_lista(lista_t *lista, settings_t *settings)
+/* lista_t *restricao_lista(lista_t *lista, settings_t *settings)
 {
     dados_t *head, aux;
 
@@ -637,9 +685,9 @@ lista_t *restricao_lista(lista_t *lista, settings_t *settings)
     {
         while (head != NULL) // loop que verifica a lista inteira
         {
-            if(settings->criterio_res == P_MIN) //apenas dados de países com mais de n mil habitantes
+            if (settings->criterio_res == P_MIN) //apenas dados de países com mais de n mil habitantes
                 restricao_min(lista, &head, settings);
-            else if(settings->criterio_res == P_MAX) //apenas dados de países com menos de n mil habitantes
+            else if (settings->criterio_res == P_MAX) //apenas dados de países com menos de n mil habitantes
                 restricao_max(lista, &head, settings);
             else if (settings->criterio_res == P_DATE) //apenas dados relativos à semana indicada
                 restricao_date(lista, &head, settings);
@@ -652,7 +700,7 @@ lista_t *restricao_lista(lista_t *lista, settings_t *settings)
     }
     lista->last = head;
     return lista;
-}
+} */
 //--------------------------------------------------------------------------------------
 
 /** \brief selecionar, para cada pais, a semana com mais infetados
@@ -662,28 +710,24 @@ lista_t *restricao_lista(lista_t *lista, settings_t *settings)
  * \return int: 0,1,2
  *
  */
-int selecao_inf(dados_t *atual, dados_t *comparacao)
+
+//TODO - deaths
+
+short selecao_inf(void *p_atual, void *p_comparacao)
 {
-    //se os paises forem diferentes
-    if (comparacao != NULL && strcmp(atual->country_code, comparacao->country_code) != 0)
-        return 0;
+    dados_t *atual = p_atual;
+    dados_t *comparacao = p_comparacao;
 
-    //se o elemento atual nao tiver o indicador "cases"
-    if (strcmp(atual->indicator, "cases") != 0)
-        return 2; //"discartar" o elemento atual
-
-    //se o elemento comparacao for nulo, ignoramo-lo
-    if (comparacao == NULL)
-        return 0;
-
-    //se o elemento de comparacao nao tiver o indicador "cases"
+    //se o elemento novo nao tiver o indicador "cases"
     if (strcmp(comparacao->indicator, "cases") != 0)
-        return 1; //"discartar" o elemento de comparacao
+        return 0; //"descartar" o novo elemento
 
-    if (atual->weekly_count > comparacao->weekly_count)
-        return 1; //discarta o elemento comparacao
-    else
-        return 2; //discarta o elemento atual
+    //se o elemento atual for nulo, ficamos com o comparacao
+    if (atual == NULL)
+        return 1;
+
+    if (atual->weekly_count < comparacao->weekly_count)
+        return 1; //descarta o elemento atual
 
     //no caso de empate, para desempatar escolhe-se a semana mais recente
     if (atual->weekly_count == comparacao->weekly_count)
@@ -691,29 +735,36 @@ int selecao_inf(dados_t *atual, dados_t *comparacao)
 
         if (atual->year_week->year == comparacao->year_week->year) //se for o mesmo ano
         {
-
-            if (atual->year_week->week > comparacao->year_week->week)
-                return 2;
-
-            else
-                return 1;
+            if (atual->year_week->week < comparacao->year_week->week)
+                return 1; //descartar o elemento atual
         }
-        if (atual->year_week->year > comparacao->year_week->year)
-        {
-            return 1; //o elemento atual é mais recente, discartamos o elemento comparacao
-        }
-        else
-            return 2;
+        if (atual->year_week->year < comparacao->year_week->year)
+            return 1; //o elemento atual é mais antigo, descartamos o elemento atual
     }
+    return 0;
 }
 //----------------------------------------------------------------------------------
 void imprime_lista(lista_t *lista)
 {
-    dados_t *curr = lista->first;
+    node_t *curr = lista->first;
     while (curr != NULL)
     {
-        printf("%s - %s - %s - %d - %s - %d - %d-%d - %f - %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,
-               curr->weekly_count, curr->year_week->year, curr->year_week->week, curr->rate_14_day, curr->cumulative_count);
+        dados_t *dados = curr->value;
+        printf("- %s - %d - %d-%d - %f - %d\n", dados->indicator,
+               dados->weekly_count, dados->year_week->year, dados->year_week->week, dados->rate_14_day, dados->cumulative_count);
+        curr = curr->next;
+    }
+}
+
+void imprime_lista_paises(lista_t *lista)
+{
+    node_t *curr = lista->first;
+    while (curr != NULL)
+    {
+        pais_t *pais = curr->value;
+        printf("%s - %s - %s - %d\n", pais->country,
+               pais->country_code, pais->continent, pais->population);
+        imprime_lista(pais->dados);
         curr = curr->next;
     }
 }
@@ -725,7 +776,7 @@ void imprime_lista(lista_t *lista)
  * \return void
  *
  */
-void cria_ficheiro(lista_t *root, settings_t *settings)
+/* void cria_ficheiro(lista_t *root, settings_t *settings)
 {
     FILE *fp;
     dados_t *curr = root->first;
@@ -735,13 +786,13 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
         fprintf(stderr, "Erro a criar ficheiro");
         exit(EXIT_FAILURE);
     }
-    if(strcmp(settings->tipo_escrita, "w") == 0)
+    if (strcmp(settings->tipo_escrita, "w") == 0)
     {
         fprintf(fp, "country,country_code,continent,population,indicator,weekly_count,year_week,rate_14_day,cumulative_count\n");
     }
     while (curr != NULL)
     {
-        if(strcmp(settings->tipo_escrita, "w") == 0)
+        if (strcmp(settings->tipo_escrita, "w") == 0)
         {
             fprintf(fp, "%s, %s, %s, %d, %s, %d, %d-%d, %f, %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,
                     curr->weekly_count, curr->year_week->year, curr->year_week->week, curr->rate_14_day, curr->cumulative_count);
@@ -762,7 +813,7 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
         curr = curr->next;
     }
     fclose(fp);
-}
+} */
 
 /** \brief apaga um certo elemento da lista
  *
@@ -771,25 +822,19 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
  * \return void
  *
  */
-void apagar_elemento_lista(lista_t *lista, dados_t *elemento)
+void apagar_elemento_lista(lista_t *lista, node_t *elemento, void (*destruir_fn)(void *))
 {
     if (elemento->prev == NULL)
-    {
         lista->first = elemento->next;
-    }
     else
-    {
         elemento->prev->next = elemento->next;
-    }
+
     if (elemento->next == NULL)
-    {
         lista->last = elemento->prev;
-    }
     else
-    {
         elemento->next->prev = elemento->prev;
-    }
-    destruir_dados(elemento);
+    destruir_fn(elemento->value);
+    free(elemento);
 }
 
 /** \brief liberta a lista da memoria
@@ -798,16 +843,17 @@ void apagar_elemento_lista(lista_t *lista, dados_t *elemento)
  * \return void
  *
  */
-void liberta_lista(lista_t *lista)
+void liberta_lista(lista_t *lista, void (*destruir_fn)(void *))
 {
-    dados_t *curr;
-    dados_t *next = lista->first;
+    node_t *curr;
+    node_t *next = lista->first;
 
     while (next != NULL) // loop que liberta linha a linha
     {
         curr = next;
         next = next->next;
-        destruir_dados(curr);
+        destruir_fn(curr->value);
+        free(curr);
     }
     free(lista);
 }
@@ -818,10 +864,23 @@ void liberta_lista(lista_t *lista)
  * \return void
  *
  */
-void destruir_dados(dados_t *dados)
+void destruir_dados(void *p_dados)
 {
+    dados_t *dados = p_dados;
+    free(dados->indicator);
     free(dados->year_week);
     free(dados);
+}
+
+void destruir_pais(void *p_pais)
+{
+    pais_t *pais = p_pais;
+    free(pais->country_code);
+    free(pais->country);
+    free(pais->continent);
+    if (pais->dados != NULL)
+        liberta_lista(pais->dados, destruir_dados);
+    free(pais);
 }
 
 /** \brief liberta memoria das settings
@@ -830,16 +889,16 @@ void destruir_dados(dados_t *dados)
  * \return void
  *
  */
-void liberta_settings(settings_t* settings)
+void liberta_settings(settings_t *settings)
 {
     free(settings->criterio_file);
     free(settings->criterio_write);
     free(settings->leitura_continente);
-    if(settings->ord_date != NULL)
+    if (settings->ord_date != NULL)
         free(settings->ord_date);
-    if(settings->restricao_date1 != NULL)
+    if (settings->restricao_date1 != NULL)
         free(settings->restricao_date1);
-    if(settings->restricao_date2 != NULL)
+    if (settings->restricao_date2 != NULL)
         free(settings->restricao_date2);
     free(settings);
 }
@@ -852,10 +911,10 @@ void liberta_settings(settings_t* settings)
  * \return int
  *
  */
-int criterio_selecao(settings_t *settings, dados_t *atual, dados_t *comparacao)
+short (*criterio_selecao(settings_t *settings))(void *, void *)
 {
     if (settings->criterio_sel == D_INF) // selecao inf
-        return selecao_inf(atual, comparacao);
+        return selecao_inf;
     // else if (...)
     return 0;
 }
@@ -869,41 +928,41 @@ int criterio_selecao(settings_t *settings, dados_t *atual, dados_t *comparacao)
  */
 void selecionar(settings_t *settings, lista_t *lista)
 {
-    dados_t *el_atual = lista->first;
-    dados_t *el_comparacao;
+    node_t *el_atual = lista->first;
+    short (*cmp_fn)(void *, void *) = criterio_selecao(settings);
 
     while (el_atual != NULL)
     {
-        dados_t *aux_atual = el_atual;
+        node_t *aux = el_atual;
+        pais_t *pais_atual = el_atual->value;
+        dados_t *resultado = selecionar_pais(pais_atual->dados, cmp_fn);
         el_atual = el_atual->next;
-        el_comparacao = aux_atual->next;
 
-        while (el_comparacao != NULL)
+        if (resultado == NULL)
+            apagar_elemento_lista(lista, aux, destruir_pais);
+        else
         {
-            int result = criterio_selecao(settings, aux_atual, el_comparacao); //0-ignorar, 1-apagar comparacao, 2-apagar atual
-            dados_t *aux_comparacao = el_comparacao;
-            el_comparacao = el_comparacao->next;
-            if (result == 1)
-            {
-                if (aux_comparacao == el_atual)
-                    el_atual = el_atual->next;
-                apagar_elemento_lista(lista, aux_comparacao);
-            }
-            else if (result == 2)
-            {
-                if (aux_atual == el_atual)
-                    el_atual = el_atual->next;
-                apagar_elemento_lista(lista, aux_atual);
-                aux_atual = aux_comparacao;
-            }
-        }
-        if (criterio_selecao(settings, aux_atual, NULL) == 2)
-        {
-            if (aux_atual == el_atual)
-                el_atual = el_atual->next;
-            apagar_elemento_lista(lista, aux_atual);
+            liberta_lista(pais_atual->dados, destruir_dados);
+            pais_atual->dados = cria_lista();
+            inserir_elemento_final(pais_atual->dados, resultado);
         }
     }
+}
+
+dados_t *selecionar_pais(lista_t *lista_dados, short (*cmp_fn)(void *, void *))
+{
+    dados_t *resultado = NULL;
+    node_t *aux = lista_dados->first;
+
+    while (aux != NULL)
+    {
+        if (cmp_fn(resultado, aux->value))
+        {
+            resultado = aux->value;
+        }
+        aux = aux->next;
+    }
+    return resultado;
 }
 
 /** \brief verifica se existe algum erro de escrita no ficheiro lido
@@ -912,7 +971,7 @@ void selecionar(settings_t *settings, lista_t *lista)
  * \return void
  *
  */
-void erros_ficheiro(lista_t *lista)
+/* void erros_ficheiro(lista_t *lista)
 {
     dados_t *head = lista->first;
     char i;
@@ -939,7 +998,7 @@ void erros_ficheiro(lista_t *lista)
         }
         head = head->next;
     }
-}
+} */
 
 /** \brief verifica se o ficheiro e .dat ou .csv
  *
@@ -984,7 +1043,7 @@ void utilizacao()
     printf("[-L all ou \"continente\"]\t  le o ficheiro inteiro ou dos paises em ralacao ao continente\n");
     printf("[-S]\t\t\t\t  Ordenacao dos dados\n");
     printf("[-D]\t\t\t\t  Selecao dos dados\n");
-    printf("[-P]\t\t\t\t  Restricicao dos dados\n");
+    printf("[-P]\t\t\t\t  Restricao dos dados\n");
     printf("[-i]\t\t\t\t  Leitura do ficheiro\n");
     printf("[-o]\t\t\t\t  Escrita do ficheiro\n");
 }

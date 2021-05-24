@@ -15,30 +15,44 @@ typedef struct yearWeek
 
 typedef struct dados
 {
-    char country[COUNTRY];
-    char country_code[COUNTRY_CODE];
-    char continent[CONTINENT];
-    int population;
-    char indicator[INDICATOR];
+    char *indicator;
     int weekly_count;
     yearWeek_t *year_week;
     double rate_14_day;
     int cumulative_count;
 
-    struct dados *prev;
-    struct dados *next;
 } dados_t;
+
+typedef struct node
+{
+    struct node *prev;
+    struct node *next;
+
+    void *value;
+
+} node_t;
 
 typedef struct lista
 {
-    dados_t *first;
-    dados_t *last;
+    node_t *first;
+    node_t *last;
 } lista_t;
+
+typedef struct pais
+{
+    char *country;
+    char *country_code;
+    char *continent;
+    int population;
+
+    lista_t *dados;
+
+} pais_t;
 
 enum leitura
 {
     L_ALL,
-    L_CONTINENTE//---------------------nao estamos a utilizar----------------------------
+    L_CONTINENTE //---------------------nao estamos a utilizar----------------------------
 };
 enum ordenacao
 {
@@ -72,7 +86,7 @@ typedef struct settings
     yearWeek_t *ord_date;
     enum selecao criterio_sel;   //-D
     enum restricao criterio_res; //-P
-    int restricao_nmin;           //numero de habitantes
+    int restricao_nmin;          //numero de habitantes
     int restricao_nmax;
     yearWeek_t *restricao_date1; //data 1
     yearWeek_t *restricao_date2; //data 2
@@ -83,19 +97,21 @@ typedef struct settings
 } settings_t;
 //listas--------------------
 lista_t *cria_lista();
-void inserir_elemento_final(lista_t *lista, dados_t *item);
+pais_t *cria_pais();
+void inserir_elemento_final(lista_t *lista, void *item);
 lista_t *ler_ficheiro(settings_t *settings);
-dados_t *ler_linha(char *letra);
-void inserir_dados(dados_t *dados, char *inicio_coluna, int coluna);
+void ler_linha(settings_t *settings, lista_t *lista, char *letra);
+void inserir_dados(pais_t *pais, dados_t *dados, char *inicio_coluna, int coluna);
 yearWeek_t *parseYearWeek(char *dados);
-settings_t *troca_datas(settings_t* datas);
+settings_t *troca_datas(settings_t *datas);
 settings_t *verifica_datas(settings_t *datas);
-dados_t *troca(dados_t *left, dados_t *right);
+node_t *troca(node_t *left, node_t *right);
 dados_t *remove_do_inicio(dados_t *headlist);
 void cria_ficheiro(lista_t *root, settings_t *settings);
-void apagar_elemento_lista(lista_t *lista, dados_t *elemento);
-void liberta_lista(lista_t *lista);
-void destruir_dados(dados_t *dados);
+void apagar_elemento_lista(lista_t *lista, node_t *elemento, void (*destruir_fn)(void *));
+void liberta_lista(lista_t *lista, void (*destruir_fn)(void *));
+void destruir_dados(void *p_dados);
+void destruir_pais(void *p_pais);
 //funcionalidades------------
 void ordenacao_pop(dados_t **right, dados_t **left, int *flag);
 void ordenacao_alfa(dados_t **right, dados_t **left, int *flag);
@@ -105,16 +121,19 @@ void restricao_max(lista_t *lista, dados_t **head, settings_t *settings);
 void restricao_date(lista_t *lista, dados_t **head, settings_t *settings);
 void restricao_dates(lista_t *lista, dados_t **head, settings_t *settings);
 lista_t *restricao_lista(lista_t *root, settings_t *anosemana);
-int selecao_inf(dados_t *atual, dados_t *comparacao);
-int criterio_selecao(settings_t *settings, dados_t *atual, dados_t *comparacao);
+short selecao_inf(void *p_atual, void *p_comparacao);
+short (*criterio_selecao(settings_t *settings))(void *, void *);
 void selecionar(settings_t *settings, lista_t *lista);
+dados_t *selecionar_pais(lista_t *lista_dados, short (*cmp_fn)(void *, void *));
 //main-----------------------
-void liberta_settings(settings_t* settings);
+void liberta_settings(settings_t *settings);
 void erros_ficheiro(lista_t *lista);
 settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario);
 void utilizacao();
 settings_t *init_settings();
+
+void imprime_lista_paises(lista_t *lista);
 //---------------------------
-void imprime_lista(lista_t *lista);//para apagar
+void imprime_lista(lista_t *lista); //para apagar
 
 #endif
