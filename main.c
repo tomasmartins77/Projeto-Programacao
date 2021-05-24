@@ -28,9 +28,9 @@ int main(int argc, char *argv[])
                 settings->criterio_leitura = L_ALL; // ficheiro inteiro
             else
             {
-                settings->criterio_leitura = L_CONTINENTE;//---------------------------
+                settings->criterio_leitura = L_CONTINENTE;//-------------------nao utilizado------------------
                 settings->leitura_continente = (char*)malloc(sizeof(char) * (strlen(criterio_L) + 1));
-                if(settings->leitura_continente)
+                if(settings->leitura_continente == NULL)
                 {
                     fprintf(stderr, "Erro a alocar memoria para leitura continente");
                     exit(EXIT_FAILURE);
@@ -139,12 +139,9 @@ int main(int argc, char *argv[])
             root_principal = restricao_lista(root_principal, settings);
 
         root_principal = ordenar_lista(root_principal, settings);
-        cria_ficheiro(root_principal, settings);
     }
-    if(binario == 1)
-    {
-        // cria_ficheiro_binario()
-    }
+
+    cria_ficheiro(root_principal, settings);
     imprime_lista(root_principal);
     liberta_settings(settings);
     liberta_lista(root_principal);
@@ -258,10 +255,7 @@ lista_t *ler_ficheiro(settings_t *settings)
                 dados_t *item = ler_linha(buffer);
                 inserir_elemento_final(lista, item);
             }
-            else
-            {
-                continue; // se nao for o continente passa para a linha seguinte
-            }
+             // se nao for o continente passa para a linha seguinte
         }
     }
 
@@ -747,28 +741,24 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
     }
     while (curr != NULL)
     {
-        fprintf(fp, "%s, %s, %s, %d, %s, %d, %d-%d, %f, %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,
-                curr->weekly_count, curr->year_week->year, curr->year_week->week, curr->rate_14_day, curr->cumulative_count);
-        curr = curr->next;
-    }
-    fclose(fp);
-}
-
-void cria_ficheiro_binario(lista_t *root, settings_t *settings)
-{
-    FILE *fp;
-    dados_t *curr = root->first;
-    fp = fopen(settings->criterio_write, settings->tipo_escrita);
-    if (fp == NULL)
-    {
-        fprintf(stderr, "Erro a criar ficheiro");
-        exit(EXIT_FAILURE);
-    }
-
-    while (curr != NULL)
-    {
-
-        fwrite(curr->country, sizeof(curr->country), 1, fp);
+        if(strcmp(settings->tipo_escrita, "w") == 0)
+        {
+            fprintf(fp, "%s, %s, %s, %d, %s, %d, %d-%d, %f, %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,
+                    curr->weekly_count, curr->year_week->year, curr->year_week->week, curr->rate_14_day, curr->cumulative_count);
+        }
+        else
+        {
+            fwrite(curr->country, sizeof(curr->country), 1, fp);
+            fwrite(curr->country_code, sizeof(curr->country_code), 1, fp);
+            fwrite(curr->continent, sizeof(curr->continent), 1, fp);
+            fwrite(&curr->population, sizeof(curr->population), 1, fp);
+            fwrite(curr->indicator, sizeof(curr->indicator), 1, fp);
+            fwrite(&curr->weekly_count, sizeof(curr->weekly_count), 1, fp);
+            fwrite(&curr->year_week->year, sizeof(curr->year_week->year), 1, fp);
+            fwrite(&curr->year_week->week, sizeof(curr->year_week->week), 1, fp);
+            fwrite(&curr->rate_14_day, sizeof(curr->rate_14_day), 1, fp);
+            fwrite(&curr->cumulative_count, sizeof(curr->cumulative_count), 1, fp);
+        }
         curr = curr->next;
     }
     fclose(fp);
