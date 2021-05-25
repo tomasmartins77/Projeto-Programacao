@@ -97,7 +97,7 @@ typedef struct settings
     char *tipo_escrita;          //tipo de ficheiro a escrever(.csv ou .dat)
 } settings_t;
 
-typedef short (*compare_fn)(void *, void *);
+typedef int (*compare_fn)(void *, void *);
 
 //listas--------------------
 lista_t *cria_lista();
@@ -109,7 +109,7 @@ void inserir_dados(pais_t *pais, dados_t *dados, char *inicio_coluna, int coluna
 yearWeek_t *parseYearWeek(char *dados);
 settings_t *troca_datas(settings_t *datas);
 settings_t *verifica_datas(settings_t *datas);
-node_t *troca(node_t *left, node_t *right);
+void troca(lista_t *lista, node_t *el1, node_t *el2);
 dados_t *remove_do_inicio(dados_t *headlist);
 void cria_ficheiro(lista_t *root, settings_t *settings);
 void apagar_elemento_lista(lista_t *lista, node_t *elemento, void (*destruir_fn)(void *));
@@ -117,18 +117,21 @@ void liberta_lista(lista_t *lista, void (*destruir_fn)(void *));
 void destruir_dados(void *p_dados);
 void destruir_pais(void *p_pais);
 //funcionalidades------------
-void ordenacao_pop(dados_t **right, dados_t **left, int *flag);
-void ordenacao_alfa(dados_t **right, dados_t **left, int *flag);
-lista_t *ordenar_lista(lista_t *root, settings_t *anosemana);
+int ordenacao_pop(pais_t *atual, pais_t *comparacao);
+int ordenacao_alfa(pais_t *atual, pais_t *comparacao);
+int ordenacao_inf_dea(settings_t *settings, pais_t *atual, pais_t *comparacao, char *indicator);
+lista_t *ordenar_lista(lista_t *root, settings_t *settings);
 void restricao_min(lista_t *lista, node_t *node, settings_t *settings);
 void restricao_max(lista_t *lista, node_t *node, settings_t *settings);
 void restricao_date(lista_t *lista, node_t *node, settings_t *settings);
 void restricao_dates(lista_t *lista, node_t *node, settings_t *settings);
 void restricao_lista(lista_t *lista, settings_t *settings);
-short selecao_inf(void *p_atual, void *p_comparacao);
-short (*criterio_selecao(settings_t *settings))(void *, void *);
+int selecao_inf(void *p_atual, void *p_comparacao);
+compare_fn criterio_selecao(settings_t *settings);
+int criterio_ordenacao(settings_t *settings, pais_t *atual, pais_t *comparacao);
 void selecionar(settings_t *settings, lista_t *lista);
-node_t *selecionar_pais(lista_t *lista_dados, short (*cmp_fn)(void *, void *));
+node_t *selecionar_pais(lista_t *lista_dados, compare_fn cmp_fn);
+dados_t *obter_dados_semana(lista_t *lista, yearWeek_t *yearWeek, char *indicator);
 //main-----------------------
 void liberta_settings(settings_t *settings);
 void erros_ficheiro(lista_t *lista);
@@ -139,5 +142,11 @@ settings_t *init_settings();
 void imprime_lista_paises(lista_t *lista);
 //---------------------------
 void imprime_lista(lista_t *lista); //para apagar
+
+void escreve_ficheiro_dat(lista_t *paises, FILE *file);
+void escreve_ficheiro_csv(lista_t *paises, FILE *file);
+int tamanho_lista(lista_t *lista);
+void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista);
+void ler_ficheiro_dat(settings_t *settings, FILE *file, lista_t *lista);
 
 #endif

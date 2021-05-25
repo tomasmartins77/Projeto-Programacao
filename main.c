@@ -138,11 +138,11 @@ int main(int argc, char *argv[])
         if (settings->criterio_res != P_NONE)
             restricao_lista(root_principal, settings);
 
-        // root_principal = ordenar_lista(root_principal, settings);
+        root_principal = ordenar_lista(root_principal, settings);
     }
 
-    //  cria_ficheiro(root_principal, settings);
-    imprime_lista_paises(root_principal);
+    cria_ficheiro(root_principal, settings);
+    //  imprime_lista_paises(root_principal);
     /*   liberta_settings(settings);
     liberta_lista(root_principal, destruir_pais); */
     return 0;
@@ -272,7 +272,6 @@ void inserir_elemento_final(lista_t *lista, void *item)
 lista_t *ler_ficheiro(settings_t *settings)
 {
     FILE *ficheiro;
-    char buffer[MAX_PALAVRAS_LINHAS];
     lista_t *lista = cria_lista(); //cria lista vazia
 
     ficheiro = fopen(settings->criterio_file, settings->tipo_ficheiro); // abre o ficheiro
@@ -281,8 +280,25 @@ lista_t *ler_ficheiro(settings_t *settings)
         fprintf(stderr, "Erro a abrir ficheiro\n");
         exit(EXIT_FAILURE);
     }
+
+    if (strcmp(settings->tipo_ficheiro, "r") == 0)
+    {
+        ler_ficheiro_csv(settings, ficheiro, lista);
+    }
+    else
+    {
+        ler_ficheiro_dat(settings, ficheiro, lista);
+    }
+
+    fclose(ficheiro);
+    return lista;
+}
+
+void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista)
+{
+    char buffer[MAX_PALAVRAS_LINHAS];
     int linhas = 0; // contador de linhas, para nao ler a primeira, pois e o cabecalho
-    while (fgets(buffer, MAX_PALAVRAS_LINHAS, ficheiro) != NULL)
+    while (fgets(buffer, MAX_PALAVRAS_LINHAS, file) != NULL)
     {
         if (linhas == 0)
         {
@@ -291,11 +307,60 @@ lista_t *ler_ficheiro(settings_t *settings)
         }
         ler_linha(settings, lista, buffer);
     }
-
-    fclose(ficheiro);
-    return lista;
 }
 
+void ler_ficheiro_dat(settings_t *settings, FILE *file, lista_t *lista)
+{
+    int count_paises;
+
+    fread(&count_paises, sizeof(int), 1, file);
+
+    for (; count_paises > 0; count_paises--)
+    {
+        int count, count_dados;
+
+        pais_t *pais = cria_pais();
+
+        fread(&count, sizeof(int), 1, file);
+        pais->country = malloc(sizeof(char) * count);
+        fread(pais->country, sizeof(char), count, file);
+
+        fread(&count, sizeof(int), 1, file);
+        pais->country_code = malloc(sizeof(char) * count);
+        fread(pais->country_code, sizeof(char), count, file);
+
+        fread(&count, sizeof(int), 1, file);
+        pais->continent = malloc(sizeof(char) * count);
+        fread(pais->continent, sizeof(char), count, file);
+
+        fread(&pais->population, sizeof(int), 1, file);
+
+        fread(&count_dados, sizeof(int), 1, file);
+        pais->dados = cria_lista();
+
+        for (; count_dados > 0; count_dados--)
+        {
+            dados_t *dados = malloc(sizeof(dados_t));
+
+            fread(&count, sizeof(int), 1, file);
+            dados->indicator = malloc(sizeof(char) * count);
+            fread(dados->indicator, sizeof(char), count, file);
+
+            fread(&dados->weekly_count, sizeof(int), 1, file);
+
+            dados->year_week = malloc(sizeof(yearWeek_t));
+            fread(dados->year_week, sizeof(yearWeek_t), 1, file);
+
+            fread(&dados->rate_14_day, sizeof(double), 1, file);
+
+            fread(&dados->cumulative_count, sizeof(int), 1, file);
+
+            dados->pais = pais;
+            inserir_elemento_final(pais->dados, dados);
+        }
+        inserir_elemento_final(lista, pais);
+    }
+}
 /** \brief le a linha, divide-a em varias strings e coloca-as nas diferentes variaveis de um node
  *
  * \param letra char* linha lida do ficheiro
@@ -456,12 +521,41 @@ settings_t *verifica_datas(settings_t *datas)
  * \return node_t* nodes trocados
  *
  */
-node_t *troca(node_t *left, node_t *right)
+/* void troca(lista_t *lista, node_t *el1, node_t *el2)
 {
-    left->next = right->next;
-    right->next = left;
-    return right;
-}
+
+    node_t *el1_prev = el1->prev;
+    node_t *el1_next = el1->next;
+    node_t *el2_prev = el2->prev;
+    node_t *el2_next = el2->next;
+
+    el1->prev = el2_prev;
+    el1->next = el2_next;
+
+    el2->prev = el1_prev;
+    el2->next = el1_next;
+
+    if (el1_prev != NULL)
+        el1_prev->next = el2;
+    else
+        //se el1 nao tiver um elemento antes, el2 passa a ser o inicio da lista
+        lista->first = el2;
+
+    if (el1_next != NULL)
+        el1_next->prev = el2;
+    else
+        lista->last = el2;
+
+    if (el2_prev != NULL)
+        el2_prev->next = el1;
+    else
+        lista->first = el1;
+
+    if (el2_next != NULL)
+        el2_next->prev = el1;
+    else
+        lista->last = el1;
+} */
 
 //-------------------------------------------------------------------------------------
 /** \brief ordena dois nodes de acordo com a populacao decrescente, se a populacao do node right for menor
@@ -473,15 +567,16 @@ node_t *troca(node_t *left, node_t *right)
  * \return void
  *
  */
-/* void ordenacao_pop(dados_t **right, dados_t **left, int *flag)
+int ordenacao_pop(pais_t *atual, pais_t *comparacao)
 {
-    if ((*right)->population < (*right)->next->population) // se menor, troca
-    {
-        (*left)->next = troca((*right), (*right)->next);
-        (*flag) = 1;
-    }
+    int dif = atual->population - comparacao->population;
+
+    if (dif == 0)
+        return ordenacao_alfa(atual, comparacao);
+
+    return dif;
 }
- */
+
 /** \brief ordena a lista por ordem alfabetica
  *
  * \param right dados_t**
@@ -490,52 +585,88 @@ node_t *troca(node_t *left, node_t *right)
  * \return void
  *
  */
-/* void ordenacao_alfa(dados_t **right, dados_t **left, int *flag)
+int ordenacao_alfa(pais_t *atual, pais_t *comparacao)
 {
-    if (strcmp((*right)->country, (*right)->next->country) > 0) // se > 0, o node right->next tem uma letra
-    {
-        // mais abaixo no alfabeto
-        (*left)->next = troca((*right), (*right)->next);
-        (*flag) = 1;
-    }
-} */
+    return strcmp(atual->country, comparacao->country);
+}
+
+int ordenacao_inf_dea(settings_t *settings, pais_t *atual, pais_t *comparacao, char *indicator)
+{
+
+    dados_t *atual_dados = obter_dados_semana(atual->dados, settings->ord_date, indicator);
+    dados_t *comparacao_dados = obter_dados_semana(comparacao->dados, settings->ord_date, indicator);
+
+    int dif = (atual_dados == NULL ? 0 : atual_dados->weekly_count) - (comparacao_dados == NULL ? 0 : comparacao_dados->weekly_count);
+
+    if (dif == 0)
+        return ordenacao_alfa(atual, comparacao);
+
+    return dif;
+}
+
+int criterio_ordenacao(settings_t *settings, pais_t *atual, pais_t *comparacao)
+{
+    if (settings->criterio_ord == S_ALFA)
+        return ordenacao_alfa(atual, comparacao);
+    if (settings->criterio_ord == S_POP)
+        return ordenacao_pop(atual, comparacao);
+    if (settings->criterio_ord == S_INF)
+        return ordenacao_inf_dea(settings, atual, comparacao, "cases");
+    if (settings->criterio_ord == S_DEA)
+        return ordenacao_inf_dea(settings, atual, comparacao, "deaths");
+    return 0;
+}
 
 /** \brief ordena a lista
  *
- * \param root lista_t*
+ * \param root lista_t* 
  * \param settings settings_t*
  * \return lista_t*
  *
  */
-/* lista_t *ordenar_lista(lista_t *root, settings_t *settings)
+lista_t *ordenar_lista(lista_t *root, settings_t *settings)
 {
-    int flag = 1;
-    dados_t *left, *right, *head, aux;
-    head = &aux;
-    head->next = root->first;
-    if (root != NULL && root->first->next != NULL)
-    {
-        while (flag)
-        {
-            flag = 0;
-            left = head;
-            right = head->next;
-            while (right->next != NULL)
-            {
-                if (settings->criterio_ord == S_ALFA)
-                    ordenacao_alfa(&right, &left, &flag);
-                else if (settings->criterio_ord == S_POP)
-                    ordenacao_pop(&right, &left, &flag);
+    node_t *el_atual, *el_comparacao, *aux;
 
-                left = right;
-                if (right->next != NULL)
-                    right = right->next;
-            }
+    lista_t *nova_lista = cria_lista();
+
+    el_atual = root->first;
+
+    while (el_atual != NULL)
+    {
+        aux = el_atual;
+        el_comparacao = el_atual->next;
+
+        while (el_comparacao != NULL)
+        {
+            if (criterio_ordenacao(settings, aux->value, el_comparacao->value) > 0)
+                aux = el_comparacao; //el_comparacao é menor do que aux
+            el_comparacao = el_comparacao->next;
         }
+        inserir_elemento_final(nova_lista, aux->value);
+        apagar_elemento_lista(root, aux, NULL);
+        el_atual = root->first;
     }
-    root->first = head->next;
-    return root;
-} */
+    free(root);
+    return nova_lista;
+}
+
+dados_t *obter_dados_semana(lista_t *lista, yearWeek_t *yearWeek, char *indicator)
+{
+    node_t *aux = lista->first;
+
+    dados_t *aux_dados;
+
+    while (aux != NULL)
+    {
+        aux_dados = aux->value;
+
+        if (aux_dados->year_week->year == yearWeek->year && aux_dados->year_week->week == yearWeek->week && strcmp(aux_dados->indicator, indicator) == 0)
+            return aux_dados;
+        aux = aux->next;
+    }
+    return NULL;
+}
 
 //--------------------------------------------------------------------------------------------
 
@@ -718,7 +849,7 @@ void restricao_lista(lista_t *lista, settings_t *settings)
  *
  */
 
-short selecao_inf(void *p_atual, void *p_comparacao)
+int selecao_inf(void *p_atual, void *p_comparacao)
 {
     dados_t *atual = p_atual;
     dados_t *comparacao = p_comparacao;
@@ -749,7 +880,7 @@ short selecao_inf(void *p_atual, void *p_comparacao)
     return 0;
 }
 
-short selecao_dea(void *p_atual, void *p_comparacao)
+int selecao_dea(void *p_atual, void *p_comparacao)
 {
     dados_t *atual = p_atual;
     dados_t *comparacao = p_comparacao;
@@ -780,7 +911,7 @@ short selecao_dea(void *p_atual, void *p_comparacao)
     return 0;
 }
 
-short selecao_racio_inf(void *p_atual, void *p_comparacao)
+int selecao_racio_inf(void *p_atual, void *p_comparacao)
 {
     dados_t *atual = p_atual;
     dados_t *comparacao = p_comparacao;
@@ -810,7 +941,7 @@ short selecao_racio_inf(void *p_atual, void *p_comparacao)
     return 0;
 }
 
-short selecao_racio_dea(void *p_atual, void *p_comparacao)
+int selecao_racio_dea(void *p_atual, void *p_comparacao)
 {
     dados_t *atual = p_atual;
     dados_t *comparacao = p_comparacao;
@@ -865,17 +996,17 @@ void imprime_lista_paises(lista_t *lista)
     }
 }
 //----------------------------------^^^^eliminar no final^^^^-------------------------------------------------
-/** \brief cria um ficheiro csv
+/** \brief cria um ficheiro
  *
  * \param root lista_t* lista que vai criar o ficheiro
  * \param settings settings_t* saber qual o nome do ficheiro
  * \return void
  *
  */
-/* void cria_ficheiro(lista_t *root, settings_t *settings)
+void cria_ficheiro(lista_t *root, settings_t *settings)
 {
     FILE *fp;
-    dados_t *curr = root->first;
+
     fp = fopen(settings->criterio_write, settings->tipo_escrita);
     if (fp == NULL)
     {
@@ -884,32 +1015,110 @@ void imprime_lista_paises(lista_t *lista)
     }
     if (strcmp(settings->tipo_escrita, "w") == 0)
     {
-        fprintf(fp, "country,country_code,continent,population,indicator,weekly_count,year_week,rate_14_day,cumulative_count\n");
+        escreve_ficheiro_csv(root, fp);
     }
+    else
+    {
+        escreve_ficheiro_dat(root, fp);
+    }
+
+    fclose(fp);
+}
+
+void escreve_ficheiro_csv(lista_t *paises, FILE *file)
+{
+    fprintf(file, "country,country_code,continent,population,indicator,weekly_count,year_week,rate_14_day,cumulative_count\n");
+
+    node_t *curr = paises->first;
+
     while (curr != NULL)
     {
-        if (strcmp(settings->tipo_escrita, "w") == 0)
+        pais_t *pais = curr->value;
+
+        node_t *curr_dados = pais->dados->first;
+
+        while (curr_dados != NULL)
         {
-            fprintf(fp, "%s, %s, %s, %d, %s, %d, %d-%d, %f, %d\n", curr->country, curr->country_code, curr->continent, curr->population, curr->indicator,
-                    curr->weekly_count, curr->year_week->year, curr->year_week->week, curr->rate_14_day, curr->cumulative_count);
+            dados_t *dados = curr_dados->value;
+
+            fprintf(file, "%s,%s,%s,%d,%s,%d,%04d-%02d,%f,%d\n", pais->country, pais->country_code,
+                    pais->continent, pais->population, dados->indicator, dados->weekly_count,
+                    dados->year_week->year, dados->year_week->week, dados->rate_14_day, dados->cumulative_count);
+
+            curr_dados = curr_dados->next;
         }
-        else
-        {
-            fwrite(curr->country, sizeof(curr->country), 1, fp);
-            fwrite(curr->country_code, sizeof(curr->country_code), 1, fp);
-            fwrite(curr->continent, sizeof(curr->continent), 1, fp);
-            fwrite(&curr->population, sizeof(curr->population), 1, fp);
-            fwrite(curr->indicator, sizeof(curr->indicator), 1, fp);
-            fwrite(&curr->weekly_count, sizeof(curr->weekly_count), 1, fp);
-            fwrite(&curr->year_week->year, sizeof(curr->year_week->year), 1, fp);
-            fwrite(&curr->year_week->week, sizeof(curr->year_week->week), 1, fp);
-            fwrite(&curr->rate_14_day, sizeof(curr->rate_14_day), 1, fp);
-            fwrite(&curr->cumulative_count, sizeof(curr->cumulative_count), 1, fp);
-        }
+
         curr = curr->next;
     }
-    fclose(fp);
-} */
+}
+
+void escreve_ficheiro_dat(lista_t *paises, FILE *file)
+{
+    node_t *curr = paises->first;
+
+    int count_paises = tamanho_lista(paises);
+
+    fwrite(&count_paises, sizeof(int), 1, file);
+
+    while (curr != NULL)
+    {
+        pais_t *pais = curr->value;
+        int count_dados = tamanho_lista(pais->dados);
+        int count;
+
+        if (count_dados == 0)
+            continue;
+
+        count = strlen(pais->country) + 1;
+        fwrite(&count, sizeof(int), 1, file);
+        fwrite(pais->country, sizeof(char), count, file);
+        count = strlen(pais->country_code) + 1;
+        fwrite(&count, sizeof(int), 1, file);
+        fwrite(pais->country_code, sizeof(char), count, file);
+        count = strlen(pais->continent) + 1;
+        fwrite(&count, sizeof(int), 1, file);
+        fwrite(pais->continent, sizeof(char), count, file);
+
+        fwrite(&pais->population, sizeof(int), 1, file);
+
+        // escrever dados
+        fwrite(&count_dados, sizeof(int), 1, file);
+
+        node_t *curr_dados = pais->dados->first;
+        while (curr_dados != NULL)
+        {
+            dados_t *dados = curr_dados->value;
+
+            count = strlen(dados->indicator) + 1;
+            fwrite(&count, sizeof(int), 1, file);
+            fwrite(dados->indicator, sizeof(char), count, file);
+
+            fwrite(&dados->weekly_count, sizeof(int), 1, file);
+
+            fwrite(&dados->year_week, sizeof(yearWeek_t), 1, file);
+
+            fwrite(&dados->rate_14_day, sizeof(double), 1, file);
+
+            fwrite(&dados->cumulative_count, sizeof(int), 1, file);
+
+            curr_dados = curr_dados->next;
+        }
+
+        curr = curr->next;
+    }
+}
+
+int tamanho_lista(lista_t *lista)
+{
+    int count = 0;
+    node_t *curr = lista->first;
+    while (curr != NULL)
+    {
+        count++;
+        curr = curr->next;
+    }
+    return count;
+}
 
 /** \brief apaga um certo elemento da lista
  *
