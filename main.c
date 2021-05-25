@@ -135,9 +135,9 @@ int main(int argc, char *argv[])
     {
         if (settings->criterio_sel != D_NONE)
             selecionar(settings, root_principal);
-        /*  if (settings->criterio_res != P_NONE)
-            root_principal = restricao_lista(root_principal, settings);
- */
+        if (settings->criterio_res != P_NONE)
+            restricao_lista(root_principal, settings);
+
         // root_principal = ordenar_lista(root_principal, settings);
     }
 
@@ -227,6 +227,7 @@ void insere_pais_dados_lista(lista_t *lista, pais_t *pais, dados_t *dados)
     {
         destruir_pais(pais);
     }
+    dados->pais = aux->value;
     inserir_elemento_final(((pais_t *)aux->value)->dados, dados); //inserir os novos dados na lista do pais
 }
 
@@ -331,7 +332,7 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra)
     *letra = '\0';
     inserir_dados(pais, dados, inicio_coluna, coluna);
 
-    if (settings->criterio_leitura == L_CONTINENTE && strcmp(pais->country, settings->leitura_continente) != 0)
+    if (settings->criterio_leitura == L_CONTINENTE && strcmp(pais->continent, settings->leitura_continente) != 0)
     {
         //descartar linha
         destruir_pais(pais);
@@ -563,17 +564,12 @@ node_t *troca(node_t *left, node_t *right)
  * \return void
  *
  */
-/* void restricao_min(lista_t *lista, dados_t **head, settings_t *settings)
+void restricao_min(lista_t *lista, node_t *node, settings_t *settings)
 {
-    if ((*head)->population < settings->restricao_nmin) // se menor que o minimo, apaga
-    {
-        (*head) = apagar_elemento_restricao(lista, (*head));
-    }
-    else
-    {
-        (*head) = (*head)->next;
-    }
-} */
+    pais_t *pais = node->value;
+    if (pais->population < settings->restricao_nmin) // se menor que o minimo, apaga
+        apagar_elemento_lista(lista, node, destruir_pais);
+}
 
 /** \brief apenas dados de países com menos de n mil habitantes
  *
@@ -583,18 +579,12 @@ node_t *troca(node_t *left, node_t *right)
  * \return void
  *
  */
-/* void restricao_max(lista_t *lista, dados_t **head, settings_t *settings)
+void restricao_max(lista_t *lista, node_t *node, settings_t *settings)
 {
-    if ((*head)->population > settings->restricao_nmax) // se maior que o maximo, apaga
-    {
-        (*head) = apagar_elemento_restricao(lista, (*head));
-    }
-    else
-    {
-        (*head) = (*head)->next;
-    }
-} */
-
+    pais_t *pais = node->value;
+    if (pais->population > settings->restricao_nmax) // se maior que o maximo, apaga
+        apagar_elemento_lista(lista, node, destruir_pais);
+}
 /** \brief  apenas dados relativos à semana indicada
  *
  * \param lista lista_t* primeiro ou ultimo elemento da lista
@@ -603,17 +593,58 @@ node_t *troca(node_t *left, node_t *right)
  * \return void
  *
  */
-/* void restricao_date(lista_t *lista, dados_t **head, settings_t *anosemana)
+void restricao_date(lista_t *lista, node_t *node, settings_t *settings)
 {
-    if ((*head)->year_week->week != anosemana->restricao_date1->week || (*head)->year_week->year != anosemana->restricao_date1->year)
+    pais_t *pais = node->value;
+
+    if (pais->dados == NULL)
+        return;
+
+    node_t *curr = pais->dados->first, *aux;
+    dados_t *aux_dados;
+
+    while (curr != NULL)
     {
-        (*head) = apagar_elemento_restricao(lista, (*head)); // se nao for a semana indicada, apaga
+        aux = curr;
+        curr = curr->next;
+        aux_dados = aux->value;
+
+        if (aux_dados->year_week->week != settings->restricao_date1->week || aux_dados->year_week->year != settings->restricao_date1->year)
+            apagar_elemento_lista(lista, node, destruir_dados); // se nao for a semana indicada, apaga o node que contem os dados
     }
-    else
+}
+
+short entre_semanas(yearWeek_t *data, yearWeek_t *data1, yearWeek_t *data2)
+{
+    if (data->year <= data1->year || data->year >= data2->year)
     {
-        (*head) = (*head)->next;
+        // se nao e um ano dentro do intervalo, nao entra
+        if (data->year == data1->year && data->year == data2->year)
+        {
+            // se tiver no mesmo ano
+            if (data->week >= data1->week && data->week <= data2->week)
+                // se tiver dentro do intervalo indicado, retorna
+                return 1;
+        }
+        else if (data->year == data1->year)
+        {
+            // ano da data 1 e diferente do da data 2
+            if (data->week >= data1->week)
+                // se tiver dentro do intervalo, retorna
+                return 1;
+        }
+        else if (data->year == data2->year)
+        {
+            // ano da data 2 e diferente do da data 1
+            if (data->week <= data2->week)
+                // se tiver dentro do intervalo, retorna
+                return 1;
+        }
+        // se nao entrar nos outros ifs, entao nao esta no intervalo
+        return 0;
     }
-} */
+    return 1;
+}
 
 /** \brief apenas dados entre as semanas indicadas
  *
@@ -623,46 +654,26 @@ node_t *troca(node_t *left, node_t *right)
  * \return void
  *
  */
-/* void restricao_dates(lista_t *lista, dados_t **head, settings_t *anosemana)
+void restricao_dates(lista_t *lista, node_t *node, settings_t *settings)
 {
-    if ((*head)->year_week->year <= anosemana->restricao_date1->year || (*head)->year_week->year >= anosemana->restricao_date2->year)
+    pais_t *pais = node->value;
+
+    if (pais->dados == NULL)
+        return;
+
+    node_t *curr = pais->dados->first, *aux;
+    dados_t *aux_dados;
+
+    while (curr != NULL)
     {
-        // se nao e um ano dentro do intervalo, nao entra
-        if ((*head)->year_week->year == anosemana->restricao_date1->year && (*head)->year_week->year == anosemana->restricao_date2->year)
-        {
-            // se tiver no mesmo ano
-            if ((*head)->year_week->week >= anosemana->restricao_date1->week && (*head)->year_week->week <= anosemana->restricao_date2->week)
-            {
-                // se tiver dentro do intervalo indicado, retorna
-                (*head) = (*head)->next;
-                return;
-            }
-        }
-        else if ((*head)->year_week->year == anosemana->restricao_date1->year)
-        {
-            // ano da data 1 e diferente do da data 2
-            if ((*head)->year_week->week >= anosemana->restricao_date1->week)
-            {
-                // se tiver dentro do intervalo, retorna
-                (*head) = (*head)->next;
-                return;
-            }
-        }
-        else if ((*head)->year_week->year == anosemana->restricao_date2->year)
-        {
-            // ano da data 2 e diferente do da data 1
-            if ((*head)->year_week->week <= anosemana->restricao_date2->week)
-            {
-                // se tiver dentro do intervalo, retorna
-                (*head) = (*head)->next;
-                return;
-            }
-        }
-        (*head) = apagar_elemento_restricao(lista, (*head)); // se nao entrar nos outros ifs, entao e para apagar pq
-        return;                                              // nao esta no intervalo
+        aux = curr;
+        curr = curr->next;
+        aux_dados = aux->value;
+
+        if (!entre_semanas(aux_dados->year_week, settings->restricao_date1, settings->restricao_date2))
+            apagar_elemento_lista(lista, node, destruir_dados); // se nao for a semana indicada, apaga o node que contem os dados
     }
-    (*head) = (*head)->next;
-} */
+}
 
 /** \brief restringe a lista de acordo com varias especificacoes referidas pelo utilizador
  *
@@ -671,36 +682,32 @@ node_t *troca(node_t *left, node_t *right)
  * \return lista_t* lista restringida
  *
  */
-/* lista_t *restricao_lista(lista_t *lista, settings_t *settings)
+void restricao_lista(lista_t *lista, settings_t *settings)
 {
-    dados_t *head, aux;
+    node_t *curr, *aux;
 
     settings->restricao_nmin *= 1000; // n mil habitantes
     settings->restricao_nmax *= 1000;
 
-    head = &aux;
-    head = lista->first;
+    curr = lista->first;
 
-    if (lista != NULL && lista->first->next != NULL)
+    while (curr != NULL) // loop que verifica a lista inteira
     {
-        while (head != NULL) // loop que verifica a lista inteira
+        aux = curr;
+        curr = curr->next;
+        if (settings->criterio_res == P_MIN) //apenas dados de países com mais de n mil habitantes
+            restricao_min(lista, aux, settings);
+        else if (settings->criterio_res == P_MAX) //apenas dados de países com menos de n mil habitantes
+            restricao_max(lista, aux, settings);
+        else if (settings->criterio_res == P_DATE) //apenas dados relativos à semana indicada
+            restricao_date(lista, aux, settings);
+        else if (settings->criterio_res == P_DATES) //apenas dados entre as semanas indicadas
         {
-            if (settings->criterio_res == P_MIN) //apenas dados de países com mais de n mil habitantes
-                restricao_min(lista, &head, settings);
-            else if (settings->criterio_res == P_MAX) //apenas dados de países com menos de n mil habitantes
-                restricao_max(lista, &head, settings);
-            else if (settings->criterio_res == P_DATE) //apenas dados relativos à semana indicada
-                restricao_date(lista, &head, settings);
-            else if (settings->criterio_res == P_DATES) //apenas dados entre as semanas indicadas
-            {
-                settings = verifica_datas(settings);
-                restricao_dates(lista, &head, settings);
-            }
+            settings = verifica_datas(settings);
+            restricao_dates(lista, aux, settings);
         }
     }
-    lista->last = head;
-    return lista;
-} */
+}
 //--------------------------------------------------------------------------------------
 
 /** \brief selecionar, para cada pais, a semana com mais infetados
@@ -710,8 +717,6 @@ node_t *troca(node_t *left, node_t *right)
  * \return int: 0,1,2
  *
  */
-
-//TODO - deaths
 
 short selecao_inf(void *p_atual, void *p_comparacao)
 {
@@ -733,6 +738,97 @@ short selecao_inf(void *p_atual, void *p_comparacao)
     if (atual->weekly_count == comparacao->weekly_count)
     {
 
+        if (atual->year_week->year == comparacao->year_week->year) //se for o mesmo ano
+        {
+            if (atual->year_week->week < comparacao->year_week->week)
+                return 1; //descartar o elemento atual
+        }
+        if (atual->year_week->year < comparacao->year_week->year)
+            return 1; //o elemento atual é mais antigo, descartamos o elemento atual
+    }
+    return 0;
+}
+
+short selecao_dea(void *p_atual, void *p_comparacao)
+{
+    dados_t *atual = p_atual;
+    dados_t *comparacao = p_comparacao;
+
+    //se o elemento novo nao tiver o indicador "deaths"
+    if (strcmp(comparacao->indicator, "deaths") != 0)
+        return 0; //"descartar" o novo elemento
+
+    //se o elemento atual for nulo, ficamos com o comparacao
+    if (atual == NULL)
+        return 1;
+
+    if (atual->weekly_count < comparacao->weekly_count)
+        return 1; //descarta o elemento atual
+
+    //no caso de empate, para desempatar escolhe-se a semana mais recente
+    if (atual->weekly_count == comparacao->weekly_count)
+    {
+
+        if (atual->year_week->year == comparacao->year_week->year) //se for o mesmo ano
+        {
+            if (atual->year_week->week < comparacao->year_week->week)
+                return 1; //descartar o elemento atual
+        }
+        if (atual->year_week->year < comparacao->year_week->year)
+            return 1; //o elemento atual é mais antigo, descartamos o elemento atual
+    }
+    return 0;
+}
+
+short selecao_racio_inf(void *p_atual, void *p_comparacao)
+{
+    dados_t *atual = p_atual;
+    dados_t *comparacao = p_comparacao;
+
+    //se o elemento novo nao tiver o indicador "cases"
+    if (strcmp(comparacao->indicator, "cases") != 0)
+        return 0; //"descartar" o novo elemento
+
+    //se o elemento atual for nulo, ficamos com o comparacao
+    if (atual == NULL)
+        return 1;
+
+    if (atual->rate_14_day < comparacao->rate_14_day)
+        return 1; //descarta o elemento atual
+
+    //no caso de empate, para desempatar escolhe-se a semana mais recente
+    if (atual->rate_14_day == comparacao->rate_14_day)
+    {
+        if (atual->year_week->year == comparacao->year_week->year) //se for o mesmo ano
+        {
+            if (atual->year_week->week < comparacao->year_week->week)
+                return 1; //descartar o elemento atual
+        }
+        if (atual->year_week->year < comparacao->year_week->year)
+            return 1; //o elemento atual é mais antigo, descartamos o elemento atual
+    }
+    return 0;
+}
+
+short selecao_racio_dea(void *p_atual, void *p_comparacao)
+{
+    dados_t *atual = p_atual;
+    dados_t *comparacao = p_comparacao;
+
+    //se o elemento novo nao tiver o indicador "deaths"
+    if (strcmp(comparacao->indicator, "deaths") != 0)
+        return 0; //"descartar" o novo elemento
+
+    //se o elemento atual for nulo, ficamos com o comparacao
+    if (atual == NULL)
+        return 1;
+
+    if (atual->rate_14_day < comparacao->rate_14_day)
+        return 1; //descarta o elemento atual
+
+    //no caso de empate, para desempatar escolhe-se a semana mais recente
+    if (atual->rate_14_day == comparacao->rate_14_day)
+    {
         if (atual->year_week->year == comparacao->year_week->year) //se for o mesmo ano
         {
             if (atual->year_week->week < comparacao->year_week->week)
@@ -833,7 +929,8 @@ void apagar_elemento_lista(lista_t *lista, node_t *elemento, void (*destruir_fn)
         lista->last = elemento->prev;
     else
         elemento->next->prev = elemento->prev;
-    destruir_fn(elemento->value);
+    if (destruir_fn != NULL)
+        destruir_fn(elemento->value);
     free(elemento);
 }
 
@@ -911,12 +1008,17 @@ void liberta_settings(settings_t *settings)
  * \return int
  *
  */
-short (*criterio_selecao(settings_t *settings))(void *, void *)
+compare_fn criterio_selecao(settings_t *settings)
 {
-    if (settings->criterio_sel == D_INF) // selecao inf
+    if (settings->criterio_sel == D_INF) // selecao infetados
         return selecao_inf;
-    // else if (...)
-    return 0;
+    if (settings->criterio_sel == D_DEA) //selecao deaths
+        return selecao_dea;
+    if (settings->criterio_sel == D_RACIOINF) // selecao racio infetados / 100 mil de habitantes
+        return selecao_racio_inf;
+    if (settings->criterio_sel == D_RACIODEA) // selecao racio mortes / 1 milhao de habitantes
+        return selecao_racio_dea;
+    return NULL;
 }
 
 /** \brief
@@ -929,36 +1031,38 @@ short (*criterio_selecao(settings_t *settings))(void *, void *)
 void selecionar(settings_t *settings, lista_t *lista)
 {
     node_t *el_atual = lista->first;
-    short (*cmp_fn)(void *, void *) = criterio_selecao(settings);
+    compare_fn cmp_fn = criterio_selecao(settings);
 
     while (el_atual != NULL)
     {
         node_t *aux = el_atual;
         pais_t *pais_atual = el_atual->value;
-        dados_t *resultado = selecionar_pais(pais_atual->dados, cmp_fn);
+        node_t *resultado = selecionar_pais(pais_atual->dados, cmp_fn);
         el_atual = el_atual->next;
 
         if (resultado == NULL)
             apagar_elemento_lista(lista, aux, destruir_pais);
         else
         {
-            liberta_lista(pais_atual->dados, destruir_dados);
-            pais_atual->dados = cria_lista();
-            inserir_elemento_final(pais_atual->dados, resultado);
+            dados_t *resultado_dados = resultado->value;
+            apagar_elemento_lista(pais_atual->dados, resultado, NULL); //remove elemento da lista, sem o destruir
+            liberta_lista(pais_atual->dados, destruir_dados);          // destroi o restante da lista
+            pais_atual->dados = cria_lista();                          // cria uma nova lista com apenas o elemento selecionado
+            inserir_elemento_final(pais_atual->dados, resultado_dados);
         }
     }
 }
 
-dados_t *selecionar_pais(lista_t *lista_dados, short (*cmp_fn)(void *, void *))
+node_t *selecionar_pais(lista_t *lista_dados, compare_fn cmp_fn)
 {
-    dados_t *resultado = NULL;
+    node_t *resultado = NULL;
     node_t *aux = lista_dados->first;
 
     while (aux != NULL)
     {
-        if (cmp_fn(resultado, aux->value))
+        if (cmp_fn(resultado == NULL ? NULL : resultado->value, aux->value))
         {
-            resultado = aux->value;
+            resultado = aux;
         }
         aux = aux->next;
     }

@@ -13,16 +13,6 @@ typedef struct yearWeek
     int week;
 } yearWeek_t;
 
-typedef struct dados
-{
-    char *indicator;
-    int weekly_count;
-    yearWeek_t *year_week;
-    double rate_14_day;
-    int cumulative_count;
-
-} dados_t;
-
 typedef struct node
 {
     struct node *prev;
@@ -48,6 +38,17 @@ typedef struct pais
     lista_t *dados;
 
 } pais_t;
+
+typedef struct dados
+{
+    char *indicator;
+    int weekly_count;
+    yearWeek_t *year_week;
+    double rate_14_day;
+    int cumulative_count;
+    pais_t *pais;
+
+} dados_t;
 
 enum leitura
 {
@@ -95,6 +96,9 @@ typedef struct settings
     char *tipo_ficheiro;         //tipo de ficheiro a ler(.csv ou .dat)
     char *tipo_escrita;          //tipo de ficheiro a escrever(.csv ou .dat)
 } settings_t;
+
+typedef short (*compare_fn)(void *, void *);
+
 //listas--------------------
 lista_t *cria_lista();
 pais_t *cria_pais();
@@ -116,15 +120,15 @@ void destruir_pais(void *p_pais);
 void ordenacao_pop(dados_t **right, dados_t **left, int *flag);
 void ordenacao_alfa(dados_t **right, dados_t **left, int *flag);
 lista_t *ordenar_lista(lista_t *root, settings_t *anosemana);
-void restricao_min(lista_t *lista, dados_t **head, settings_t *settings);
-void restricao_max(lista_t *lista, dados_t **head, settings_t *settings);
-void restricao_date(lista_t *lista, dados_t **head, settings_t *settings);
-void restricao_dates(lista_t *lista, dados_t **head, settings_t *settings);
-lista_t *restricao_lista(lista_t *root, settings_t *anosemana);
+void restricao_min(lista_t *lista, node_t *node, settings_t *settings);
+void restricao_max(lista_t *lista, node_t *node, settings_t *settings);
+void restricao_date(lista_t *lista, node_t *node, settings_t *settings);
+void restricao_dates(lista_t *lista, node_t *node, settings_t *settings);
+void restricao_lista(lista_t *lista, settings_t *settings);
 short selecao_inf(void *p_atual, void *p_comparacao);
 short (*criterio_selecao(settings_t *settings))(void *, void *);
 void selecionar(settings_t *settings, lista_t *lista);
-dados_t *selecionar_pais(lista_t *lista_dados, short (*cmp_fn)(void *, void *));
+node_t *selecionar_pais(lista_t *lista_dados, short (*cmp_fn)(void *, void *));
 //main-----------------------
 void liberta_settings(settings_t *settings);
 void erros_ficheiro(lista_t *lista);
