@@ -1,11 +1,5 @@
 #include "headers.h"
 
-/** \brief
- *
- * \param lista lista_t*
- * \return int
- *
- */
 int tamanho_lista(lista_t *lista)
 {
     int count = 0;
@@ -18,40 +12,31 @@ int tamanho_lista(lista_t *lista)
     return count;
 }
 
-/** \brief
- *
- * \param  void*
- * \return void apagar_elemento_lista(lista_t *lista, node_t *elemento, void
- *
- */
 void apagar_elemento_lista(lista_t *lista, node_t *elemento, void (*destruir_fn)(void *))
 {
+    //se for o primeiro da lista
     if (elemento->prev == NULL)
         lista->first = elemento->next;
     else
         elemento->prev->next = elemento->next;
 
+    //se for o ultimo da lista
     if (elemento->next == NULL)
         lista->last = elemento->prev;
     else
         elemento->next->prev = elemento->prev;
+
     if (destruir_fn != NULL)
         destruir_fn(elemento->value);
     free(elemento);
 }
 
-/** \brief
- *
- * \param  void*
- * \return void liberta_lista(lista_t *lista, void
- *
- */
 void liberta_lista(lista_t *lista, void (*destruir_fn)(void *))
 {
     node_t *curr;
     node_t *next = lista->first;
 
-    while (next != NULL) // loop que liberta linha a linha
+    while (next != NULL) // loop que liberta elemento a elemento
     {
         curr = next;
         next = next->next;
@@ -61,12 +46,6 @@ void liberta_lista(lista_t *lista, void (*destruir_fn)(void *))
     free(lista);
 }
 
-/** \brief
- *
- * \param p_dados void*
- * \return void
- *
- */
 void destruir_dados(void *p_dados)
 {
     dados_t *dados = p_dados;
@@ -75,30 +54,19 @@ void destruir_dados(void *p_dados)
     free(dados);
 }
 
-/** \brief
- *
- * \param p_pais void*
- * \return void
- *
- */
 void destruir_pais(void *p_pais)
 {
     pais_t *pais = p_pais;
+    //apaga os dados fixos
     free(pais->country_code);
     free(pais->country);
     free(pais->continent);
     if (pais->dados != NULL)
+        //apaga tambem os dados variaveis
         liberta_lista(pais->dados, destruir_dados);
     free(pais);
 }
 
-/** \brief
- *
- * \param lista lista_t*
- * \param item void*
- * \return void
- *
- */
 void inserir_elemento_final(lista_t *lista, void *item)
 {
     node_t *node = (node_t *)malloc(sizeof(node_t));
@@ -123,11 +91,6 @@ void inserir_elemento_final(lista_t *lista, void *item)
     lista->last = node;
 }
 
-/** \brief
- *
- * \return pais_t*
- *
- */
 pais_t *cria_pais()
 {
     pais_t *pais = (pais_t *)malloc(sizeof(pais_t));
@@ -144,11 +107,6 @@ pais_t *cria_pais()
     return pais;
 }
 
-/** \brief
- *
- * \return lista_t*
- *
- */
 lista_t *cria_lista()
 {
     lista_t *novaLista = (lista_t *)malloc(sizeof(lista_t));
@@ -163,26 +121,18 @@ lista_t *cria_lista()
     return novaLista;
 }
 
-/** \brief
- *
- * \param lista lista_t*
- * \param pais pais_t*
- * \param dados dados_t*
- * \return void
- *
- */
 void insere_pais_dados_lista(lista_t *lista, pais_t *pais, dados_t *dados)
 {
     node_t *aux = lista->first;
 
-    while (aux != NULL && strcmp(pais->country_code, ((pais_t *)aux->value)->country_code) != 0)
+    while (aux != NULL && strcmp(pais->country_code, ((pais_t *)aux->value)->country_code) != 0) //procurar o pais
     {
         aux = aux->next;
     }
-    if (aux == NULL)
+    if (aux == NULL) //se nao existir pais
     {
-        inserir_elemento_final(lista, pais);
-        pais->dados = cria_lista();
+        inserir_elemento_final(lista, pais); //adicionar o pais à lista
+        pais->dados = cria_lista();          //criar lista
         aux = lista->last;
     }
     else //se ja existir pais

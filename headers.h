@@ -104,16 +104,16 @@ typedef int (*compare_fn)(void *, void *);
 
 //listas----------------------------------------------------------
 
-/** \brief cria uma lista vazia
+/** \brief cria uma nova lista sem elementos
  *
  * \return lista_t* lista vazia
  *
  */
 lista_t *cria_lista();
 
-/** \brief cria um node de pais novo
+/** \brief cria uma lista para um pais e inicializa cada elemento do pais
  *
- * \return pais_t* pais novo
+ * \return pais_t*: lista vazia
  *
  */
 pais_t *cria_pais();
@@ -127,7 +127,7 @@ pais_t *cria_pais();
  */
 void inserir_elemento_final(lista_t *lista, void *item);
 
-/** \brief apaga um certo elemento da lista
+/** \brief apaga um elemento da lista e destroi-o se destruir_fn não for NULL
  *
  * \param lista lista_t* primeiro ou ultimo elemento da lista
  * \param elemento dados_t* elemento a ser apagado
@@ -136,7 +136,7 @@ void inserir_elemento_final(lista_t *lista, void *item);
  */
 void apagar_elemento_lista(lista_t *lista, node_t *elemento, void (*destruir_fn)(void *));
 
-/** \brief liberta a lista da memoria
+/** \brief da free a todos os elementos de uma lista e à estrutura lista
  *
  * \param lista lista_t* lista a ser libertada
  * \return void
@@ -144,7 +144,7 @@ void apagar_elemento_lista(lista_t *lista, node_t *elemento, void (*destruir_fn)
  */
 void liberta_lista(lista_t *lista, void (*destruir_fn)(void *));
 
-/** \brief liberta um determinado node
+/** \brief da free aos dados variaveis de cada pais
  *
  * \param dados dados_t*
  * \return void
@@ -152,7 +152,7 @@ void liberta_lista(lista_t *lista, void (*destruir_fn)(void *));
  */
 void destruir_dados(void *p_dados);
 
-/** \brief liberta da memoria um determinado node de pais
+/** \brief da free a todos os dados de cada pais
  *
  * \param p_pais void*
  * \return void
@@ -168,6 +168,14 @@ void destruir_pais(void *p_pais);
  */
 int tamanho_lista(lista_t *lista);
 
+/** \brief procura na lista principal se o pais ja existe
+ *
+ * \param lista lista_t*: lista que vai receber os dados
+ * \param pais pais_t*: pais que estamos a ver
+ * \param dados dados_t*: dados do pais
+ * \return void
+ *
+ */
 void insere_pais_dados_lista(lista_t *lista, pais_t *pais, dados_t *dados);
 
 //funcionalidades-----------------------------------------------------------
@@ -450,7 +458,7 @@ yearWeek_t *parseYearWeek(char *dados);
 
 int erro_letra_em_numero(char *numero, int contador);
 
-int verifica_L(char* continente);
+int verifica_L(char *continente);
 
 int verfica_S(char *ordenacao);
 

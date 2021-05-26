@@ -287,7 +287,7 @@ void restricao_lista(lista_t *lista, settings_t *settings)
     node_t *curr, *aux;
 
     settings->restricao_nmin *= 1000; // n mil habitantes
-    settings->restricao_nmax *= 1000; //se por acaso nao for escolhido um deles, 
+    settings->restricao_nmax *= 1000; //se por acaso nao for escolhido um deles,
     //como sao inicializados a 0, nao muda o valor, e nao sao utilizados na mesma
 
     curr = lista->first;
@@ -314,9 +314,9 @@ void restricao_lista(lista_t *lista, settings_t *settings)
 
 int ordenacao_pop(pais_t *atual, pais_t *comparacao)
 {
-    int dif = atual->population - comparacao->population;
+    int dif = comparacao->population - atual->population;
 
-    if (dif == 0)//se tiver a mesma populacao
+    if (dif == 0) //se tiver a mesma populacao
         return ordenacao_alfa(atual, comparacao);
 
     return dif;
@@ -332,9 +332,9 @@ int ordenacao_inf_dea(settings_t *settings, pais_t *atual, pais_t *comparacao, c
     dados_t *atual_dados = obter_dados_semana(atual->dados, settings->ord_date, indicator);
     dados_t *comparacao_dados = obter_dados_semana(comparacao->dados, settings->ord_date, indicator);
 
-    int dif = (atual_dados == NULL ? 0 : atual_dados->weekly_count) - (comparacao_dados == NULL ? 0 : comparacao_dados->weekly_count);
+    int dif = (comparacao_dados == NULL ? 0 : comparacao_dados->weekly_count) - (atual_dados == NULL ? 0 : atual_dados->weekly_count);
 
-    if (dif == 0)//se tiver os mesmos valores
+    if (dif == 0) //se tiver os mesmos valores
         return ordenacao_alfa(atual, comparacao);
 
     return dif;
@@ -342,13 +342,13 @@ int ordenacao_inf_dea(settings_t *settings, pais_t *atual, pais_t *comparacao, c
 
 int criterio_ordenacao(settings_t *settings, pais_t *atual, pais_t *comparacao)
 {
-    if (settings->criterio_ord == S_ALFA)//ordem alfabetica
+    if (settings->criterio_ord == S_ALFA) //ordem alfabetica
         return ordenacao_alfa(atual, comparacao);
-    if (settings->criterio_ord == S_POP)//ordem decrescente de populacao
+    if (settings->criterio_ord == S_POP) //ordem decrescente de populacao
         return ordenacao_pop(atual, comparacao);
-    if (settings->criterio_ord == S_INF)//ordem decrescente de casos numa data
+    if (settings->criterio_ord == S_INF) //ordem decrescente de casos numa data
         return ordenacao_inf_dea(settings, atual, comparacao, "cases");
-    if (settings->criterio_ord == S_DEA)//ordem decrescente de mortes numa data
+    if (settings->criterio_ord == S_DEA) //ordem decrescente de mortes numa data
         return ordenacao_inf_dea(settings, atual, comparacao, "deaths");
     return 0;
 }

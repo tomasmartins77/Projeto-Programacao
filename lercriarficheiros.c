@@ -32,7 +32,7 @@ lista_t *ler_ficheiro(settings_t *settings)
     return lista;
 }
 
-/** \brief
+/** \brief le um ficheiro .csv, ignorando a primeira linha (cabecalho)
  *
  * \param settings settings_t*
  * \param file FILE*
@@ -55,7 +55,7 @@ void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista)
     }
 }
 
-/** \brief
+/** \brief le um ficheiro .dat
  *
  * \param settings settings_t*
  * \param file FILE*
@@ -146,7 +146,7 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra)
 
             inserir_dados(pais, dados, inicio_coluna, coluna);
 
-            if(erro_letra_em_numero(inicio_coluna, contador))
+            if (erro_letra_em_numero(inicio_coluna, contador))
             {
                 fprintf(stderr, "existem letras onde deviam existir apenas numeros");
                 liberta_settings(settings);
@@ -159,7 +159,7 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra)
         }
         letra++;
     }
-    if(contador != 9)//se tem falta de colunas
+    if (contador != 9) //se tem falta de colunas
     {
         fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido");
         liberta_settings(settings);
@@ -192,6 +192,7 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra)
  */
 void inserir_dados(pais_t *pais, dados_t *dados, char *inicio_coluna, int coluna)
 {
+    //consoante o numero da coluna, organiza os diferentes dados
     switch (coluna)
     {
     case 0:
@@ -258,7 +259,7 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
     fclose(fp);
 }
 
-/** \brief
+/** \brief escreve num ficheiro do tipo .csv
  *
  * \param paises lista_t*
  * \param file FILE*
@@ -292,7 +293,7 @@ void escreve_ficheiro_csv(lista_t *paises, FILE *file)
     }
 }
 
-/** \brief
+/** \brief escreve num ficheiro do tipo .dat
  *
  * \param paises lista_t*
  * \param file FILE*
