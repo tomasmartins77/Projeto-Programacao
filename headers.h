@@ -1,6 +1,11 @@
 #ifndef headers
 #define headers
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <getopt.h>
+
 #define MAX_PALAVRAS_LINHAS 150
 #define COUNTRY 35
 #define COUNTRY_CODE 4
@@ -53,7 +58,7 @@ typedef struct dados
 enum leitura
 {
     L_ALL,
-    L_CONTINENTE //---------------------nao estamos a utilizar----------------------------
+    L_CONTINENTE
 };
 enum ordenacao
 {
@@ -100,22 +105,80 @@ typedef struct settings
 typedef int (*compare_fn)(void *, void *);
 
 //listas--------------------
+/** \brief cria uma lista vazia
+ *
+ * \return lista_t* lista vazia
+ *
+ */
 lista_t *cria_lista();
+
+/** \brief cria um node de pais novo
+ *
+ * \return pais_t* pais novo
+ *
+ */
 pais_t *cria_pais();
+
+/** \brief insere um node no final da lista
+ *
+ * \param lista lista_t* lista na qual vamos adicionar o elemento
+ * \param item void* elemento a adicionar na lista
+ * \return void
+ *
+ */
 void inserir_elemento_final(lista_t *lista, void *item);
 lista_t *ler_ficheiro(settings_t *settings);
 void ler_linha(settings_t *settings, lista_t *lista, char *letra);
 void inserir_dados(pais_t *pais, dados_t *dados, char *inicio_coluna, int coluna);
-yearWeek_t *parseYearWeek(char *dados);
-settings_t *troca_datas(settings_t *datas);
-settings_t *verifica_datas(settings_t *datas);
+
+
 void troca(lista_t *lista, node_t *el1, node_t *el2);
 dados_t *remove_do_inicio(dados_t *headlist);
 void cria_ficheiro(lista_t *root, settings_t *settings);
+
+/** \brief apaga um certo elemento da lista
+ *
+ * \param lista lista_t* primeiro ou ultimo elemento da lista
+ * \param elemento dados_t* elemento a ser apagado
+ * \return void
+ *
+ */
 void apagar_elemento_lista(lista_t *lista, node_t *elemento, void (*destruir_fn)(void *));
+
+/** \brief liberta a lista da memoria
+ *
+ * \param lista lista_t* lista a ser libertada
+ * \return void
+ *
+ */
 void liberta_lista(lista_t *lista, void (*destruir_fn)(void *));
+
+/** \brief liberta um determinado node
+ *
+ * \param dados dados_t*
+ * \return void
+ *
+ */
 void destruir_dados(void *p_dados);
+
+/** \brief liberta da memoria um determinado node de pais
+ *
+ * \param p_pais void*
+ * \return void
+ *
+ */
 void destruir_pais(void *p_pais);
+
+/** \brief verifica quantos nodes a lista contem
+ *
+ * \param lista lista_t*
+ * \return int numero de nodes da lista
+ *
+ */
+int tamanho_lista(lista_t *lista);
+void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista);
+void ler_ficheiro_dat(settings_t *settings, FILE *file, lista_t *lista);
+void insere_pais_dados_lista(lista_t *lista, pais_t *pais, dados_t *dados);
 //funcionalidades------------
 int ordenacao_pop(pais_t *atual, pais_t *comparacao);
 int ordenacao_alfa(pais_t *atual, pais_t *comparacao);
@@ -133,20 +196,30 @@ void selecionar(settings_t *settings, lista_t *lista);
 node_t *selecionar_pais(lista_t *lista_dados, compare_fn cmp_fn);
 dados_t *obter_dados_semana(lista_t *lista, yearWeek_t *yearWeek, char *indicator);
 //main-----------------------
+
+/** \brief liberta memoria das settings
+ *
+ * \param settings settings_t*
+ * \return void
+ *
+ */
 void liberta_settings(settings_t *settings);
 void erros_ficheiro(lista_t *lista);
 settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario);
 void utilizacao();
 settings_t *init_settings();
-
-void imprime_lista_paises(lista_t *lista);
-//---------------------------
-void imprime_lista(lista_t *lista); //para apagar
-
 void escreve_ficheiro_dat(lista_t *paises, FILE *file);
 void escreve_ficheiro_csv(lista_t *paises, FILE *file);
-int tamanho_lista(lista_t *lista);
-void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista);
-void ler_ficheiro_dat(settings_t *settings, FILE *file, lista_t *lista);
+settings_t *troca_datas(settings_t *datas);
+settings_t *verifica_datas(settings_t *datas);
+
+/** \brief  converte o input dado (string) num int para facilitar a comparacao de datas
+ *
+ * \param dados *char string com a data
+ * \return yearWeek_t data convertida em dois ints
+ *
+ */
+yearWeek_t *parseYearWeek(char *dados);
+//---------------------------
 
 #endif
