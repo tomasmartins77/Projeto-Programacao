@@ -103,7 +103,10 @@ void ler_ficheiro_dat(settings_t *settings, FILE *file, lista_t *lista)
             fread(&dados->weekly_count, sizeof(int), 1, file);
 
             dados->year_week = malloc(sizeof(yearWeek_t));
-            fread(dados->year_week, sizeof(yearWeek_t), 1, file);
+
+            fread(&dados->year_week->year, sizeof(int), 1, file);
+
+            fread(&dados->year_week->week, sizeof(int), 1, file);
 
             fread(&dados->rate_14_day, sizeof(double), 1, file);
 
@@ -125,7 +128,7 @@ void ler_ficheiro_dat(settings_t *settings, FILE *file, lista_t *lista)
 void ler_linha(settings_t *settings, lista_t *lista, char *letra)
 {
     char *inicio_coluna = letra;
-    int coluna = 0;
+    int coluna = 0, contador = 1;
     pais_t *pais = cria_pais();
 
     dados_t *dados = malloc(sizeof(dados_t));
@@ -143,10 +146,25 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra)
 
             inserir_dados(pais, dados, inicio_coluna, coluna);
 
+            if(erro_letra_em_numero(inicio_coluna, contador))
+            {
+                fprintf(stderr, "existem letras onde deviam existir apenas numeros");
+                liberta_settings(settings);
+                liberta_lista(lista, destruir_pais);
+                exit(EXIT_FAILURE);
+            }
+            contador++;
             coluna++;
             inicio_coluna = letra + 1;
         }
         letra++;
+    }
+    if(contador != 9)//se tem falta de colunas
+    {
+        fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido");
+        liberta_settings(settings);
+        liberta_lista(lista, destruir_pais);
+        exit(EXIT_FAILURE);
     }
 
     *letra = '\0';
@@ -320,11 +338,14 @@ void escreve_ficheiro_dat(lista_t *paises, FILE *file)
 
             count = strlen(dados->indicator) + 1;
             fwrite(&count, sizeof(int), 1, file);
+
             fwrite(dados->indicator, sizeof(char), count, file);
 
             fwrite(&dados->weekly_count, sizeof(int), 1, file);
 
-            fwrite(&dados->year_week, sizeof(yearWeek_t), 1, file);
+            fwrite(&dados->year_week->year, sizeof(int), 1, file);
+
+            fwrite(&dados->year_week->week, sizeof(int), 1, file);
 
             fwrite(&dados->rate_14_day, sizeof(double), 1, file);
 

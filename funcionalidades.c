@@ -1,12 +1,5 @@
 #include "headers.h"
 
-/** \brief selecionar, para cada pais, a semana com mais infetados
- *
- * \param atual dados_t*
- * \param comparacao dados_t*
- * \return int: 0,1,2
- *
- */
 int selecao_inf(void *p_atual, void *p_comparacao)
 {
     dados_t *atual = p_atual;
@@ -26,7 +19,6 @@ int selecao_inf(void *p_atual, void *p_comparacao)
     //no caso de empate, para desempatar escolhe-se a semana mais recente
     if (atual->weekly_count == comparacao->weekly_count)
     {
-
         if (atual->year_week->year == comparacao->year_week->year) //se for o mesmo ano
         {
             if (atual->year_week->week < comparacao->year_week->week)
@@ -38,13 +30,6 @@ int selecao_inf(void *p_atual, void *p_comparacao)
     return 0;
 }
 
-/** \brief
- *
- * \param p_atual void*
- * \param p_comparacao void*
- * \return int
- *
- */
 int selecao_dea(void *p_atual, void *p_comparacao)
 {
     dados_t *atual = p_atual;
@@ -76,13 +61,6 @@ int selecao_dea(void *p_atual, void *p_comparacao)
     return 0;
 }
 
-/** \brief
- *
- * \param p_atual void*
- * \param p_comparacao void*
- * \return int
- *
- */
 int selecao_racio_inf(void *p_atual, void *p_comparacao)
 {
     dados_t *atual = p_atual;
@@ -113,13 +91,6 @@ int selecao_racio_inf(void *p_atual, void *p_comparacao)
     return 0;
 }
 
-/** \brief
- *
- * \param p_atual void*
- * \param p_comparacao void*
- * \return int
- *
- */
 int selecao_racio_dea(void *p_atual, void *p_comparacao)
 {
     dados_t *atual = p_atual;
@@ -149,14 +120,7 @@ int selecao_racio_dea(void *p_atual, void *p_comparacao)
     }
     return 0;
 }
-/** \brief menu que verifica qual a selecao a fazer
- *
- * \param settings settings_t* para saber qual o tipo de selecao
- * \param atual dados_t*
- * \param comparacao dados_t*
- * \return int
- *
- */
+
 compare_fn criterio_selecao(settings_t *settings)
 {
     if (settings->criterio_sel == D_INF) // selecao infetados
@@ -170,13 +134,6 @@ compare_fn criterio_selecao(settings_t *settings)
     return NULL;
 }
 
-/** \brief
- *
- * \param settings settings_t*
- * \param lista lista_t*
- * \return void
- *
- */
 void selecionar(settings_t *settings, lista_t *lista)
 {
     node_t *el_atual = lista->first;
@@ -202,13 +159,6 @@ void selecionar(settings_t *settings, lista_t *lista)
     }
 }
 
-/** \brief
- *
- * \param lista_dados lista_t*
- * \param cmp_fn compare_fn
- * \return node_t*
- *
- */
 node_t *selecionar_pais(lista_t *lista_dados, compare_fn cmp_fn)
 {
     node_t *resultado = NULL;
@@ -224,16 +174,26 @@ node_t *selecionar_pais(lista_t *lista_dados, compare_fn cmp_fn)
     }
     return resultado;
 }
+
+dados_t *obter_dados_semana(lista_t *lista, yearWeek_t *yearWeek, char *indicator)
+{
+    node_t *aux = lista->first;
+
+    dados_t *aux_dados;
+
+    while (aux != NULL)
+    {
+        aux_dados = aux->value;
+
+        if (aux_dados->year_week->year == yearWeek->year && aux_dados->year_week->week == yearWeek->week && strcmp(aux_dados->indicator, indicator) == 0)
+            return aux_dados;
+        aux = aux->next;
+    }
+    return NULL;
+}
+
 //--------------------------------------------
 
-/** \brief apenas dados de países com mais de n mil habitantes
- *
- * \param lista lista_t* primeiro ou ultimo elemento da lista
- * \param head dados_t** elemento que estamos neste momento
- * \param settings settings_t* numero de habitantes
- * \return void
- *
- */
 void restricao_min(lista_t *lista, node_t *node, settings_t *settings)
 {
     pais_t *pais = node->value;
@@ -241,14 +201,6 @@ void restricao_min(lista_t *lista, node_t *node, settings_t *settings)
         apagar_elemento_lista(lista, node, destruir_pais);
 }
 
-/** \brief apenas dados de países com menos de n mil habitantes
- *
- * \param lista lista_t* primeiro ou ultimo elemento da lista
- * \param head dados_t** elemento que estamos neste momento
- * \param settings settings_t* n maximo
- * \return void
- *
- */
 void restricao_max(lista_t *lista, node_t *node, settings_t *settings)
 {
     pais_t *pais = node->value;
@@ -256,14 +208,6 @@ void restricao_max(lista_t *lista, node_t *node, settings_t *settings)
         apagar_elemento_lista(lista, node, destruir_pais);
 }
 
-/** \brief  apenas dados relativos à semana indicada
- *
- * \param lista lista_t* primeiro ou ultimo elemento da lista
- * \param head dados_t** elemento que estamos neste momento
- * \param anosemana settings_t* semana especificada pelo utilizador
- * \return void
- *
- */
 void restricao_date(lista_t *lista, node_t *node, settings_t *settings)
 {
     pais_t *pais = node->value;
@@ -285,14 +229,6 @@ void restricao_date(lista_t *lista, node_t *node, settings_t *settings)
     }
 }
 
-/** \brief
- *
- * \param data yearWeek_t*
- * \param data1 yearWeek_t*
- * \param data2 yearWeek_t*
- * \return short
- *
- */
 short entre_semanas(yearWeek_t *data, yearWeek_t *data1, yearWeek_t *data2)
 {
     if (data->year <= data1->year || data->year >= data2->year)
@@ -325,14 +261,6 @@ short entre_semanas(yearWeek_t *data, yearWeek_t *data1, yearWeek_t *data2)
     return 1;
 }
 
-/** \brief apenas dados entre as semanas indicadas
- *
- * \param lista lista_t* primeiro ou ultimo elemento da lista
- * \param head dados_t** elemento que estamos neste momento
- * \param anosemana settings_t* semanas que restringem os dados
- * \return void
- *
- */
 void restricao_dates(lista_t *lista, node_t *node, settings_t *settings)
 {
     pais_t *pais = node->value;
@@ -350,23 +278,17 @@ void restricao_dates(lista_t *lista, node_t *node, settings_t *settings)
         aux_dados = aux->value;
 
         if (!entre_semanas(aux_dados->year_week, settings->restricao_date1, settings->restricao_date2))
-            apagar_elemento_lista(pais->dados, aux, destruir_dados); // se nao for a semana indicada, apaga o node que contem os dados
+            apagar_elemento_lista(pais->dados, aux, destruir_dados); // se nao estiver entre as semanas indicadas, apaga o node que contem os dados
     }
 }
 
-/** \brief restringe a lista de acordo com varias especificacoes referidas pelo utilizador
- *
- * \param lista lista_t* lista a ser restringida
- * \param settings settings_t* para saber qual o tipo de restricao
- * \return lista_t* lista restringida
- *
- */
 void restricao_lista(lista_t *lista, settings_t *settings)
 {
     node_t *curr, *aux;
 
     settings->restricao_nmin *= 1000; // n mil habitantes
-    settings->restricao_nmax *= 1000;
+    settings->restricao_nmax *= 1000; //se por acaso nao for escolhido um deles, 
+    //como sao inicializados a 0, nao muda o valor, e nao sao utilizados na mesma
 
     curr = lista->first;
 
@@ -382,96 +304,55 @@ void restricao_lista(lista_t *lista, settings_t *settings)
             restricao_date(lista, aux, settings);
         else if (settings->criterio_res == P_DATES) //apenas dados entre as semanas indicadas
         {
-            settings = verifica_datas(settings);
+            settings = verifica_datas(settings); // verifica se tem de trocar as datas
             restricao_dates(lista, aux, settings);
         }
     }
 }
+
 //----------------------------------------------------
 
-/** \brief ordena dois nodes de acordo com a populacao decrescente, se a populacao do node right for menor
- *          que a do node right->next, trocam
- *
- * \param right dados_t**
- * \param left dados_t**
- * \param flag int* flag que mantem o loop a verificar a lista inteira
- * \return void
- *
- */
 int ordenacao_pop(pais_t *atual, pais_t *comparacao)
 {
     int dif = atual->population - comparacao->population;
 
-    if (dif == 0)
+    if (dif == 0)//se tiver a mesma populacao
         return ordenacao_alfa(atual, comparacao);
 
     return dif;
 }
 
-/** \brief ordena a lista por ordem alfabetica
- *
- * \param right dados_t**
- * \param left dados_t**
- * \param flag int* flag que mantem o loop a verificar a lista inteira
- * \return void
- *
- */
 int ordenacao_alfa(pais_t *atual, pais_t *comparacao)
 {
     return strcmp(atual->country, comparacao->country);
 }
 
-/** \brief
- *
- * \param settings settings_t*
- * \param atual pais_t*
- * \param comparacao pais_t*
- * \param indicator char*
- * \return int
- *
- */
 int ordenacao_inf_dea(settings_t *settings, pais_t *atual, pais_t *comparacao, char *indicator)
 {
-
     dados_t *atual_dados = obter_dados_semana(atual->dados, settings->ord_date, indicator);
     dados_t *comparacao_dados = obter_dados_semana(comparacao->dados, settings->ord_date, indicator);
 
     int dif = (atual_dados == NULL ? 0 : atual_dados->weekly_count) - (comparacao_dados == NULL ? 0 : comparacao_dados->weekly_count);
 
-    if (dif == 0)
+    if (dif == 0)//se tiver os mesmos valores
         return ordenacao_alfa(atual, comparacao);
 
     return dif;
 }
 
-/** \brief
- *
- * \param settings settings_t*
- * \param atual pais_t*
- * \param comparacao pais_t*
- * \return int
- *
- */
 int criterio_ordenacao(settings_t *settings, pais_t *atual, pais_t *comparacao)
 {
-    if (settings->criterio_ord == S_ALFA)
+    if (settings->criterio_ord == S_ALFA)//ordem alfabetica
         return ordenacao_alfa(atual, comparacao);
-    if (settings->criterio_ord == S_POP)
+    if (settings->criterio_ord == S_POP)//ordem decrescente de populacao
         return ordenacao_pop(atual, comparacao);
-    if (settings->criterio_ord == S_INF)
+    if (settings->criterio_ord == S_INF)//ordem decrescente de casos numa data
         return ordenacao_inf_dea(settings, atual, comparacao, "cases");
-    if (settings->criterio_ord == S_DEA)
+    if (settings->criterio_ord == S_DEA)//ordem decrescente de mortes numa data
         return ordenacao_inf_dea(settings, atual, comparacao, "deaths");
     return 0;
 }
 
-/** \brief ordena a lista
- *
- * \param root lista_t*
- * \param settings settings_t*
- * \return lista_t*
- *
- */
 lista_t *ordenar_lista(lista_t *root, settings_t *settings)
 {
     node_t *el_atual, *el_comparacao, *aux;
