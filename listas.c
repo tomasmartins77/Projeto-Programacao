@@ -9,23 +9,23 @@ int tamanho_lista(lista_t *lista)
         count++; // contador de nodes
         curr = curr->next;
     }
-    return count;
+    return count; // quantidade de nodes da lista
 }
 
 void apagar_elemento_lista(lista_t *lista, node_t *elemento, void (*destruir_fn)(void *))
 {
-    if (elemento->prev == NULL)
+    if (elemento->prev == NULL) // se for o primeiro, o primeiro passa para o seguinte
         lista->first = elemento->next;
     else
-        elemento->prev->next = elemento->next;
+        elemento->prev->next = elemento->next; // o anterior liga ao seguinte
 
     if (elemento->next == NULL)
-        lista->last = elemento->prev;
+        lista->last = elemento->prev; // se for o ultimo, o ultimo passa a ser o anterior
     else
-        elemento->next->prev = elemento->prev;
+        elemento->next->prev = elemento->prev; // o seguinte liga ao anterior
     if (destruir_fn != NULL)
         destruir_fn(elemento->value);
-    free(elemento);
+    free(elemento); // destroi o node
 }
 
 void liberta_lista(lista_t *lista, void (*destruir_fn)(void *))
@@ -33,7 +33,7 @@ void liberta_lista(lista_t *lista, void (*destruir_fn)(void *))
     node_t *curr;
     node_t *next = lista->first;
 
-    while (next != NULL) // loop que liberta linha a linha
+    while (next != NULL) // loop que liberta node a node
     {
         curr = next;
         next = next->next;
@@ -71,7 +71,6 @@ void inserir_elemento_final(lista_t *lista, void *item)
         fprintf(stderr, "Erro a alocar memoria a node");
         exit(EXIT_FAILURE);
     }
-
     node->next = NULL;        //inicia o next como null porque é o ultimo elemento
     node->prev = lista->last; //o item anterior é o "antigo" ultimo elemento da lista
     node->value = item;
@@ -81,9 +80,9 @@ void inserir_elemento_final(lista_t *lista, void *item)
     }
     else
     {
-        lista->last->next = node;
+        lista->last->next = node; // insere o node no final
     }
-    lista->last = node;
+    lista->last = node; // torna esse node o ultimo pois inserimos no final
 }
 
 pais_t *cria_pais()
@@ -94,7 +93,7 @@ pais_t *cria_pais()
         fprintf(stderr, "Erro a alocar memoria a pais");
         exit(EXIT_FAILURE);
     }
-    pais->country = NULL;
+    pais->country = NULL; // inicializa o novo pais vazio
     pais->country_code = NULL;
     pais->continent = NULL;
     pais->population = 0;
@@ -110,7 +109,7 @@ lista_t *cria_lista()
         fprintf(stderr, "Erro a alocar memoria para novalista");
         exit(EXIT_FAILURE);
     }
-    novaLista->first = NULL;
+    novaLista->first = NULL; // inicializa a lista vazia
     novaLista->last = NULL;
 
     return novaLista;
@@ -122,9 +121,9 @@ void insere_pais_dados_lista(lista_t *lista, pais_t *pais, dados_t *dados)
 
     while (aux != NULL && strcmp(pais->country_code, ((pais_t *)aux->value)->country_code) != 0)
     {
-        aux = aux->next;
+        aux = aux->next; // se nao for o pais, passa para o proximo node
     }
-    if (aux == NULL)
+    if (aux == NULL) // se a lista estiver vazia
     {
         inserir_elemento_final(lista, pais);
         pais->dados = cria_lista();
@@ -136,4 +135,85 @@ void insere_pais_dados_lista(lista_t *lista, pais_t *pais, dados_t *dados)
     }
     dados->pais = aux->value;
     inserir_elemento_final(((pais_t *)aux->value)->dados, dados); //inserir os novos dados na lista do pais
+}
+
+settings_t *init_settings()
+{
+    settings_t *settings = (settings_t *)malloc(sizeof(settings_t));
+    if (settings == NULL)
+    {
+        fprintf(stderr, "Erro a alocar memoria a settings");
+        exit(EXIT_FAILURE);
+    }
+    settings->criterio_leitura = L_ALL; //predefinicao all
+    settings->criterio_ord = S_ALFA;    // predefinicao alfa
+    settings->criterio_sel = D_NONE;
+    settings->criterio_res = P_NONE;
+    settings->criterio_file = NULL;
+    settings->criterio_write = NULL;
+    settings->leitura_continente = NULL;
+    settings->ord_date = NULL;
+    settings->restricao_date1 = NULL;
+    settings->restricao_date2 = NULL;
+    settings->restricao_nmax = 0;
+    settings->restricao_nmin = 0;
+    settings->tipo_escrita = NULL;
+    settings->tipo_ficheiro = NULL;
+
+    return settings; // inicializa as settings vazias
+}
+
+yearWeek_t *parseYearWeek(char *dados)
+{
+    yearWeek_t *yearWeek = malloc(sizeof(yearWeek_t));
+    if (yearWeek == NULL)
+    {
+        fprintf(stderr, "Erro a alocar memoria a yearweek");
+        exit(EXIT_FAILURE);
+    }
+    dados[4] = '\0'; // '-'
+    yearWeek->year = atoi(dados);     //int
+    yearWeek->week = atoi(dados + 5); //int
+
+    return yearWeek;
+}
+
+settings_t *troca_datas(settings_t *datas)
+{
+    yearWeek_t *aux;
+    aux = datas->restricao_date1; // guarda a data num auxiliar
+    datas->restricao_date1 = datas->restricao_date2; // mete a data do segundo no primeiro
+    datas->restricao_date2 = aux; // mete a data do aux(data 1) no data 2
+    return datas;
+}
+
+settings_t *verifica_datas(settings_t *datas)
+{
+    if (datas->restricao_date1->year > datas->restricao_date2->year)//ano 1 e maior que o 2
+    {
+        datas = troca_datas(datas);
+    }
+    else if (datas->restricao_date1->year == datas->restricao_date2->year)//mesmo ano
+    {
+        if (datas->restricao_date1->week > datas->restricao_date2->week)//mas semana 1 maior que a 2
+        {
+            datas = troca_datas(datas);
+        }
+    }
+    //se nao entrar em nenhum, as datas nao precisam ser trocadas
+    return datas;
+}
+
+void liberta_settings(settings_t *settings)
+{
+    free(settings->criterio_file);
+    free(settings->criterio_write);
+    free(settings->leitura_continente);
+    if (settings->ord_date != NULL) //se nao forem utilizados, nao precisam dar free
+        free(settings->ord_date);
+    if (settings->restricao_date1 != NULL)
+        free(settings->restricao_date1);
+    if (settings->restricao_date2 != NULL)
+        free(settings->restricao_date2);
+    free(settings);
 }

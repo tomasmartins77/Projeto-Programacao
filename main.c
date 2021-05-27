@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 
     argumentos(argc, argv, settings); // argumentos da linha de comandos
 
-    erros_ficheiros_argumentos(settings);
+    erros_ficheiros_argumentos(settings); // verifica se -i e -o estao especificados
 
     settings = verifica_tipo_ficheiro(settings, &binario); // verifica se o ficheiro e .dat ou .csv
 
@@ -196,87 +196,6 @@ void argumentos(int argc, char *argv[], settings_t *settings)
     }
 }
 
-settings_t *init_settings()
-{
-    settings_t *settings = (settings_t *)malloc(sizeof(settings_t));
-    if (settings == NULL)
-    {
-        fprintf(stderr, "Erro a alocar memoria a settings");
-        exit(EXIT_FAILURE);
-    }
-    settings->criterio_leitura = L_ALL; //predefinicao all
-    settings->criterio_ord = S_ALFA;    // predefinicao alfa
-    settings->criterio_sel = D_NONE;
-    settings->criterio_res = P_NONE;
-    settings->criterio_file = NULL;
-    settings->criterio_write = NULL;
-    settings->leitura_continente = NULL;
-    settings->ord_date = NULL;
-    settings->restricao_date1 = NULL;
-    settings->restricao_date2 = NULL;
-    settings->restricao_nmax = 0;
-    settings->restricao_nmin = 0;
-    settings->tipo_escrita = NULL;
-    settings->tipo_ficheiro = NULL;
-
-    return settings;
-}
-
-yearWeek_t *parseYearWeek(char *dados)
-{
-    yearWeek_t *yearWeek = malloc(sizeof(yearWeek_t));
-    if (yearWeek == NULL)
-    {
-        fprintf(stderr, "Erro a alocar memoria a yearweek");
-        exit(EXIT_FAILURE);
-    }
-    dados[4] = '\0'; // '-'
-    yearWeek->year = atoi(dados);     //int
-    yearWeek->week = atoi(dados + 5); //int
-
-    return yearWeek;
-}
-
-settings_t *troca_datas(settings_t *datas)
-{
-    yearWeek_t *aux;
-    aux = datas->restricao_date1;
-    datas->restricao_date1 = datas->restricao_date2;
-    datas->restricao_date2 = aux;
-    return datas;
-}
-
-settings_t *verifica_datas(settings_t *datas)
-{
-    if (datas->restricao_date1->year > datas->restricao_date2->year)//ano 1 e maior que o 2
-    {
-        datas = troca_datas(datas);
-    }
-    else if (datas->restricao_date1->year == datas->restricao_date2->year)//mesmo ano
-    {
-        if (datas->restricao_date1->week > datas->restricao_date2->week)//mas semana 1 maior que a 2
-        {
-            datas = troca_datas(datas);
-        }
-    }
-    //se nao entrar em nenhum, as datas nao precisam ser trocadas
-    return datas;
-}
-
-void liberta_settings(settings_t *settings)
-{
-    free(settings->criterio_file);
-    free(settings->criterio_write);
-    free(settings->leitura_continente);
-    if (settings->ord_date != NULL) //se nao forem utilizados, nao precisam dar free
-        free(settings->ord_date);
-    if (settings->restricao_date1 != NULL)
-        free(settings->restricao_date1);
-    if (settings->restricao_date2 != NULL)
-        free(settings->restricao_date2);
-    free(settings);
-}
-
 int erro_letra_em_numero(char *numero, int contador)
 {
     char i;
@@ -303,18 +222,18 @@ void erros_ficheiro(lista_t *lista, settings_t *settings)
 
         node_t *aux_dados = aux_pais->dados->first;
 
-        if (aux_pais->population < 0)
+        if (aux_pais->population < 0) // populacao menor que 0
         {
-            fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido");
+            fprintf(stderr, "pais com populacao negativa");
             liberta_settings(settings);
             liberta_lista(lista, destruir_pais);
             exit(EXIT_FAILURE);
         }
-        for (i = '0'; i <= '9'; i++)
+        for (i = '0'; i <= '9'; i++)// ve cada numero nas palavras
         {
             if (strchr(aux_pais->country, i) != NULL || strchr(aux_pais->continent, i) != NULL || strchr(aux_pais->country_code, i) != NULL)
             {
-                fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido");
+                fprintf(stderr, "valor so com letras possui numeros"); // se algum valor possui numeros
                 liberta_settings(settings);
                 liberta_lista(lista, destruir_pais);
                 exit(EXIT_FAILURE);
@@ -327,23 +246,23 @@ void erros_ficheiro(lista_t *lista, settings_t *settings)
 
             if (dados->cumulative_count < 0 || dados->rate_14_day < 0 || dados->weekly_count < 0)
             {
-                fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido");
+                fprintf(stderr, "dados variaveis com numeros negativos"); // valores negativos
                 liberta_settings(settings);
                 liberta_lista(lista, destruir_pais);
                 exit(EXIT_FAILURE);
             }
             else if (dados->year_week->week <= 0 || dados->year_week->week > 53 || dados->year_week->year < 0)
             {
-                fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido");
+                fprintf(stderr, "semanas impossiveis"); // semanas impossiveis
                 liberta_settings(settings);
                 liberta_lista(lista, destruir_pais);
                 exit(EXIT_FAILURE);
             }
             for (i = '0'; i <= '9'; i++)
             {
-                if (strchr(dados->indicator, i) != NULL)
+                if (strchr(dados->indicator, i) != NULL) // ve se o indicador tem numeros
                 {
-                    fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido");
+                    fprintf(stderr, "indicador de cases ou deaths possui numeros");
                     liberta_settings(settings);
                     liberta_lista(lista, destruir_pais);
                     exit(EXIT_FAILURE);
@@ -359,7 +278,7 @@ void verifica_L(char* continente)
 {
     if(strcmp(continente, "all") == 0 || strcmp(continente, "Europe") == 0 || strcmp(continente, "Africa") == 0 || strcmp(continente, "Asia") == 0 || strcmp(continente, "America") == 0 || strcmp(continente, "Oceania") == 0)
     {
-        return;
+        return; // se for opcao correta, retorna
     }
     fprintf(stderr, "continente invalido");
     exit(EXIT_FAILURE);
@@ -369,7 +288,7 @@ void verfica_S(char *ordenacao)
 {
     if(strcmp(ordenacao, "alfa") == 0 || strcmp(ordenacao, "pop") == 0 || strcmp(ordenacao, "inf") == 0 || strcmp(ordenacao, "dea") == 0)
     {
-        return;
+        return;// se for opcao correta, retorna
     }
     fprintf(stderr, "ordenacao indisponivel");
     exit(EXIT_FAILURE);
@@ -379,7 +298,7 @@ void verifica_D(char *selecao)
 {
     if(strcmp(selecao, "inf") == 0 || strcmp(selecao, "dea") == 0 || strcmp(selecao, "racioinf") == 0 || strcmp(selecao, "raciodea") == 0)
     {
-        return;
+        return; // se for opcao correta, retorna
     }
     fprintf(stderr, "selecao indisponivel");
     exit(EXIT_FAILURE);
@@ -389,7 +308,7 @@ void verifica_P(char *restricao)
 {
     if(strcmp(restricao, "min") == 0 || strcmp(restricao, "max") == 0 || strcmp(restricao, "date") == 0 || strcmp(restricao, "dates") == 0)
     {
-        return;
+        return; // se for opcao correta, retorna
     }
     fprintf(stderr, "restricao indisponivel");
     exit(EXIT_FAILURE);
@@ -399,7 +318,7 @@ void erro_argumento(char *word)
 {
     if(!strcmp(word,"-L") || !strcmp(word, "-S") || !strcmp(word,"-D")  || !strcmp(word,"-P") || !strcmp(word,"-i")  || !strcmp(word,"-o"))
     {
-        fprintf(stderr, "opcao precisa de um valor");
+        fprintf(stderr, "opcao precisa de um valor"); // se nao tiver um numero ou data a seguir a uma opcao que precisa
         exit(EXIT_FAILURE);
     }
 }
@@ -408,7 +327,7 @@ void verifica_argumento(char *word)
 {
     if(!strcmp(word,"-L") || !strcmp(word, "-S") || !strcmp(word,"-D")  || !strcmp(word,"-P") || !strcmp(word,"-i")  || !strcmp(word,"-o"))
     {
-        return;
+        return; // se tiver um numero ou data onde nao pode haver
     }
     fprintf(stderr, "opcao nao permite valores");
     exit(EXIT_FAILURE);
@@ -416,13 +335,13 @@ void verifica_argumento(char *word)
 
 void erros_ficheiros_argumentos(settings_t *settings)
 {
-    if(settings->criterio_file == NULL)
+    if(settings->criterio_file == NULL) // se tem -i
     {
         fprintf(stderr, "opcao -i e obrigatoria");
         liberta_settings(settings);
         exit(EXIT_FAILURE);
     }
-    if(settings->criterio_write == NULL)
+    if(settings->criterio_write == NULL) // se tem -o
     {
         fprintf(stderr, "opcao -o e obrigatoria");
         liberta_settings(settings);
@@ -453,7 +372,7 @@ settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario)
     }
     else
     {
-        fprintf(stderr, "extensao indisponivel");
+        fprintf(stderr, "extensao indisponivel"); // se nao for nenhuma destas, a extensao esta errada 
         exit(EXIT_FAILURE);
     }
     return settings;
@@ -461,12 +380,12 @@ settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario)
 
 void utilizacao()
 {
-    printf("\t\tPROJETO FINAL\n\n");
-    printf("opcoes validas:\n");
-    printf("[-L all ou \"continente\"]\t\t\t\t  le o ficheiro inteiro ou dos paises em relacao ao continente\n");
-    printf("[-S (alfa, pop, inf yyyy-ww, dea yyyy-ww)]\t\t  Ordenacao dos dados\n");
-    printf("[-D (inf, dea, racioinf, raciodea)]\t\t\t  Selecao dos dados\n");
-    printf("[-P (min n, max n, date yyyy-ww, dates yyyy-ww yyyy-ww)]  Restricao dos dados\n");
-    printf("[-i \"nomedoficheiro.extensao\"]\t\t\t\t  Leitura do ficheiro\n");
-    printf("[-o \"nomedoficheiro.extensao\"]\t\t\t\t  Escrita do ficheiro\n");
+    fprintf(stderr, "\t\tPROJETO FINAL\n\n");
+    fprintf(stderr, "opcoes validas:\n");
+    fprintf(stderr, "[-L all ou \"continente\"]\t\t\t\t  le o ficheiro inteiro ou dos paises em relacao ao continente\n");
+    fprintf(stderr, "[-S (alfa, pop, inf yyyy-ww, dea yyyy-ww)]\t\t  Ordenacao dos dados\n");
+    fprintf(stderr, "[-D (inf, dea, racioinf, raciodea)]\t\t\t  Selecao dos dados\n");
+    fprintf(stderr, "[-P (min n, max n, date yyyy-ww, dates yyyy-ww yyyy-ww)]  Restricao dos dados\n");
+    fprintf(stderr, "[-i \"nomedoficheiro.extensao\"]\t\t\t\t  Leitura do ficheiro\n");
+    fprintf(stderr, "[-o \"nomedoficheiro.extensao\"]\t\t\t\t  Escrita do ficheiro\n");
 }

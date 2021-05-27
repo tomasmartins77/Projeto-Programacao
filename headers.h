@@ -178,6 +178,45 @@ int tamanho_lista(lista_t *lista);
  */
 void insere_pais_dados_lista(lista_t *lista, pais_t *pais, dados_t *dados);
 
+/** \brief liberta memoria das settings
+ *
+ * \param settings settings_t*
+ * \return void
+ *
+ */
+void liberta_settings(settings_t *settings);
+
+/** \brief inicializa todas as settings do programa
+ *
+ * \return settings_t*
+ *
+ */
+settings_t *init_settings();
+
+/** \brief troca as datas recebidas dos argumentos
+ *
+ * \param datas settings_t* data a ser trocada
+ * \return settings_t* datas data trocada
+ *
+ */
+settings_t *troca_datas(settings_t *datas);
+
+/** \brief verifica se a data precisa ser trocada
+ *
+ * \param datas settings_t* data a ser verificada
+ * \return settings_t* data trocada
+ *
+ */
+settings_t *verifica_datas(settings_t *datas);
+
+/** \brief  converte o input dado (string) num int para facilitar a comparacao de datas
+ *
+ * \param dados *char string com a data
+ * \return yearWeek_t data convertida em dois ints
+ *
+ */
+yearWeek_t *parseYearWeek(char *dados);
+
 //funcionalidades-----------------------------------------------------------
 
 //ordenacao
@@ -458,14 +497,6 @@ void escreve_ficheiro_csv(lista_t *paises, FILE *file);
  */
 void argumentos(int argc, char *argv[], settings_t *settings);
 
-/** \brief liberta memoria das settings
- *
- * \param settings settings_t*
- * \return void
- *
- */
-void liberta_settings(settings_t *settings);
-
 /** \brief verifica se existe algum erro de escrita no ficheiro lido
  *
  * \param lista lista_t* lista com o ficheiro inteiro
@@ -490,37 +521,6 @@ settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario);
  *
  */
 void utilizacao();
-
-/** \brief inicializa todas as settings do programa
- *
- * \return settings_t*
- *
- */
-settings_t *init_settings();
-
-/** \brief troca as datas recebidas dos argumentos
- *
- * \param datas settings_t* data a ser trocada
- * \return settings_t* datas data trocada
- *
- */
-settings_t *troca_datas(settings_t *datas);
-
-/** \brief verifica se a data precisa ser trocada
- *
- * \param datas settings_t* data a ser verificada
- * \return settings_t* data trocada
- *
- */
-settings_t *verifica_datas(settings_t *datas);
-
-/** \brief  converte o input dado (string) num int para facilitar a comparacao de datas
- *
- * \param dados *char string com a data
- * \return yearWeek_t data convertida em dois ints
- *
- */
-yearWeek_t *parseYearWeek(char *dados);
 
 /** \brief verifica se o ficheiro possui alguma letra onde apenas deviam existir numeros
  *

@@ -6,19 +6,19 @@ lista_t *ler_ficheiro(settings_t *settings)
     lista_t *lista = cria_lista(); //cria lista vazia
 
     ficheiro = fopen(settings->criterio_file, settings->tipo_ficheiro); // abre o ficheiro
-    if (ficheiro == NULL)                                               // verifica se ouve algum erro na abertura do ficheiro
+    if (ficheiro == NULL) // verifica se ouve algum erro na abertura do ficheiro
     {
         fprintf(stderr, "Erro a abrir ficheiro\n");
         exit(EXIT_FAILURE);
     }
 
-    if (strcmp(settings->tipo_ficheiro, "r") == 0)
+    if (strcmp(settings->tipo_ficheiro, "r") == 0) // se e csv
     {
         ler_ficheiro_csv(settings, ficheiro, lista);
     }
     else
     {
-        ler_ficheiro_dat(ficheiro, lista);
+        ler_ficheiro_dat(ficheiro, lista); // se e dat
     }
 
     fclose(ficheiro);
@@ -55,17 +55,13 @@ void ler_ficheiro_dat(FILE *file, lista_t *lista)
         fread(&count, sizeof(int), 1, file);
         pais->country = malloc(sizeof(char) * count);
         fread(pais->country, sizeof(char), count, file);
-
         fread(&count, sizeof(int), 1, file);
         pais->country_code = malloc(sizeof(char) * count);
         fread(pais->country_code, sizeof(char), count, file);
-
         fread(&count, sizeof(int), 1, file);
         pais->continent = malloc(sizeof(char) * count);
         fread(pais->continent, sizeof(char), count, file);
-
         fread(&pais->population, sizeof(int), 1, file);
-
         fread(&count_dados, sizeof(int), 1, file);
         pais->dados = cria_lista();
 
@@ -76,17 +72,11 @@ void ler_ficheiro_dat(FILE *file, lista_t *lista)
             fread(&count, sizeof(int), 1, file);
             dados->indicator = malloc(sizeof(char) * count);
             fread(dados->indicator, sizeof(char), count, file);
-
             fread(&dados->weekly_count, sizeof(int), 1, file);
-
             dados->year_week = malloc(sizeof(yearWeek_t));
-
             fread(&dados->year_week->year, sizeof(int), 1, file);
-
             fread(&dados->year_week->week, sizeof(int), 1, file);
-
             fread(&dados->rate_14_day, sizeof(double), 1, file);
-
             fread(&dados->cumulative_count, sizeof(int), 1, file);
 
             dados->pais = pais;
@@ -117,7 +107,7 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra)
 
             inserir_dados(pais, dados, inicio_coluna, coluna);
 
-            if(!erro_letra_em_numero(inicio_coluna, contador))
+            if(!erro_letra_em_numero(inicio_coluna, contador)) // se existe letras em numeros
             {
                 fprintf(stderr, "existem letras onde deviam existir apenas numeros");
                 liberta_settings(settings);
@@ -155,7 +145,7 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra)
 
 void inserir_dados(pais_t *pais, dados_t *dados, char *inicio_coluna, int coluna)
 {
-    switch (coluna)
+    switch (coluna) // coloca os dados na variavel correta de acordo com a coluna
     {
     case 0:
         pais->country = malloc(sizeof(char) * (strlen(inicio_coluna) + 1));
@@ -201,31 +191,30 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
         fprintf(stderr, "Erro a criar ficheiro");
         exit(EXIT_FAILURE);
     }
-    if (strcmp(settings->tipo_escrita, "w") == 0)
+    if (strcmp(settings->tipo_escrita, "w") == 0)// se ficheiro e csv
     {
         escreve_ficheiro_csv(root, fp);
     }
-    else
+    else // se ficherio e binario
     {
         escreve_ficheiro_dat(root, fp);
     }
-
     fclose(fp);
 }
 
 void escreve_ficheiro_csv(lista_t *paises, FILE *file)
 {
     fprintf(file, "country,country_code,continent,population,indicator,weekly_count,year_week,rate_14_day,cumulative_count\n");
-
+    // cabecalho
     node_t *curr = paises->first;
 
-    while (curr != NULL)
+    while (curr != NULL) // loop pelos paises
     {
         pais_t *pais = curr->value;
 
         node_t *curr_dados = pais->dados->first;
 
-        while (curr_dados != NULL)
+        while (curr_dados != NULL) // loop pelos dados de cada pais
         {
             dados_t *dados = curr_dados->value;
 
@@ -235,7 +224,6 @@ void escreve_ficheiro_csv(lista_t *paises, FILE *file)
 
             curr_dados = curr_dados->next;
         }
-
         curr = curr->next;
     }
 }
@@ -244,19 +232,19 @@ void escreve_ficheiro_dat(lista_t *paises, FILE *file)
 {
     node_t *curr = paises->first;
 
-    int count_paises = tamanho_lista(paises);
+    int count_paises = tamanho_lista(paises); // quantidade de paises
 
     fwrite(&count_paises, sizeof(int), 1, file);
 
     while (curr != NULL)
     {
         pais_t *pais = curr->value;
-        int count_dados = tamanho_lista(pais->dados);
+        int count_dados = tamanho_lista(pais->dados); // quantidade de dados em cada pais
         int count;
 
         if (count_dados == 0)
             continue;
-
+        //escreve os dados no ficheiro
         count = strlen(pais->country) + 1;
         fwrite(&count, sizeof(int), 1, file);
         fwrite(pais->country, sizeof(char), count, file);
@@ -266,10 +254,7 @@ void escreve_ficheiro_dat(lista_t *paises, FILE *file)
         count = strlen(pais->continent) + 1;
         fwrite(&count, sizeof(int), 1, file);
         fwrite(pais->continent, sizeof(char), count, file);
-
         fwrite(&pais->population, sizeof(int), 1, file);
-
-        // escrever dados
         fwrite(&count_dados, sizeof(int), 1, file);
 
         node_t *curr_dados = pais->dados->first;
@@ -279,17 +264,11 @@ void escreve_ficheiro_dat(lista_t *paises, FILE *file)
 
             count = strlen(dados->indicator) + 1;
             fwrite(&count, sizeof(int), 1, file);
-
             fwrite(dados->indicator, sizeof(char), count, file);
-
             fwrite(&dados->weekly_count, sizeof(int), 1, file);
-
             fwrite(&dados->year_week->year, sizeof(int), 1, file);
-
             fwrite(&dados->year_week->week, sizeof(int), 1, file);
-
             fwrite(&dados->rate_14_day, sizeof(double), 1, file);
-
             fwrite(&dados->cumulative_count, sizeof(int), 1, file);
 
             curr_dados = curr_dados->next;
