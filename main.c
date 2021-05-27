@@ -7,6 +7,8 @@ int main(int argc, char *argv[])
 
     argumentos(argc, argv, settings); // argumentos da linha de comandos
 
+    erros_ficheiros_argumentos(settings);
+
     settings = verifica_tipo_ficheiro(settings, &binario); // verifica se o ficheiro e .dat ou .csv
 
     lista_t *root_principal = ler_ficheiro(settings); // cria a lista inteira ou apenas com um continente
@@ -410,6 +412,22 @@ void verifica_argumento(char *word)
     }
     fprintf(stderr, "opcao nao permite valores");
     exit(EXIT_FAILURE);
+}
+
+void erros_ficheiros_argumentos(settings_t *settings)
+{
+    if(settings->criterio_file == NULL)
+    {
+        fprintf(stderr, "opcao -i e obrigatoria");
+        liberta_settings(settings);
+        exit(EXIT_FAILURE);
+    }
+    if(settings->criterio_write == NULL)
+    {
+        fprintf(stderr, "opcao -o e obrigatoria");
+        liberta_settings(settings);
+        exit(EXIT_FAILURE);
+    }
 }
 
 settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario)

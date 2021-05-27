@@ -579,4 +579,12 @@ void erro_argumento(char *word);
  */
 void verifica_argumento(char *word);
 
+/** \brief verifica se a linha de argumentos possui -i ou -o
+ *
+ * \param settings settings_t*
+ * \return void
+ *
+ */
+void erros_ficheiros_argumentos(settings_t *settings);
+
 #endif
