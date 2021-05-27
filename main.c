@@ -3,7 +3,7 @@
 int main(int argc, char *argv[])
 {
     settings_t *settings = init_settings();
-    int binario = 0, flag = 0;
+    int binario = 0;
 
     argumentos(argc, argv, settings); // argumentos da linha de comandos
 
@@ -11,21 +11,18 @@ int main(int argc, char *argv[])
 
     lista_t *root_principal = ler_ficheiro(settings); // cria a lista inteira ou apenas com um continente
 
-    flag = erros_ficheiro(root_principal, flag); // verifica se o ficheiro possui erros a partir da lista criada
+    erros_ficheiro(root_principal, settings); // verifica se o ficheiro possui erros a partir da lista criada
 
-    if (flag == 0) //se ha ou nao erros no ficheiro
+    if (binario == 0) // e binario ou nao
     {
-        if (binario == 0) // e binario ou nao
-        {
-            if (settings->criterio_sel != D_NONE)
-                selecionar(settings, root_principal); // selecao
-            if (settings->criterio_res != P_NONE)
-                restricao_lista(root_principal, settings); // restricao
+        if (settings->criterio_sel != D_NONE)
+            selecionar(settings, root_principal); // selecao
+        if (settings->criterio_res != P_NONE)
+            restricao_lista(root_principal, settings); // restricao
 
-            root_principal = ordenar_lista(root_principal, settings); // ordenacao
-        }
-        cria_ficheiro(root_principal, settings); // cria ficheiro na extensao pretendida
+        root_principal = ordenar_lista(root_principal, settings); // ordenacao
     }
+    cria_ficheiro(root_principal, settings); // cria ficheiro na extensao pretendida
     //liberta toda a memoria
     liberta_settings(settings);
     liberta_lista(root_principal, destruir_pais);
@@ -50,7 +47,7 @@ void argumentos(int argc, char *argv[], settings_t *settings)
         {
         case 'L': // verifica se le o ficheiro inteiro ou apenas num certo continente
             sscanf(optarg, "%s", criterio_L);
-            if (verifica_L(criterio_L))
+            if(!verifica_L(criterio_L))
             {
                 fprintf(stderr, "continente invalido");
                 exit(EXIT_FAILURE);
@@ -69,9 +66,9 @@ void argumentos(int argc, char *argv[], settings_t *settings)
                 strcpy(settings->leitura_continente, criterio_L); // continente especifico
             }
             break;
-        case 'S': //ordenacao
+        case 'S'://ordenacao
             sscanf(optarg, "%s", criterio_S);
-            if (verfica_S(criterio_S))
+            if(!verfica_S(criterio_S))
             {
                 fprintf(stderr, "ordenacao indisponivel");
                 exit(EXIT_FAILURE);
@@ -97,7 +94,7 @@ void argumentos(int argc, char *argv[], settings_t *settings)
             break;
         case 'D': // selecao
             sscanf(optarg, "%s", criterio_D);
-            if (verifica_D(criterio_D))
+            if(!verifica_D(criterio_D))
             {
                 fprintf(stderr, "selecao indisponivel");
                 exit(EXIT_FAILURE);
@@ -113,7 +110,7 @@ void argumentos(int argc, char *argv[], settings_t *settings)
             break;
         case 'P': // restricao
             sscanf(optarg, "%s", criterio_P);
-            if (verifica_P(criterio_P))
+            if(!verifica_P(criterio_P))
             {
                 fprintf(stderr, "restricao indisponivel");
                 exit(EXIT_FAILURE);
@@ -209,7 +206,7 @@ yearWeek_t *parseYearWeek(char *dados)
         fprintf(stderr, "Erro a alocar memoria a yearweek");
         exit(EXIT_FAILURE);
     }
-    dados[4] = '\0';                  // '-'
+    dados[4] = '\0'; // '-'
     yearWeek->year = atoi(dados);     //int
     yearWeek->week = atoi(dados + 5); //int
 
@@ -227,13 +224,13 @@ settings_t *troca_datas(settings_t *datas)
 
 settings_t *verifica_datas(settings_t *datas)
 {
-    if (datas->restricao_date1->year > datas->restricao_date2->year) //ano 1 e maior que o 2
+    if (datas->restricao_date1->year > datas->restricao_date2->year)//ano 1 e maior que o 2
     {
         datas = troca_datas(datas);
     }
-    else if (datas->restricao_date1->year == datas->restricao_date2->year) //mesmo ano
+    else if (datas->restricao_date1->year == datas->restricao_date2->year)//mesmo ano
     {
-        if (datas->restricao_date1->week > datas->restricao_date2->week) //mas semana 1 maior que a 2
+        if (datas->restricao_date1->week > datas->restricao_date2->week)//mas semana 1 maior que a 2
         {
             datas = troca_datas(datas);
         }
@@ -260,18 +257,18 @@ int erro_letra_em_numero(char *numero, int contador)
 {
     char i;
 
-    if (contador == 4 || (contador >= 6 && contador <= 9))
+    if(contador == 4 || (contador >= 6 && contador <= 9)) // colunas onde existem numeros
     {
-        for (i = 'A'; i <= 'z'; i++)
+        for(i = 'A'; i <= 'z'; i++)
         {
-            if (strchr(numero, i) != NULL)
-                return 1;
+            if(strchr(numero, i) != NULL) // se existe alguma letra no ficheiro
+                return 0;
         }
     }
-    return 0;
+    return 1;
 }
 
-int erros_ficheiro(lista_t *lista, int flag)
+void erros_ficheiro(lista_t *lista, settings_t *settings)
 {
     char i;
     node_t *curr = lista->first;
@@ -284,15 +281,19 @@ int erros_ficheiro(lista_t *lista, int flag)
 
         if (aux_pais->population < 0)
         {
-            fprintf(stderr, "dados de ficheiros com numero(s) negativo(s)");
-            return flag = 1;
+            fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido");
+            liberta_settings(settings);
+            liberta_lista(lista, destruir_pais);
+            exit(EXIT_FAILURE);
         }
         for (i = '0'; i <= '9'; i++)
         {
             if (strchr(aux_pais->country, i) != NULL || strchr(aux_pais->continent, i) != NULL || strchr(aux_pais->country_code, i) != NULL)
             {
-                fprintf(stderr, "dados de ficheiros com numero(s) em nome(s)");
-                return flag = 1;
+                fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido");
+                liberta_settings(settings);
+                liberta_lista(lista, destruir_pais);
+                exit(EXIT_FAILURE);
             }
         }
 
@@ -302,76 +303,80 @@ int erros_ficheiro(lista_t *lista, int flag)
 
             if (dados->cumulative_count < 0 || dados->rate_14_day < 0 || dados->weekly_count < 0)
             {
-                fprintf(stderr, "dados de ficheiros com numero(s) negativo(s)");
-                return flag = 1;
+                fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido");
+                liberta_settings(settings);
+                liberta_lista(lista, destruir_pais);
+                exit(EXIT_FAILURE);
             }
             else if (dados->year_week->week <= 0 || dados->year_week->week > 53 || dados->year_week->year < 0)
             {
-                fprintf(stderr, "dados de ficheiros com semana(s) impossive(l)(is)");
-                return flag = 1;
+                fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido");
+                liberta_settings(settings);
+                liberta_lista(lista, destruir_pais);
+                exit(EXIT_FAILURE);
             }
             for (i = '0'; i <= '9'; i++)
             {
                 if (strchr(dados->indicator, i) != NULL)
                 {
-                    fprintf(stderr, "dados de ficheiros com numero(s) em nome(s)");
-                    return flag = 1;
+                    fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido");
+                    liberta_settings(settings);
+                    liberta_lista(lista, destruir_pais);
+                    exit(EXIT_FAILURE);
                 }
             }
-
             aux_dados = aux_dados->next;
         }
         curr = curr->next;
     }
-    return flag = 0;
 }
 
-int verifica_L(char *continente)
+int verifica_L(char* continente)
 {
-    if (strcmp(continente, "all") == 0 || strcmp(continente, "Europe") == 0 || strcmp(continente, "Africa") == 0 || strcmp(continente, "Asia") == 0 || strcmp(continente, "America") == 0 || strcmp(continente, "Oceania") == 0)
-        return 0;
-    return 1;
+    if(strcmp(continente, "all") == 0 || strcmp(continente, "Europe") == 0 || strcmp(continente, "Africa") == 0 || strcmp(continente, "Asia") == 0 || strcmp(continente, "America") == 0 || strcmp(continente, "Oceania") == 0)
+        return 1;
+    return 0;
 }
 
 int verfica_S(char *ordenacao)
 {
-    if (strcmp(ordenacao, "alfa") == 0 || strcmp(ordenacao, "pop") == 0 || strcmp(ordenacao, "inf") == 0 || strcmp(ordenacao, "dea") == 0)
-        return 0;
-    return 1;
+    if(strcmp(ordenacao, "alfa") == 0 || strcmp(ordenacao, "pop") == 0 || strcmp(ordenacao, "inf") == 0 || strcmp(ordenacao, "dea") == 0)
+        return 1;
+    return 0;
 }
 
 int verifica_D(char *selecao)
 {
-    if (strcmp(selecao, "inf") == 0 || strcmp(selecao, "dea") == 0 || strcmp(selecao, "racioinf") == 0 || strcmp(selecao, "raciodea") == 0)
-        return 0;
-    return 1;
+    if(strcmp(selecao, "inf") == 0 || strcmp(selecao, "dea") == 0 || strcmp(selecao, "racioinf") == 0 || strcmp(selecao, "raciodea") == 0)
+        return 1;
+    return 0;
 }
 
 int verifica_P(char *restricao)
 {
-    if (strcmp(restricao, "min") == 0 || strcmp(restricao, "max") == 0 || strcmp(restricao, "date") == 0 || strcmp(restricao, "dates") == 0)
-        return 0;
-    return 1;
+    if(strcmp(restricao, "min") == 0 || strcmp(restricao, "max") == 0 || strcmp(restricao, "date") == 0 || strcmp(restricao, "dates") == 0)
+        return 1;
+    return 0;
 }
 
 settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario)
 {
     char csv[4] = "csv";
     char dat[4] = "dat";
-    if (strstr(settings->criterio_file, csv) != 0) //se for ficheiro csv
+    if (strstr(settings->criterio_file, csv) != 0)//se for ficheiro csv
     {
         settings->tipo_ficheiro = "r";
     }
-    else if (strstr(settings->criterio_file, dat) != 0) //se for ficheiro dat
+    else if (strstr(settings->criterio_file, dat) != 0)//se for ficheiro dat
     {
         settings->tipo_ficheiro = "rb";
         (*binario) = 1;
     }
-    if (strstr(settings->criterio_write, csv) != 0) //se criar ficheiro csv
+    if (strstr(settings->criterio_write, csv) != 0)//se criar ficheiro csv
     {
         settings->tipo_escrita = "w";
     }
-    else if (strstr(settings->criterio_write, dat) != 0) //se criar ficheiro dat
+    else if (strstr(settings->criterio_write, dat) != 0)//se criar ficheiro dat
     {
         settings->tipo_escrita = "wb";
     }

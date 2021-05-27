@@ -104,16 +104,16 @@ typedef int (*compare_fn)(void *, void *);
 
 //listas----------------------------------------------------------
 
-/** \brief cria uma nova lista sem elementos
+/** \brief cria uma lista vazia
  *
  * \return lista_t* lista vazia
  *
  */
 lista_t *cria_lista();
 
-/** \brief cria uma lista para um pais e inicializa cada elemento do pais
+/** \brief cria um node de pais novo
  *
- * \return pais_t*: lista vazia
+ * \return pais_t* pais novo
  *
  */
 pais_t *cria_pais();
@@ -127,7 +127,7 @@ pais_t *cria_pais();
  */
 void inserir_elemento_final(lista_t *lista, void *item);
 
-/** \brief apaga um elemento da lista e destroi-o se destruir_fn não for NULL
+/** \brief apaga um certo elemento da lista
  *
  * \param lista lista_t* primeiro ou ultimo elemento da lista
  * \param elemento dados_t* elemento a ser apagado
@@ -136,7 +136,7 @@ void inserir_elemento_final(lista_t *lista, void *item);
  */
 void apagar_elemento_lista(lista_t *lista, node_t *elemento, void (*destruir_fn)(void *));
 
-/** \brief da free a todos os elementos de uma lista e à estrutura lista
+/** \brief liberta a lista da memoria
  *
  * \param lista lista_t* lista a ser libertada
  * \return void
@@ -144,7 +144,7 @@ void apagar_elemento_lista(lista_t *lista, node_t *elemento, void (*destruir_fn)
  */
 void liberta_lista(lista_t *lista, void (*destruir_fn)(void *));
 
-/** \brief da free aos dados variaveis de cada pais
+/** \brief liberta um determinado node
  *
  * \param dados dados_t*
  * \return void
@@ -152,7 +152,7 @@ void liberta_lista(lista_t *lista, void (*destruir_fn)(void *));
  */
 void destruir_dados(void *p_dados);
 
-/** \brief da free a todos os dados de cada pais
+/** \brief liberta da memoria um determinado node de pais
  *
  * \param p_pais void*
  * \return void
@@ -168,11 +168,11 @@ void destruir_pais(void *p_pais);
  */
 int tamanho_lista(lista_t *lista);
 
-/** \brief procura na lista principal se o pais ja existe
+/** \brief insere um novo pais e dados na lista
  *
- * \param lista lista_t*: lista que vai receber os dados
- * \param pais pais_t*: pais que estamos a ver
- * \param dados dados_t*: dados do pais
+ * \param lista lista_t* lista principal
+ * \param pais pais_t* pais novo
+ * \param dados dados_t* dados desse pais
  * \return void
  *
  */
@@ -185,50 +185,49 @@ void insere_pais_dados_lista(lista_t *lista, pais_t *pais, dados_t *dados);
 /** \brief ordena dois nodes de acordo com a populacao decrescente, se a populacao do node right for menor
  *          que a do node right->next, trocam
  *
- * \param right dados_t**
- * \param left dados_t**
- * \param flag int* flag que mantem o loop a verificar a lista inteira
- * \return void
+ * \param atual pais_t* node atual
+ * \param comparacao pais_t* node de comparacao
+ * \return int diferenca de populacoes
  *
  */
 int ordenacao_pop(pais_t *atual, pais_t *comparacao);
 
-/** \brief ordena a lista por ordem alfabetica
+/** \brief ordena dois nodes de por ordem alfabetica, se a letra do node atual estiver mais abaixo no alfabeto
+ *          que a do node de comparacao, trocam
  *
- * \param right dados_t**
- * \param left dados_t**
- * \param flag int* flag que mantem o loop a verificar a lista inteira
- * \return void
+ * \param atual pais_t* atual
+ * \param comparacao pais_t* comparacao
+ * \return int strcmp entre os dois paises
  *
  */
 int ordenacao_alfa(pais_t *atual, pais_t *comparacao);
 
-/** \brief
+/** \brief ordena dois nodes em relacao a quantidade de mortes ou casos numa determinada semana
  *
- * \param settings settings_t*
- * \param atual pais_t*
- * \param comparacao pais_t*
- * \param indicator char*
- * \return int
+ * \param settings settings_t* data
+ * \param atual pais_t* atual
+ * \param comparacao pais_t* comparacao
+ * \param indicator char* casos ou mortes
+ * \return int diferenca de mortes ou casos entre os dois nodes
  *
  */
 int ordenacao_inf_dea(settings_t *settings, pais_t *atual, pais_t *comparacao, char *indicator);
 
-/** \brief
+/** \brief menu que verifica que modo de ordenacao foi escolhido
  *
- * \param settings settings_t*
- * \param atual pais_t*
- * \param comparacao pais_t*
- * \return int
+ * \param settings settings_t* qual o modo escolhido
+ * \param atual pais_t* atual
+ * \param comparacao pais_t* comparacao
+ * \return int resultado da ordenacao escolhida
  *
  */
 int criterio_ordenacao(settings_t *settings, pais_t *atual, pais_t *comparacao);
 
-/** \brief ordena a lista
+/** \brief ordena a lista inteira
  *
- * \param root lista_t*
- * \param settings settings_t*
- * \return lista_t*
+ * \param root lista_t* lista principal
+ * \param settings settings_t* qual o modo de ordenacao
+ * \return lista_t* lista ordenada
  *
  */
 lista_t *ordenar_lista(lista_t *root, settings_t *settings);
@@ -238,8 +237,8 @@ lista_t *ordenar_lista(lista_t *root, settings_t *settings);
 /** \brief apenas dados de países com mais de n mil habitantes
  *
  * \param lista lista_t* primeiro ou ultimo elemento da lista
- * \param head dados_t** elemento que estamos neste momento
- * \param settings settings_t* numero de habitantes
+ * \param node node_t* elemento que estamos neste momento
+ * \param settings settings_t* numero de habitantes minimo
  * \return void
  *
  */
@@ -248,18 +247,18 @@ void restricao_min(lista_t *lista, node_t *node, settings_t *settings);
 /** \brief apenas dados de países com menos de n mil habitantes
  *
  * \param lista lista_t* primeiro ou ultimo elemento da lista
- * \param head dados_t** elemento que estamos neste momento
- * \param settings settings_t* n maximo
+ * \param node node_t* elemento que estamos neste momento
+ * \param settings settings_t* numero de habitantes maximo
  * \return void
  *
  */
 void restricao_max(lista_t *lista, node_t *node, settings_t *settings);
 
-/** \brief  apenas dados relativos à semana indicada
+/** \brief  apenas dados relativos a semana indicada
  *
  * \param lista lista_t* primeiro ou ultimo elemento da lista
- * \param head dados_t** elemento que estamos neste momento
- * \param anosemana settings_t* semana especificada pelo utilizador
+ * \param node node_t* elemento que estamos neste momento
+ * \param settings settings_t* semana especificada pelo utilizador
  * \return void
  *
  */
@@ -268,19 +267,19 @@ void restricao_date(lista_t *lista, node_t *node, settings_t *settings);
 /** \brief apenas dados entre as semanas indicadas
  *
  * \param lista lista_t* primeiro ou ultimo elemento da lista
- * \param head dados_t** elemento que estamos neste momento
- * \param anosemana settings_t* semanas que restringem os dados
+ * \param node node_t* elemento que estamos neste momento
+ * \param settings settings_t* semanas que restringem os dados
  * \return void
  *
  */
 void restricao_dates(lista_t *lista, node_t *node, settings_t *settings);
 
-/** \brief
+/** \brief verifica se a semana do node em que estamos esta entre as datas indicadas
  *
- * \param data yearWeek_t*
- * \param data1 yearWeek_t*
- * \param data2 yearWeek_t*
- * \return short
+ * \param data yearWeek_t* data do note em que nos encontramos
+ * \param data1 yearWeek_t* data mais nova
+ * \param data2 yearWeek_t* data mais velha
+ * \return short 0 se nao estiver no intervalo, 1 se estiver
  *
  */
 short entre_semanas(yearWeek_t *data, yearWeek_t *data1, yearWeek_t *data2);
@@ -298,9 +297,9 @@ void restricao_lista(lista_t *lista, settings_t *settings);
 
 /** \brief selecionar, para cada pais, a semana com mais infetados
  *
- * \param atual dados_t*
- * \param comparacao dados_t*
- * \return int: 0,1,2
+ * \param p_atual void* atual
+ * \param p_comparacao void* comparacao
+ * \return int: 0,1-------------------------------------------------------------------------------
  *
  */
 int selecao_inf(void *p_atual, void *p_comparacao);
@@ -309,25 +308,27 @@ int selecao_inf(void *p_atual, void *p_comparacao);
  *
  * \param atual dados_t*
  * \param comparacao dados_t*
- * \return int: 0,1,2
+ * \return int: 0,1------------------------------------------------------------------------
  *
  */
 int selecao_dea(void *p_atual, void *p_comparacao);
 
-/** \brief
+/** \brief selecionar para cada país a semana com maior rácio de infectados por 100000
+ *         habitantes
  *
- * \param p_atual void*
- * \param p_comparacao void*
- * \return int
+ * \param p_atual void* atual
+ * \param p_comparacao void* comparacao
+ * \return int 0,1------------------------------------------------------------------------
  *
  */
 int selecao_racio_inf(void *p_atual, void *p_comparacao);
 
-/** \brief
+/** \brief selecionar para cada país a semana com maior rácio de mortes por milhão de
+ *         habitantes
  *
- * \param p_atual void*
- * \param p_comparacao void*
- * \return int
+ * \param p_atual void* atual
+ * \param p_comparacao void* comparacao
+ * \return int 0,1--------------------------------------------------------------------------------
  *
  */
 int selecao_racio_dea(void *p_atual, void *p_comparacao);
@@ -335,14 +336,12 @@ int selecao_racio_dea(void *p_atual, void *p_comparacao);
 /** \brief menu que verifica qual a selecao a fazer
  *
  * \param settings settings_t* para saber qual o tipo de selecao
- * \param atual dados_t*
- * \param comparacao dados_t*
- * \return int
+ * \return compare_fn-----------------------------------------------
  *
  */
 compare_fn criterio_selecao(settings_t *settings);
 
-/** \brief
+/** \brief loop que faz a selecao da lista
  *
  * \param settings settings_t*
  * \param lista lista_t*
@@ -351,7 +350,7 @@ compare_fn criterio_selecao(settings_t *settings);
  */
 void selecionar(settings_t *settings, lista_t *lista);
 
-/** \brief
+/** \brief ---------------------------------------------------------------------------------
  *
  * \param lista_dados lista_t*
  * \param cmp_fn compare_fn
@@ -360,36 +359,103 @@ void selecionar(settings_t *settings, lista_t *lista);
  */
 node_t *selecionar_pais(lista_t *lista_dados, compare_fn cmp_fn);
 
-/** \brief
+/** \brief vai buscar um determinado node na semana indicada
  *
- * \param lista lista_t*
- * \param yearWeek yearWeek_t*
- * \param indicator char*
- * \return dados_t*
+ * \param lista lista_t* lista completa
+ * \param yearWeek yearWeek_t* semana especifica
+ * \param indicator char* mortes ou casos
+ * \return dados_t* node com os dados num certa semana
  *
  */
 dados_t *obter_dados_semana(lista_t *lista, yearWeek_t *yearWeek, char *indicator);
 
 //lercriarficheiros-------------------------------------------------------------------------------
 
+/** \brief funcao que le o ficheiro e o coloca por completo numa lista, no caso de se ter
+ *         escolhido a opcao -L "continente", cria a lista apenas para esse continente
+ *
+ * \param settings settings_t* definicoes para saber se a lista é ALL ou "continente"
+ * \return lista_t* lista criada de acordo com os argumentos da linha de comando
+ *
+ */
 lista_t *ler_ficheiro(settings_t *settings);
 
+/** \brief le a linha, divide-a em varias strings e coloca-as nas diferentes variaveis de um node
+ *
+ * \param settings settings_t* saber o continente a ler
+ * \param lista lista_t* insere na lista principal
+ * \param letra char* linha lida do ficheiro
+ * \return void
+ *
+ */
 void ler_linha(settings_t *settings, lista_t *lista, char *letra);
 
+/** \brief insere um determinado dado na variavel correta da lista
+ *
+ * \param dados dados_t* lista para onde vao os dados do ficheiro
+ * \param inicio_coluna char* palavra que vai entrar em cada variavel
+ * \param coluna int indica em que coluna estamos de modo a colocar o valor na variavel correta
+ * \return void
+ *
+ */
 void inserir_dados(pais_t *pais, dados_t *dados, char *inicio_coluna, int coluna);
 
+/** \brief cria um ficheiro
+ *
+ * \param root lista_t* lista que vai criar o ficheiro
+ * \param settings settings_t* saber qual o nome do ficheiro
+ * \return void
+ *
+ */
 void cria_ficheiro(lista_t *root, settings_t *settings);
 
+/** \brief le ficheiro .csv
+ *
+ * \param settings settings_t* para usar noutra funcao
+ * \param file FILE* ficheiro
+ * \param lista lista_t* onde vai ser colocado os dados do ficheiro
+ * \return void
+ *
+ */
 void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista);
 
-void ler_ficheiro_dat(settings_t *settings, FILE *file, lista_t *lista);
+/** \brief le ficheiro .dat
+ *
+ * \param file FILE* ficheiro
+ * \param lista lista_t* onde vai ser colocado os dados do ficheiro
+ * \return void
+ *
+ */
+void ler_ficheiro_dat(FILE *file, lista_t *lista);
 
+/** \brief cria um ficheiro .dat
+ *
+ * \param paises lista_t*
+ * \param file FILE*
+ * \return void
+ *
+ */
 void escreve_ficheiro_dat(lista_t *paises, FILE *file);
 
+/** \brief cria um ficheiro .csv
+ *
+ * \param paises lista_t* lista que vai criar o ficheiro
+ * \param file FILE* ficherio
+ * \return void
+ *
+ */
 void escreve_ficheiro_csv(lista_t *paises, FILE *file);
 
 //main---------------------------------------------------------------------------------------------
 
+/** \brief le os argumentos da linha de comandos
+ *
+ * \param argc int
+ * \param argv[] char*
+ * \param settings settings_t* struct onde vao ser guardadas todas as variaveis dos argumentos
+ * \return void
+ *
+ */
 void argumentos(int argc, char *argv[], settings_t *settings);
 
 /** \brief liberta memoria das settings
@@ -403,11 +469,11 @@ void liberta_settings(settings_t *settings);
 /** \brief verifica se existe algum erro de escrita no ficheiro lido
  *
  * \param lista lista_t* lista com o ficheiro inteiro
- * \param flag int muda se tiver algum erro no ficheiro
- * \return int
+ * \param settings settings_t* se houver erro, da free
+ * \return void
  *
  */
-int erros_ficheiro(lista_t *lista, int flag);
+void erros_ficheiro(lista_t *lista, settings_t *settings);
 
 /** \brief verifica se o ficheiro e .dat ou .csv
  *
@@ -456,14 +522,45 @@ settings_t *verifica_datas(settings_t *datas);
  */
 yearWeek_t *parseYearWeek(char *dados);
 
+/** \brief verifica se o ficheiro possui alguma letra onde apenas deviam existir numeros
+ *
+ * \param numero char* string que possui o numero que vai ser verificado
+ * \param contador int coluna do ficheiro onde nos encontramos
+ * \return int 0 se existir uma letra e 1 se estiver tudo bem
+ *
+ */
 int erro_letra_em_numero(char *numero, int contador);
 
-int verifica_L(char *continente);
+/** \brief verifica se o continente escolhido e valido
+ *
+ * \param continente char* continente escolhido
+ * \return int 0 se nao for valido e 1 se for valido
+ *
+ */
+int verifica_L(char* continente);
 
+/** \brief verifica se a ordenacao escolhida e valida
+ *
+ * \param ordenacao char* ordenacao escolhida
+ * \return int int 0 se nao for valido e 1 se for valido
+ *
+ */
 int verfica_S(char *ordenacao);
 
+/** \brief verifica se a selecao escolhida e valida
+ *
+ * \param selecao char* selecao escolhida
+ * \return int int 0 se nao for valido e 1 se for valido
+ *
+ */
 int verifica_D(char *selecao);
 
+/** \brief verifica se a restricao escolhida e valida
+ *
+ * \param restricao char* restricao escolhida
+ * \return int int 0 se nao for valido e 1 se for valido
+ *
+ */
 int verifica_P(char *restricao);
 
 #endif

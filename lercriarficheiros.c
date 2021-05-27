@@ -1,12 +1,5 @@
 #include "headers.h"
 
-/** \brief funcao que le o ficheiro e o coloca por completo numa lista, no caso de se ter
- *         escolhido a opcao -L "continente", cria a lista apenas para esse continente
- *
- * \param settings settings_t* definicoes para saber se a lista é ALL ou "continente"
- * \return lista_t* lista criada de acordo com os argumentos da linha de comando
- *
- */
 lista_t *ler_ficheiro(settings_t *settings)
 {
     FILE *ficheiro;
@@ -25,21 +18,13 @@ lista_t *ler_ficheiro(settings_t *settings)
     }
     else
     {
-        ler_ficheiro_dat(settings, ficheiro, lista);
+        ler_ficheiro_dat(ficheiro, lista);
     }
 
     fclose(ficheiro);
     return lista;
 }
 
-/** \brief le um ficheiro .csv, ignorando a primeira linha (cabecalho)
- *
- * \param settings settings_t*
- * \param file FILE*
- * \param lista lista_t*
- * \return void
- *
- */
 void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista)
 {
     char buffer[MAX_PALAVRAS_LINHAS];
@@ -55,15 +40,7 @@ void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista)
     }
 }
 
-/** \brief le um ficheiro .dat
- *
- * \param settings settings_t*
- * \param file FILE*
- * \param lista lista_t*
- * \return void
- *
- */
-void ler_ficheiro_dat(settings_t *settings, FILE *file, lista_t *lista)
+void ler_ficheiro_dat(FILE *file, lista_t *lista)
 {
     int count_paises;
 
@@ -119,12 +96,6 @@ void ler_ficheiro_dat(settings_t *settings, FILE *file, lista_t *lista)
     }
 }
 
-/** \brief le a linha, divide-a em varias strings e coloca-as nas diferentes variaveis de um node
- *
- * \param letra char* linha lida do ficheiro
- * \return dados_t* node com os elementos da linha nas suas variaveis
- *
- */
 void ler_linha(settings_t *settings, lista_t *lista, char *letra)
 {
     char *inicio_coluna = letra;
@@ -146,7 +117,7 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra)
 
             inserir_dados(pais, dados, inicio_coluna, coluna);
 
-            if (erro_letra_em_numero(inicio_coluna, contador))
+            if(!erro_letra_em_numero(inicio_coluna, contador))
             {
                 fprintf(stderr, "existem letras onde deviam existir apenas numeros");
                 liberta_settings(settings);
@@ -159,7 +130,7 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra)
         }
         letra++;
     }
-    if (contador != 9) //se tem falta de colunas
+    if(contador != 9)//se tem falta de colunas
     {
         fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido");
         liberta_settings(settings);
@@ -182,17 +153,8 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra)
     }
 }
 
-/** \brief insere um determinado dado na variavel correta da lista
- *
- * \param dados dados_t* lista para onde vao os dados do ficheiro
- * \param inicio_coluna char* palavra que vai entrar em cada variavel
- * \param coluna int indica em que coluna estamos de modo a colocar o valor na variavel correta
- * \return void
- *
- */
 void inserir_dados(pais_t *pais, dados_t *dados, char *inicio_coluna, int coluna)
 {
-    //consoante o numero da coluna, organiza os diferentes dados
     switch (coluna)
     {
     case 0:
@@ -202,7 +164,6 @@ void inserir_dados(pais_t *pais, dados_t *dados, char *inicio_coluna, int coluna
     case 1:
         pais->country_code = malloc(sizeof(char) * (strlen(inicio_coluna) + 1));
         strcpy(pais->country_code, inicio_coluna);
-
         break;
     case 2:
         pais->continent = malloc(sizeof(char) * (strlen(inicio_coluna) + 1));
@@ -230,13 +191,6 @@ void inserir_dados(pais_t *pais, dados_t *dados, char *inicio_coluna, int coluna
     }
 }
 
-/** \brief cria um ficheiro
- *
- * \param root lista_t* lista que vai criar o ficheiro
- * \param settings settings_t* saber qual o nome do ficheiro
- * \return void
- *
- */
 void cria_ficheiro(lista_t *root, settings_t *settings)
 {
     FILE *fp;
@@ -259,13 +213,6 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
     fclose(fp);
 }
 
-/** \brief escreve num ficheiro do tipo .csv
- *
- * \param paises lista_t*
- * \param file FILE*
- * \return void
- *
- */
 void escreve_ficheiro_csv(lista_t *paises, FILE *file)
 {
     fprintf(file, "country,country_code,continent,population,indicator,weekly_count,year_week,rate_14_day,cumulative_count\n");
@@ -293,13 +240,6 @@ void escreve_ficheiro_csv(lista_t *paises, FILE *file)
     }
 }
 
-/** \brief escreve num ficheiro do tipo .dat
- *
- * \param paises lista_t*
- * \param file FILE*
- * \return void
- *
- */
 void escreve_ficheiro_dat(lista_t *paises, FILE *file)
 {
     node_t *curr = paises->first;

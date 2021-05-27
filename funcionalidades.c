@@ -49,7 +49,6 @@ int selecao_dea(void *p_atual, void *p_comparacao)
     //no caso de empate, para desempatar escolhe-se a semana mais recente
     if (atual->weekly_count == comparacao->weekly_count)
     {
-
         if (atual->year_week->year == comparacao->year_week->year) //se for o mesmo ano
         {
             if (atual->year_week->week < comparacao->year_week->week)
@@ -175,23 +174,6 @@ node_t *selecionar_pais(lista_t *lista_dados, compare_fn cmp_fn)
     return resultado;
 }
 
-dados_t *obter_dados_semana(lista_t *lista, yearWeek_t *yearWeek, char *indicator)
-{
-    node_t *aux = lista->first;
-
-    dados_t *aux_dados;
-
-    while (aux != NULL)
-    {
-        aux_dados = aux->value;
-
-        if (aux_dados->year_week->year == yearWeek->year && aux_dados->year_week->week == yearWeek->week && strcmp(aux_dados->indicator, indicator) == 0)
-            return aux_dados;
-        aux = aux->next;
-    }
-    return NULL;
-}
-
 //--------------------------------------------
 
 void restricao_min(lista_t *lista, node_t *node, settings_t *settings)
@@ -312,11 +294,27 @@ void restricao_lista(lista_t *lista, settings_t *settings)
 
 //----------------------------------------------------
 
+dados_t *obter_dados_semana(lista_t *lista, yearWeek_t *yearWeek, char *indicator)
+{
+    node_t *aux = lista->first;
+
+    dados_t *aux_dados;
+
+    while (aux != NULL)
+    {
+        aux_dados = aux->value;
+
+        if (aux_dados->year_week->year == yearWeek->year && aux_dados->year_week->week == yearWeek->week && strcmp(aux_dados->indicator, indicator) == 0)
+            return aux_dados;
+        aux = aux->next;
+    }
+    return NULL;
+}
 int ordenacao_pop(pais_t *atual, pais_t *comparacao)
 {
     int dif = comparacao->population - atual->population;
 
-    if (dif == 0) //se tiver a mesma populacao
+    if (dif == 0)//se tiver a mesma populacao
         return ordenacao_alfa(atual, comparacao);
 
     return dif;
@@ -332,9 +330,9 @@ int ordenacao_inf_dea(settings_t *settings, pais_t *atual, pais_t *comparacao, c
     dados_t *atual_dados = obter_dados_semana(atual->dados, settings->ord_date, indicator);
     dados_t *comparacao_dados = obter_dados_semana(comparacao->dados, settings->ord_date, indicator);
 
-    int dif = (comparacao_dados == NULL ? 0 : comparacao_dados->weekly_count) - (atual_dados == NULL ? 0 : atual_dados->weekly_count);
+    int dif = (atual_dados == NULL ? 0 : comparacao_dados->weekly_count) - (comparacao_dados == NULL ? 0 : atual_dados->weekly_count);
 
-    if (dif == 0) //se tiver os mesmos valores
+    if (dif == 0)//se tiver os mesmos valores
         return ordenacao_alfa(atual, comparacao);
 
     return dif;
@@ -342,13 +340,13 @@ int ordenacao_inf_dea(settings_t *settings, pais_t *atual, pais_t *comparacao, c
 
 int criterio_ordenacao(settings_t *settings, pais_t *atual, pais_t *comparacao)
 {
-    if (settings->criterio_ord == S_ALFA) //ordem alfabetica
+    if (settings->criterio_ord == S_ALFA)//ordem alfabetica
         return ordenacao_alfa(atual, comparacao);
-    if (settings->criterio_ord == S_POP) //ordem decrescente de populacao
+    if (settings->criterio_ord == S_POP)//ordem decrescente de populacao
         return ordenacao_pop(atual, comparacao);
-    if (settings->criterio_ord == S_INF) //ordem decrescente de casos numa data
+    if (settings->criterio_ord == S_INF)//ordem decrescente de casos numa data
         return ordenacao_inf_dea(settings, atual, comparacao, "cases");
-    if (settings->criterio_ord == S_DEA) //ordem decrescente de mortes numa data
+    if (settings->criterio_ord == S_DEA)//ordem decrescente de mortes numa data
         return ordenacao_inf_dea(settings, atual, comparacao, "deaths");
     return 0;
 }

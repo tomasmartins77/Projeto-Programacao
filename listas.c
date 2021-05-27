@@ -14,18 +14,15 @@ int tamanho_lista(lista_t *lista)
 
 void apagar_elemento_lista(lista_t *lista, node_t *elemento, void (*destruir_fn)(void *))
 {
-    //se for o primeiro da lista
     if (elemento->prev == NULL)
         lista->first = elemento->next;
     else
         elemento->prev->next = elemento->next;
 
-    //se for o ultimo da lista
     if (elemento->next == NULL)
         lista->last = elemento->prev;
     else
         elemento->next->prev = elemento->prev;
-
     if (destruir_fn != NULL)
         destruir_fn(elemento->value);
     free(elemento);
@@ -36,7 +33,7 @@ void liberta_lista(lista_t *lista, void (*destruir_fn)(void *))
     node_t *curr;
     node_t *next = lista->first;
 
-    while (next != NULL) // loop que liberta elemento a elemento
+    while (next != NULL) // loop que liberta linha a linha
     {
         curr = next;
         next = next->next;
@@ -57,12 +54,10 @@ void destruir_dados(void *p_dados)
 void destruir_pais(void *p_pais)
 {
     pais_t *pais = p_pais;
-    //apaga os dados fixos
     free(pais->country_code);
     free(pais->country);
     free(pais->continent);
     if (pais->dados != NULL)
-        //apaga tambem os dados variaveis
         liberta_lista(pais->dados, destruir_dados);
     free(pais);
 }
@@ -125,14 +120,14 @@ void insere_pais_dados_lista(lista_t *lista, pais_t *pais, dados_t *dados)
 {
     node_t *aux = lista->first;
 
-    while (aux != NULL && strcmp(pais->country_code, ((pais_t *)aux->value)->country_code) != 0) //procurar o pais
+    while (aux != NULL && strcmp(pais->country_code, ((pais_t *)aux->value)->country_code) != 0)
     {
         aux = aux->next;
     }
-    if (aux == NULL) //se nao existir pais
+    if (aux == NULL)
     {
-        inserir_elemento_final(lista, pais); //adicionar o pais à lista
-        pais->dados = cria_lista();          //criar lista
+        inserir_elemento_final(lista, pais);
+        pais->dados = cria_lista();
         aux = lista->last;
     }
     else //se ja existir pais
