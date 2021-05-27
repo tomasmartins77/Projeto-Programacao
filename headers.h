@@ -537,30 +537,46 @@ int erro_letra_em_numero(char *numero, int contador);
  * \return int 0 se nao for valido e 1 se for valido
  *
  */
-int verifica_L(char* continente);
+void verifica_L(char* continente);
 
 /** \brief verifica se a ordenacao escolhida e valida
  *
  * \param ordenacao char* ordenacao escolhida
- * \return int int 0 se nao for valido e 1 se for valido
+ * \return void
  *
  */
-int verfica_S(char *ordenacao);
+void verfica_S(char *ordenacao);
 
 /** \brief verifica se a selecao escolhida e valida
  *
  * \param selecao char* selecao escolhida
- * \return int int 0 se nao for valido e 1 se for valido
+ * \return void
  *
  */
-int verifica_D(char *selecao);
+void verifica_D(char *selecao);
 
 /** \brief verifica se a restricao escolhida e valida
  *
  * \param restricao char* restricao escolhida
- * \return int int 0 se nao for valido e 1 se for valido
+ * \return void
  *
  */
-int verifica_P(char *restricao);
+void verifica_P(char *restricao);
+
+/** \brief verifica se existe alguma falta de valores num argumento da linha de comando
+ *
+ * \param word char* argv[optind]
+ * \return void
+ *
+ */
+void erro_argumento(char *word);
+
+/** \brief verifica se possui algum valor em lugares onde nao devia haver
+ *
+ * \param word char* argv[optind]
+ * \return void
+ *
+ */
+void verifica_argumento(char *word);
 
 #endif
