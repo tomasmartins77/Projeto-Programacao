@@ -79,14 +79,26 @@ void argumentos(int argc, char *argv[], settings_t *settings)
                 settings->criterio_ord = S_POP;
             else if (strcmp(criterio_S, "inf") == 0) // ordenacao por ordem decrescente de casos numa determinada data
             {
+                if(!strcmp(argv[optind],"-L") || !strcmp(argv[optind],"-D")  || !strcmp(argv[optind],"-P") || !strcmp(argv[optind],"-i")  || !strcmp(argv[optind],"-o"))
+                {
+                    fprintf(stderr, "opcao precisa de uma data");
+                    exit(EXIT_FAILURE);
+                }
                 settings->criterio_ord = S_INF;
+
                 strcpy(yearweek, argv[optind]);
                 optind++;
                 settings->ord_date = parseYearWeek(yearweek);
             }
             else if (strcmp(criterio_S, "dea") == 0) //ordenacao por ordem decrescente de mortes numa determinada data
             {
+                if(!strcmp(argv[optind],"-L") || !strcmp(argv[optind],"-D")  || !strcmp(argv[optind],"-P") || !strcmp(argv[optind],"-i")  || !strcmp(argv[optind],"-o"))
+                {
+                    fprintf(stderr, "opcao precisa de uma data");
+                    exit(EXIT_FAILURE);
+                }
                 settings->criterio_ord = S_DEA;
+
                 strcpy(yearweek, argv[optind]);
                 optind++;
                 settings->ord_date = parseYearWeek(yearweek);
@@ -117,28 +129,56 @@ void argumentos(int argc, char *argv[], settings_t *settings)
             }
             if (strcmp(criterio_P, "min") == 0) // apenas dados de países com mais de n mil habitantes
             {
+                if(!strcmp(argv[optind],"-L") || !strcmp(argv[optind],"-S") || !strcmp(argv[optind],"-D")  || !strcmp(argv[optind],"-i")  || !strcmp(argv[optind],"-o"))
+                {
+                    fprintf(stderr, "opcao precisa de um numero");
+                    exit(EXIT_FAILURE);
+                }
                 settings->criterio_res = P_MIN;
+
                 settings->restricao_nmin = atoi(argv[optind]);
                 optind++;
             }
             else if (strcmp(criterio_P, "max") == 0) // apenas dados de países com menos de n mil habitantes
             {
+                if(!strcmp(argv[optind],"-L") || !strcmp(argv[optind],"-S") || !strcmp(argv[optind],"-D")  || !strcmp(argv[optind],"-i")  || !strcmp(argv[optind],"-o"))
+                {
+                    fprintf(stderr, "opcao precisa de numero");
+                    exit(EXIT_FAILURE);
+                }
                 settings->criterio_res = P_MAX;
+
                 settings->restricao_nmax = atoi(argv[optind]);
                 optind++;
             }
             else if (strcmp(criterio_P, "date") == 0) // apenas dados relativos à semana indicada
             {
+                if(!strcmp(argv[optind],"-L") || !strcmp(argv[optind],"-S") || !strcmp(argv[optind],"-D")  || !strcmp(argv[optind],"-i")  || !strcmp(argv[optind],"-o"))
+                {
+                    fprintf(stderr, "opcao precisa de uma data");
+                    exit(EXIT_FAILURE);
+                }
                 settings->criterio_res = P_DATE;
+
                 strcpy(yearweek, argv[optind]);
                 optind++;
                 settings->restricao_date1 = parseYearWeek(yearweek);
             }
             else if (strcmp(criterio_P, "dates") == 0) // apenas dados entre as semanas indicadas
             {
+                if(!strcmp(argv[optind],"-L") || !strcmp(argv[optind],"-S") || !strcmp(argv[optind],"-D")  || !strcmp(argv[optind],"-i")  || !strcmp(argv[optind],"-o"))
+                {
+                    fprintf(stderr, "opcao precisa de uma data");
+                    exit(EXIT_FAILURE);
+                }
                 settings->criterio_res = P_DATES;
                 strcpy(yearweek, argv[optind]);
                 optind++;
+                if(!strcmp(argv[optind],"-L") || !strcmp(argv[optind],"-S") || !strcmp(argv[optind],"-D")  || !strcmp(argv[optind],"-i")  || !strcmp(argv[optind],"-o"))
+                {
+                    fprintf(stderr, "opcao precisa de uma segunda data");
+                    exit(EXIT_FAILURE);
+                }
                 strcpy(yearweek2, argv[optind]);
                 optind++;
                 settings->restricao_date1 = parseYearWeek(yearweek);
