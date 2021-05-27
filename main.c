@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
     settings_t *settings = init_settings();
     int binario = 0;
 
-    argumentos(argc, argv, settings); // argumentos da linha de comandos
+    settings = argumentos(argc, argv, settings); // argumentos da linha de comandos
 
     erros_ficheiros_argumentos(settings); // verifica se -i e -o estao especificados
 
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void argumentos(int argc, char *argv[], settings_t *settings)
+settings_t *argumentos(int argc, char *argv[], settings_t *settings)
 {
     int opt;
     opterr = 0;
@@ -50,80 +50,15 @@ void argumentos(int argc, char *argv[], settings_t *settings)
         {
         case 'L': // verifica se le o ficheiro inteiro ou apenas num certo continente
             sscanf(optarg, "%s", criterio_L);
-            verifica_L(criterio_L);// verifica se e uma opcao valida
-            if (strcmp(criterio_L, "all") == 0)
-            {
-                verifica_argumento(argv[optind]); //verifica se possui valores
-                settings->criterio_leitura = L_ALL; // ficheiro inteiro
-            }
-            else
-            {
-                verifica_argumento(argv[optind]); //verifica se possui valores
-                settings->criterio_leitura = L_CONTINENTE;
-                settings->leitura_continente = (char *)malloc(sizeof(char) * (strlen(criterio_L) + 1));
-                if (settings->leitura_continente == NULL)
-                {
-                    fprintf(stderr, "Erro a alocar memoria para leitura continente");
-                    exit(EXIT_FAILURE);
-                }
-                strcpy(settings->leitura_continente, criterio_L); // continente especifico
-            }
+            settings = verifica_L(criterio_L, settings, argv[optind]);// verifica se e uma opcao valida
             break;
         case 'S'://ordenacao
             sscanf(optarg, "%s", criterio_S);
-            verfica_S(criterio_S);// verifica se e uma opcao valida
-            if (strcmp(criterio_S, "alfa") == 0)
-            {
-                verifica_argumento(argv[optind]); //verifica se possui valores
-                settings->criterio_ord = S_ALFA;     // ordenacao por ordem alfabetica
-            }
-            else if (strcmp(criterio_S, "pop") == 0) // ordenacao por populacao
-            {
-                verifica_argumento(argv[optind]); //verifica se possui valores
-                settings->criterio_ord = S_POP;
-            }
-            else if (strcmp(criterio_S, "inf") == 0) // ordenacao por ordem decrescente de casos numa determinada data
-            {
-                erro_argumento(argv[optind]); // verifica se nao possui valores
-
-                settings->criterio_ord = S_INF;
-                strcpy(yearweek, argv[optind]);
-                optind++;
-                settings->ord_date = parseYearWeek(yearweek);
-            }
-            else if (strcmp(criterio_S, "dea") == 0) //ordenacao por ordem decrescente de mortes numa determinada data
-            {
-                erro_argumento(argv[optind]); // verifica se nao possui valores
-
-                settings->criterio_ord = S_DEA;
-                strcpy(yearweek, argv[optind]);
-                optind++;
-                settings->ord_date = parseYearWeek(yearweek);
-            }
+            settings = verifica_S(criterio_S, settings, argv[optind]);// verifica se e uma opcao valida
             break;
         case 'D': // selecao
             sscanf(optarg, "%s", criterio_D);
-            verifica_D(criterio_D); // verifica se e uma opcao valida
-            if (strcmp(criterio_D, "inf") == 0) // semana com mais infetados
-            {
-                verifica_argumento(argv[optind]); //verifica se possui valores
-                settings->criterio_sel = D_INF;
-            }
-            else if (strcmp(criterio_D, "dea") == 0) // semana com mais mortes
-            {
-                verifica_argumento(argv[optind]); //verifica se possui valores
-                settings->criterio_sel = D_DEA;
-            }
-            else if (strcmp(criterio_D, "racioinf") == 0) // semana com maior racio de infetados
-            {
-                verifica_argumento(argv[optind]); //verifica se possui valores
-                settings->criterio_sel = D_RACIOINF;
-            }
-            else if (strcmp(criterio_D, "raciodea") == 0) // semana com maior racio de mortes
-            {
-                verifica_argumento(argv[optind]); //verifica se possui valores
-                settings->criterio_sel = D_RACIODEA;
-            }
+            settings = verifica_D(criterio_D, settings, argv[optind]); // verifica se e uma opcao valida
             break;
         case 'P': // restricao
             sscanf(optarg, "%s", criterio_P);
@@ -194,6 +129,7 @@ void argumentos(int argc, char *argv[], settings_t *settings)
             exit(EXIT_FAILURE);
         }
     }
+    return settings;
 }
 
 int erro_letra_em_numero(char *numero, int contador)
@@ -274,34 +210,109 @@ void erros_ficheiro(lista_t *lista, settings_t *settings)
     }
 }
 
-void verifica_L(char* continente)
+settings_t *verifica_L(char* continente, settings_t *settings, char *seguinte)
 {
     if(strcmp(continente, "all") == 0 || strcmp(continente, "Europe") == 0 || strcmp(continente, "Africa") == 0 || strcmp(continente, "Asia") == 0 || strcmp(continente, "America") == 0 || strcmp(continente, "Oceania") == 0)
     {
-        return; // se for opcao correta, retorna
+        if (strcmp(continente, "all") == 0)
+        {
+            verifica_argumento(continente); //verifica se possui valores
+            settings->criterio_leitura = L_ALL; // ficheiro inteiro
+        }
+        else
+        {
+            verifica_argumento(seguinte); //verifica se possui valores
+            settings->criterio_leitura = L_CONTINENTE;
+            settings->leitura_continente = (char *)malloc(sizeof(char) * (strlen(continente) + 1));
+            if (settings->leitura_continente == NULL)
+            {
+                fprintf(stderr, "Erro a alocar memoria para leitura continente");
+                exit(EXIT_FAILURE);
+            }
+            strcpy(settings->leitura_continente, continente); // continente especifico
+        }
     }
-    fprintf(stderr, "continente invalido");
-    exit(EXIT_FAILURE);
+    else
+    {
+        fprintf(stderr, "continente invalido");
+        exit(EXIT_FAILURE);
+    }
+    return settings;
 }
 
-void verfica_S(char *ordenacao)
+settings_t *verifica_S(char *ordenacao, settings_t *settings, char *seguinte)
 {
+    char yearweek[8];
     if(strcmp(ordenacao, "alfa") == 0 || strcmp(ordenacao, "pop") == 0 || strcmp(ordenacao, "inf") == 0 || strcmp(ordenacao, "dea") == 0)
     {
-        return;// se for opcao correta, retorna
+        if (strcmp(ordenacao, "alfa") == 0)
+        {
+            verifica_argumento(seguinte); //verifica se possui valores
+            settings->criterio_ord = S_ALFA;     // ordenacao por ordem alfabetica
+        }
+        else if (strcmp(ordenacao, "pop") == 0) // ordenacao por populacao
+        {
+            verifica_argumento(seguinte); //verifica se possui valores
+            settings->criterio_ord = S_POP;
+        }
+        else if (strcmp(ordenacao, "inf") == 0) // ordenacao por ordem decrescente de casos numa determinada data
+        {
+            erro_argumento(seguinte); // verifica se nao possui valores
+
+            settings->criterio_ord = S_INF;
+            strcpy(yearweek, seguinte);
+            optind++;
+            settings->ord_date = parseYearWeek(yearweek);
+        }
+        else if (strcmp(ordenacao, "dea") == 0) //ordenacao por ordem decrescente de mortes numa determinada data
+        {
+            erro_argumento(seguinte); // verifica se nao possui valores
+
+            settings->criterio_ord = S_DEA;
+            strcpy(yearweek, seguinte);
+            optind++;
+            settings->ord_date = parseYearWeek(yearweek);
+        }
     }
-    fprintf(stderr, "ordenacao indisponivel");
-    exit(EXIT_FAILURE);
+    else
+    {
+        fprintf(stderr, "ordenacao indisponivel");
+        exit(EXIT_FAILURE);
+    }
+    return settings;
 }
 
-void verifica_D(char *selecao)
+settings_t * verifica_D(char *selecao, settings_t *settings, char *seguinte)
 {
     if(strcmp(selecao, "inf") == 0 || strcmp(selecao, "dea") == 0 || strcmp(selecao, "racioinf") == 0 || strcmp(selecao, "raciodea") == 0)
     {
-        return; // se for opcao correta, retorna
+        if (strcmp(selecao, "inf") == 0) // semana com mais infetados
+        {
+            verifica_argumento(seguinte); //verifica se possui valores
+            settings->criterio_sel = D_INF;
+        }
+        else if (strcmp(selecao, "dea") == 0) // semana com mais mortes
+        {
+            verifica_argumento(seguinte); //verifica se possui valores
+            settings->criterio_sel = D_DEA;
+        }
+        else if (strcmp(selecao, "racioinf") == 0) // semana com maior racio de infetados
+        {
+            verifica_argumento(seguinte); //verifica se possui valores
+            settings->criterio_sel = D_RACIOINF;
+        }
+        else if (strcmp(selecao, "raciodea") == 0) // semana com maior racio de mortes
+        {
+            verifica_argumento(seguinte); //verifica se possui valores
+            settings->criterio_sel = D_RACIODEA;
+        }
     }
-    fprintf(stderr, "selecao indisponivel");
-    exit(EXIT_FAILURE);
+    else
+    {
+        fprintf(stderr, "selecao indisponivel");
+        exit(EXIT_FAILURE);
+    }
+    return settings;
 }
 
 void verifica_P(char *restricao)
@@ -325,7 +336,7 @@ void erro_argumento(char *word)
 
 void verifica_argumento(char *word)
 {
-    if(!strcmp(word,"-L") || !strcmp(word, "-S") || !strcmp(word,"-D")  || !strcmp(word,"-P") || !strcmp(word,"-i")  || !strcmp(word,"-o"))
+    if(strcmp(word,"-L") != 0 || strcmp(word, "-S") != 0|| strcmp(word,"-D") != 0 || strcmp(word,"-P") != 0 || strcmp(word,"-i") != 0 || strcmp(word,"-o") != 0)
     {
         return; // se tiver um numero ou data onde nao pode haver
     }
@@ -372,7 +383,7 @@ settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario)
     }
     else
     {
-        fprintf(stderr, "extensao indisponivel"); // se nao for nenhuma destas, a extensao esta errada 
+        fprintf(stderr, "extensao indisponivel"); // se nao for nenhuma destas, a extensao esta errada
         exit(EXIT_FAILURE);
     }
     return settings;

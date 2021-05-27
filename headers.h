@@ -338,7 +338,7 @@ void restricao_lista(lista_t *lista, settings_t *settings);
  *
  * \param p_atual void* atual
  * \param p_comparacao void* comparacao
- * \return int: 0,1-------------------------------------------------------------------------------
+ * \return int: 0,1 1 se comparacao for maior que atual, 0 se o contrario ou se for cases
  *
  */
 int selecao_inf(void *p_atual, void *p_comparacao);
@@ -347,7 +347,7 @@ int selecao_inf(void *p_atual, void *p_comparacao);
  *
  * \param atual dados_t*
  * \param comparacao dados_t*
- * \return int: 0,1------------------------------------------------------------------------
+ * \return int: 0,1 1 se comparacao for maior que atual, 0 se o contrario ou deaths
  *
  */
 int selecao_dea(void *p_atual, void *p_comparacao);
@@ -357,7 +357,7 @@ int selecao_dea(void *p_atual, void *p_comparacao);
  *
  * \param p_atual void* atual
  * \param p_comparacao void* comparacao
- * \return int 0,1------------------------------------------------------------------------
+ * \return int 0,1 1 se comparacao for maior que atual, 0 se o contrario ou se for cases
  *
  */
 int selecao_racio_inf(void *p_atual, void *p_comparacao);
@@ -367,7 +367,7 @@ int selecao_racio_inf(void *p_atual, void *p_comparacao);
  *
  * \param p_atual void* atual
  * \param p_comparacao void* comparacao
- * \return int 0,1--------------------------------------------------------------------------------
+ * \return int 0,1 1 se comparacao for maior que atual, 0 se o contrario ou se for deaths
  *
  */
 int selecao_racio_dea(void *p_atual, void *p_comparacao);
@@ -375,7 +375,7 @@ int selecao_racio_dea(void *p_atual, void *p_comparacao);
 /** \brief menu que verifica qual a selecao a fazer
  *
  * \param settings settings_t* para saber qual o tipo de selecao
- * \return compare_fn-----------------------------------------------
+ * \return compare_fn qual o tipo de selecao a ser feito
  *
  */
 compare_fn criterio_selecao(settings_t *settings);
@@ -389,7 +389,7 @@ compare_fn criterio_selecao(settings_t *settings);
  */
 void selecionar(settings_t *settings, lista_t *lista);
 
-/** \brief ---------------------------------------------------------------------------------
+/** \brief saber se estamos no mesmo pais
  *
  * \param lista_dados lista_t*
  * \param cmp_fn compare_fn
@@ -495,7 +495,7 @@ void escreve_ficheiro_csv(lista_t *paises, FILE *file);
  * \return void
  *
  */
-void argumentos(int argc, char *argv[], settings_t *settings);
+settings_t *argumentos(int argc, char *argv[], settings_t *settings);
 
 /** \brief verifica se existe algum erro de escrita no ficheiro lido
  *
@@ -537,7 +537,7 @@ int erro_letra_em_numero(char *numero, int contador);
  * \return int 0 se nao for valido e 1 se for valido
  *
  */
-void verifica_L(char* continente);
+settings_t *verifica_L(char* continente, settings_t *settings, char *seguinte);
 
 /** \brief verifica se a ordenacao escolhida e valida
  *
@@ -545,7 +545,7 @@ void verifica_L(char* continente);
  * \return void
  *
  */
-void verfica_S(char *ordenacao);
+settings_t * verifica_S(char *ordenacao, settings_t *settings, char *seguinte);
 
 /** \brief verifica se a selecao escolhida e valida
  *
@@ -553,7 +553,7 @@ void verfica_S(char *ordenacao);
  * \return void
  *
  */
-void verifica_D(char *selecao);
+settings_t * verifica_D(char *selecao, settings_t *settings, char *seguinte);
 
 /** \brief verifica se a restricao escolhida e valida
  *
