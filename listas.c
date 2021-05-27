@@ -1,5 +1,6 @@
 #include "headers.h"
 
+/** \brief verifica quantos nodes a lista contem*/
 int tamanho_lista(lista_t *lista)
 {
     int count = 0;
@@ -12,6 +13,7 @@ int tamanho_lista(lista_t *lista)
     return count; // quantidade de nodes da lista
 }
 
+/** \brief apaga um certo elemento da lista*/
 void apagar_elemento_lista(lista_t *lista, node_t *elemento, void (*destruir_fn)(void *))
 {
     if (elemento->prev == NULL) // se for o primeiro, o primeiro passa para o seguinte
@@ -28,6 +30,7 @@ void apagar_elemento_lista(lista_t *lista, node_t *elemento, void (*destruir_fn)
     free(elemento); // destroi o node
 }
 
+/** \brief liberta a lista da memoria*/
 void liberta_lista(lista_t *lista, void (*destruir_fn)(void *))
 {
     node_t *curr;
@@ -43,6 +46,7 @@ void liberta_lista(lista_t *lista, void (*destruir_fn)(void *))
     free(lista);
 }
 
+/** \brief liberta um determinado node*/
 void destruir_dados(void *p_dados)
 {
     dados_t *dados = p_dados;
@@ -51,6 +55,7 @@ void destruir_dados(void *p_dados)
     free(dados);
 }
 
+/** \brief liberta da memoria um determinado node de pais*/
 void destruir_pais(void *p_pais)
 {
     pais_t *pais = p_pais;
@@ -62,6 +67,7 @@ void destruir_pais(void *p_pais)
     free(pais);
 }
 
+/** \brief insere um node no final da lista*/
 void inserir_elemento_final(lista_t *lista, void *item)
 {
     node_t *node = (node_t *)malloc(sizeof(node_t));
@@ -85,6 +91,7 @@ void inserir_elemento_final(lista_t *lista, void *item)
     lista->last = node; // torna esse node o ultimo pois inserimos no final
 }
 
+/** \brief cria um node de pais novo*/
 pais_t *cria_pais()
 {
     pais_t *pais = (pais_t *)malloc(sizeof(pais_t));
@@ -101,6 +108,7 @@ pais_t *cria_pais()
     return pais;
 }
 
+/** \brief cria uma lista vazia*/
 lista_t *cria_lista()
 {
     lista_t *novaLista = (lista_t *)malloc(sizeof(lista_t));
@@ -115,6 +123,7 @@ lista_t *cria_lista()
     return novaLista;
 }
 
+/** \brief insere um novo pais e dados na lista*/
 void insere_pais_dados_lista(lista_t *lista, pais_t *pais, dados_t *dados)
 {
     node_t *aux = lista->first;
@@ -137,6 +146,7 @@ void insere_pais_dados_lista(lista_t *lista, pais_t *pais, dados_t *dados)
     inserir_elemento_final(((pais_t *)aux->value)->dados, dados); //inserir os novos dados na lista do pais
 }
 
+/** \brief inicializa todas as settings do programa*/
 settings_t *init_settings()
 {
     settings_t *settings = (settings_t *)malloc(sizeof(settings_t));
@@ -163,6 +173,7 @@ settings_t *init_settings()
     return settings; // inicializa as settings vazias
 }
 
+/** \brief  converte o input dado (string) num int para facilitar a comparacao de datas*/
 yearWeek_t *parseYearWeek(char *dados)
 {
     yearWeek_t *yearWeek = malloc(sizeof(yearWeek_t));
@@ -178,6 +189,7 @@ yearWeek_t *parseYearWeek(char *dados)
     return yearWeek;
 }
 
+/** \brief troca as datas recebidas dos argumentos*/
 settings_t *troca_datas(settings_t *datas)
 {
     yearWeek_t *aux;
@@ -187,6 +199,7 @@ settings_t *troca_datas(settings_t *datas)
     return datas;
 }
 
+/** \brief verifica se a data precisa ser trocada*/
 settings_t *verifica_datas(settings_t *datas)
 {
     if (datas->restricao_date1->year > datas->restricao_date2->year)//ano 1 e maior que o 2
@@ -204,6 +217,7 @@ settings_t *verifica_datas(settings_t *datas)
     return datas;
 }
 
+/** \brief liberta memoria das settings*/
 void liberta_settings(settings_t *settings)
 {
     free(settings->criterio_file);

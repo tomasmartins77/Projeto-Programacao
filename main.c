@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+/** \brief le os argumentos da linha de comandos*/
 settings_t *argumentos(int argc, char *argv[], settings_t *settings)
 {
     int opt;
@@ -132,6 +133,7 @@ settings_t *argumentos(int argc, char *argv[], settings_t *settings)
     return settings;
 }
 
+/** \brief verifica se o ficheiro possui alguma letra onde apenas deviam existir numeros*/
 int erro_letra_em_numero(char *numero, int contador)
 {
     char i;
@@ -147,6 +149,7 @@ int erro_letra_em_numero(char *numero, int contador)
     return 1;
 }
 
+/** \brief verifica se existe algum erro de escrita no ficheiro lido*/
 void erros_ficheiro(lista_t *lista, settings_t *settings)
 {
     char i;
@@ -210,6 +213,7 @@ void erros_ficheiro(lista_t *lista, settings_t *settings)
     }
 }
 
+/** \brief verifica se o continente escolhido e valido*/
 settings_t *verifica_L(char* continente, settings_t *settings, char *seguinte)
 {
     if(strcmp(continente, "all") == 0 || strcmp(continente, "Europe") == 0 || strcmp(continente, "Africa") == 0 || strcmp(continente, "Asia") == 0 || strcmp(continente, "America") == 0 || strcmp(continente, "Oceania") == 0)
@@ -240,6 +244,7 @@ settings_t *verifica_L(char* continente, settings_t *settings, char *seguinte)
     return settings;
 }
 
+/** \brief verifica se a ordenacao escolhida e valida*/
 settings_t *verifica_S(char *ordenacao, settings_t *settings, char *seguinte)
 {
     char yearweek[8];
@@ -282,6 +287,7 @@ settings_t *verifica_S(char *ordenacao, settings_t *settings, char *seguinte)
     return settings;
 }
 
+/** \brief verifica se a selecao escolhida e valida*/
 settings_t * verifica_D(char *selecao, settings_t *settings, char *seguinte)
 {
     if(strcmp(selecao, "inf") == 0 || strcmp(selecao, "dea") == 0 || strcmp(selecao, "racioinf") == 0 || strcmp(selecao, "raciodea") == 0)
@@ -315,6 +321,7 @@ settings_t * verifica_D(char *selecao, settings_t *settings, char *seguinte)
     return settings;
 }
 
+/** \brief verifica se a restricao escolhida e valida*/
 void verifica_P(char *restricao)
 {
     if(strcmp(restricao, "min") == 0 || strcmp(restricao, "max") == 0 || strcmp(restricao, "date") == 0 || strcmp(restricao, "dates") == 0)
@@ -325,6 +332,7 @@ void verifica_P(char *restricao)
     exit(EXIT_FAILURE);
 }
 
+/** \brief verifica se existe alguma falta de valores num argumento da linha de comando*/
 void erro_argumento(char *word)
 {
     if(!strcmp(word,"-L") || !strcmp(word, "-S") || !strcmp(word,"-D")  || !strcmp(word,"-P") || !strcmp(word,"-i")  || !strcmp(word,"-o"))
@@ -334,6 +342,7 @@ void erro_argumento(char *word)
     }
 }
 
+/** \brief verifica se possui algum valor em lugares onde nao devia haver*/
 void verifica_argumento(char *word)
 {
     if(strcmp(word,"-L") != 0 || strcmp(word, "-S") != 0|| strcmp(word,"-D") != 0 || strcmp(word,"-P") != 0 || strcmp(word,"-i") != 0 || strcmp(word,"-o") != 0)
@@ -344,6 +353,7 @@ void verifica_argumento(char *word)
     exit(EXIT_FAILURE);
 }
 
+/** \brief verifica se a linha de argumentos possui -i ou -o*/
 void erros_ficheiros_argumentos(settings_t *settings)
 {
     if(settings->criterio_file == NULL) // se tem -i
@@ -360,6 +370,7 @@ void erros_ficheiros_argumentos(settings_t *settings)
     }
 }
 
+/** \brief verifica se o ficheiro e .dat ou .csv*/
 settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario)
 {
     char csv[5] = ".csv";
@@ -389,6 +400,7 @@ settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario)
     return settings;
 }
 
+/** \brief menu de utilizacao*/
 void utilizacao()
 {
     fprintf(stderr, "\t\tPROJETO FINAL\n\n");

@@ -1,5 +1,7 @@
 #include "headers.h"
 
+/** \brief funcao que le o ficheiro e o coloca por completo numa lista, no caso de se ter
+ *         escolhido a opcao -L "continente", cria a lista apenas para esse continente*/
 lista_t *ler_ficheiro(settings_t *settings)
 {
     FILE *ficheiro;
@@ -25,6 +27,7 @@ lista_t *ler_ficheiro(settings_t *settings)
     return lista;
 }
 
+/** \brief le ficheiro .csv*/
 void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista)
 {
     char buffer[MAX_PALAVRAS_LINHAS];
@@ -40,6 +43,7 @@ void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista)
     }
 }
 
+/** \brief le ficheiro .dat*/
 void ler_ficheiro_dat(FILE *file, lista_t *lista)
 {
     int count_paises;
@@ -86,6 +90,7 @@ void ler_ficheiro_dat(FILE *file, lista_t *lista)
     }
 }
 
+/** \brief le a linha, divide-a em varias strings e coloca-as nas diferentes variaveis de um node*/
 void ler_linha(settings_t *settings, lista_t *lista, char *letra)
 {
     char *inicio_coluna = letra;
@@ -143,6 +148,7 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra)
     }
 }
 
+/** \brief insere um determinado dado na variavel correta da lista*/
 void inserir_dados(pais_t *pais, dados_t *dados, char *inicio_coluna, int coluna)
 {
     switch (coluna) // coloca os dados na variavel correta de acordo com a coluna
@@ -181,6 +187,7 @@ void inserir_dados(pais_t *pais, dados_t *dados, char *inicio_coluna, int coluna
     }
 }
 
+/** \brief cria um ficheiro*/
 void cria_ficheiro(lista_t *root, settings_t *settings)
 {
     FILE *fp;
@@ -202,6 +209,7 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
     fclose(fp);
 }
 
+/** \brief cria um ficheiro .csv*/
 void escreve_ficheiro_csv(lista_t *paises, FILE *file)
 {
     fprintf(file, "country,country_code,continent,population,indicator,weekly_count,year_week,rate_14_day,cumulative_count\n");
@@ -228,6 +236,7 @@ void escreve_ficheiro_csv(lista_t *paises, FILE *file)
     }
 }
 
+/** \brief cria um ficheiro .dat*/
 void escreve_ficheiro_dat(lista_t *paises, FILE *file)
 {
     node_t *curr = paises->first;
