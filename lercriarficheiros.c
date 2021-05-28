@@ -42,7 +42,7 @@ void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista)
     }
 }
 
-/** \brief le ficheiro .dat*/
+/** \brief le ficheiro .dat e coloca os seus dados na lista lista*/
 void ler_ficheiro_dat(FILE *file, lista_t *lista)
 {
     // quantidade de paises
@@ -241,7 +241,7 @@ void escreve_ficheiro_csv(lista_t *paises, FILE *file)
     }
 }
 
-/** \brief cria um ficheiro .dat*/
+/** \brief cria um ficheiro .dat e escreve para la os dados*/
 void escreve_ficheiro_dat(lista_t *paises, FILE *file)
 {
     node_t *curr = paises->first;
@@ -257,8 +257,10 @@ void escreve_ficheiro_dat(lista_t *paises, FILE *file)
         int count_dados = tamanho_lista(pais->dados); // quantidade de dados em cada pais
         int count;
 
+        //nao se escreve um pais que nao tenha dados dentro
         if (count_dados == 0)
             continue;
+
         //escreve os dados fixos do pais no ficheiro
         count = strlen(pais->country) + 1;
         fwrite(&count, sizeof(int), 1, file);
@@ -276,6 +278,7 @@ void escreve_ficheiro_dat(lista_t *paises, FILE *file)
         while (curr_dados != NULL)
         {
             dados_t *dados = curr_dados->value;
+
             //escreve os dados variaveis do pais no ficheiro
             count = strlen(dados->indicator) + 1;
             fwrite(&count, sizeof(int), 1, file);

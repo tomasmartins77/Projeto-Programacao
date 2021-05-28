@@ -383,6 +383,7 @@ lista_t *ordenar_lista(lista_t *root, settings_t *settings)
 
     el_atual = root->first;
 
+    //enquanto nao chegarmos ao final da lista
     while (el_atual != NULL)
     {
         aux = el_atual;

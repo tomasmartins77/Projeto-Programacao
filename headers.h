@@ -459,7 +459,7 @@ void cria_ficheiro(lista_t *root, settings_t *settings);
  */
 void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista);
 
-/** \brief le ficheiro .dat
+/** \brief le ficheiro .dat e coloca os seus dados na lista lista
  *
  * \param file FILE* ficheiro
  * \param lista lista_t* onde vai ser colocado os dados do ficheiro
@@ -468,7 +468,7 @@ void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista);
  */
 void ler_ficheiro_dat(FILE *file, lista_t *lista);
 
-/** \brief cria um ficheiro .dat
+/** \brief cria um ficheiro .dat e escreve para la os dados
  *
  * \param paises lista_t* lista completa
  * \param file FILE* ficheiro
