@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
         root_principal = ordenar_lista(root_principal, settings); // ordenacao
     }
     cria_ficheiro(root_principal, settings); // cria ficheiro na extensao pretendida
-    fprintf(stdout, "Ficheiro %s criado com sucesso", settings->criterio_write);
+    fprintf(stdout, "Ficheiro %s criado com sucesso\n", settings->criterio_write);
     //liberta toda a memoria
     liberta_settings(settings);
     liberta_lista(root_principal, destruir_pais);
@@ -50,11 +50,11 @@ void argumentos(int argc, char *argv[], settings_t *settings)
         {
         case 'L': // verifica se le o ficheiro inteiro ou apenas num certo continente
             sscanf(optarg, "%s", criterio_L);
-            verifica_L(criterio_L, settings);// verifica se e uma opcao valida
+            verifica_L(criterio_L, settings); // verifica se e uma opcao valida
             break;
-        case 'S'://ordenacao
+        case 'S': //ordenacao
             sscanf(optarg, "%s", criterio_S);
-            verifica_S(criterio_S, settings, argv[optind]);// verifica se e uma opcao valida
+            verifica_S(criterio_S, settings, argv[optind]); // verifica se e uma opcao valida
             break;
         case 'D': // selecao
             sscanf(optarg, "%s", criterio_D);
@@ -62,14 +62,14 @@ void argumentos(int argc, char *argv[], settings_t *settings)
             break;
         case 'P': // restricao
             sscanf(optarg, "%s", criterio_P);
-            verifica_P(criterio_P, settings, argv);// verifica se e uma opcao valida
+            verifica_P(criterio_P, settings, argv); // verifica se e uma opcao valida
             break;
         case 'i': // leitura do ficheiro
             sscanf(optarg, "%s", criterio_FILE);
             settings->criterio_file = (char *)malloc(sizeof(char) * (strlen(criterio_FILE) + 1));
             if (settings->criterio_file == NULL)
             {
-                fprintf(stderr, "Erro a alocar memoria para criterio file");
+                fprintf(stderr, "Erro a alocar memoria para criterio file\n");
                 liberta_settings(settings);
                 exit(EXIT_FAILURE);
             }
@@ -80,7 +80,7 @@ void argumentos(int argc, char *argv[], settings_t *settings)
             settings->criterio_write = (char *)malloc(sizeof(char) * (strlen(criterio_WRITE) + 1));
             if (settings->criterio_write == NULL)
             {
-                fprintf(stderr, "Erro a alocar memoria para criterio write");
+                fprintf(stderr, "Erro a alocar memoria para criterio write\n");
                 liberta_settings(settings);
                 exit(EXIT_FAILURE);
             }
@@ -99,11 +99,11 @@ int erro_letra_em_numero(char *numero, int contador)
 {
     char i;
 
-    if(contador == 4 || (contador >= 6 && contador <= 9)) // colunas onde existem numeros
+    if (contador == 4 || (contador >= 6 && contador <= 9)) // colunas onde existem numeros
     {
-        for(i = 'A'; i <= 'z'; i++)
+        for (i = 'A'; i <= 'z'; i++)
         {
-            if(strchr(numero, i) != NULL)// se existe alguma letra no ficheiro
+            if (strchr(numero, i) != NULL) // se existe alguma letra no ficheiro
             {
                 return 0;
             }
@@ -126,16 +126,16 @@ void erros_ficheiro(lista_t *lista, settings_t *settings)
 
         if (aux_pais->population < 0) // populacao menor que 0
         {
-            fprintf(stderr, "pais com populacao negativa");
+            fprintf(stderr, "pais com populacao negativa\n");
             liberta_settings(settings);
             liberta_lista(lista, destruir_pais);
             exit(EXIT_FAILURE);
         }
-        for (i = '0'; i <= '9'; i++)// ve cada numero nas palavras
+        for (i = '0'; i <= '9'; i++) // ve cada numero nas palavras
         {
             if (strchr(aux_pais->country, i) != NULL || strchr(aux_pais->continent, i) != NULL || strchr(aux_pais->country_code, i) != NULL)
             {
-                fprintf(stderr, "valor so com letras possui numeros"); // se algum valor possui numeros
+                fprintf(stderr, "valor so com letras possui numeros\n"); // se algum valor possui numeros
                 liberta_settings(settings);
                 liberta_lista(lista, destruir_pais);
                 exit(EXIT_FAILURE);
@@ -147,14 +147,14 @@ void erros_ficheiro(lista_t *lista, settings_t *settings)
 
             if (dados->cumulative_count < 0 || dados->rate_14_day < 0 || dados->weekly_count < 0)
             {
-                fprintf(stderr, "dados variaveis com numeros negativos"); // valores negativos
+                fprintf(stderr, "dados variaveis com numeros negativos\n"); // valores negativos
                 liberta_settings(settings);
                 liberta_lista(lista, destruir_pais);
                 exit(EXIT_FAILURE);
             }
             else if (dados->year_week->week <= 0 || dados->year_week->week > 53 || dados->year_week->year < 0)
             {
-                fprintf(stderr, "semanas impossiveis"); // semanas impossiveis
+                fprintf(stderr, "semanas impossiveis\n"); // semanas impossiveis
                 liberta_settings(settings);
                 liberta_lista(lista, destruir_pais);
                 exit(EXIT_FAILURE);
@@ -163,7 +163,7 @@ void erros_ficheiro(lista_t *lista, settings_t *settings)
             {
                 if (strchr(dados->indicator, i) != NULL) // ve se o indicador tem numeros
                 {
-                    fprintf(stderr, "indicador de cases ou deaths possui numeros");
+                    fprintf(stderr, "indicador de cases ou deaths possui numeros\n");
                     liberta_settings(settings);
                     liberta_lista(lista, destruir_pais);
                     exit(EXIT_FAILURE);
@@ -176,9 +176,9 @@ void erros_ficheiro(lista_t *lista, settings_t *settings)
 }
 
 /** \brief verifica se o continente escolhido e valido*/
-void verifica_L(char* continente, settings_t *settings)
+void verifica_L(char *continente, settings_t *settings)
 {
-    if(strcmp(continente, "all") == 0 || strcmp(continente, "Europe") == 0 || strcmp(continente, "Africa") == 0 || strcmp(continente, "Asia") == 0 || strcmp(continente, "America") == 0 || strcmp(continente, "Oceania") == 0)
+    if (strcmp(continente, "all") == 0 || strcmp(continente, "Europe") == 0 || strcmp(continente, "Africa") == 0 || strcmp(continente, "Asia") == 0 || strcmp(continente, "America") == 0 || strcmp(continente, "Oceania") == 0)
     {
         if (strcmp(continente, "all") == 0)
         {
@@ -190,7 +190,7 @@ void verifica_L(char* continente, settings_t *settings)
             settings->leitura_continente = (char *)malloc(sizeof(char) * (strlen(continente) + 1));
             if (settings->leitura_continente == NULL)
             {
-                fprintf(stderr, "Erro a alocar memoria para leitura continente");
+                fprintf(stderr, "Erro a alocar memoria para leitura continente\n");
                 exit(EXIT_FAILURE);
             }
             strcpy(settings->leitura_continente, continente); // continente especifico
@@ -198,7 +198,7 @@ void verifica_L(char* continente, settings_t *settings)
     }
     else
     {
-        fprintf(stderr, "continente invalido");
+        fprintf(stderr, "continente invalido\n");
         liberta_settings(settings);
         exit(EXIT_FAILURE);
     }
@@ -208,11 +208,11 @@ void verifica_L(char* continente, settings_t *settings)
 void verifica_S(char *ordenacao, settings_t *settings, char *seguinte)
 {
     char yearweek[8];
-    if(strcmp(ordenacao, "alfa") == 0 || strcmp(ordenacao, "pop") == 0 || strcmp(ordenacao, "inf") == 0 || strcmp(ordenacao, "dea") == 0)
+    if (strcmp(ordenacao, "alfa") == 0 || strcmp(ordenacao, "pop") == 0 || strcmp(ordenacao, "inf") == 0 || strcmp(ordenacao, "dea") == 0)
     {
         if (strcmp(ordenacao, "alfa") == 0)
         {
-            settings->criterio_ord = S_ALFA;     // ordenacao por ordem alfabetica
+            settings->criterio_ord = S_ALFA; // ordenacao por ordem alfabetica
         }
         else if (strcmp(ordenacao, "pop") == 0) // ordenacao por populacao
         {
@@ -235,7 +235,7 @@ void verifica_S(char *ordenacao, settings_t *settings, char *seguinte)
     }
     else
     {
-        fprintf(stderr, "ordenacao indisponivel");
+        fprintf(stderr, "ordenacao indisponivel\n");
         liberta_settings(settings);
         exit(EXIT_FAILURE);
     }
@@ -244,7 +244,7 @@ void verifica_S(char *ordenacao, settings_t *settings, char *seguinte)
 /** \brief verifica se a selecao escolhida e valida*/
 void verifica_D(char *selecao, settings_t *settings)
 {
-    if(strcmp(selecao, "inf") == 0 || strcmp(selecao, "dea") == 0 || strcmp(selecao, "racioinf") == 0 || strcmp(selecao, "raciodea") == 0)
+    if (strcmp(selecao, "inf") == 0 || strcmp(selecao, "dea") == 0 || strcmp(selecao, "racioinf") == 0 || strcmp(selecao, "raciodea") == 0)
     {
         if (strcmp(selecao, "inf") == 0) // semana com mais infetados
         {
@@ -265,7 +265,7 @@ void verifica_D(char *selecao, settings_t *settings)
     }
     else
     {
-        fprintf(stderr, "selecao indisponivel");
+        fprintf(stderr, "selecao indisponivel\n");
         liberta_settings(settings);
         exit(EXIT_FAILURE);
     }
@@ -275,7 +275,7 @@ void verifica_D(char *selecao, settings_t *settings)
 void verifica_P(char *restricao, settings_t *settings, char *argv[])
 {
     char yearweek[8], yearweek2[8];
-    if(strcmp(restricao, "min") == 0 || strcmp(restricao, "max") == 0 || strcmp(restricao, "date") == 0 || strcmp(restricao, "dates") == 0)
+    if (strcmp(restricao, "min") == 0 || strcmp(restricao, "max") == 0 || strcmp(restricao, "date") == 0 || strcmp(restricao, "dates") == 0)
     {
         if (strcmp(restricao, "min") == 0) // apenas dados de países com mais de n mil habitantes
         {
@@ -310,7 +310,7 @@ void verifica_P(char *restricao, settings_t *settings, char *argv[])
     }
     else
     {
-        fprintf(stderr, "restricao indisponivel");
+        fprintf(stderr, "restricao indisponivel\n");
         liberta_settings(settings);
         exit(EXIT_FAILURE);
     }
@@ -319,15 +319,15 @@ void verifica_P(char *restricao, settings_t *settings, char *argv[])
 /** \brief verifica se a linha de argumentos possui -i ou -o*/
 void erros_ficheiros_argumentos(settings_t *settings)
 {
-    if(settings->criterio_file == NULL) // se tem -i
+    if (settings->criterio_file == NULL) // se tem -i
     {
-        fprintf(stderr, "opcao -i e obrigatoria");
+        fprintf(stderr, "opcao -i e obrigatoria\n");
         liberta_settings(settings);
         exit(EXIT_FAILURE);
     }
-    if(settings->criterio_write == NULL) // se tem -o
+    if (settings->criterio_write == NULL) // se tem -o
     {
-        fprintf(stderr, "opcao -o e obrigatoria");
+        fprintf(stderr, "opcao -o e obrigatoria\n");
         liberta_settings(settings);
         exit(EXIT_FAILURE);
     }
@@ -338,26 +338,26 @@ settings_t *verifica_tipo_ficheiro(settings_t *settings, int *binario)
 {
     char csv[5] = ".csv";
     char dat[5] = ".dat";
-    if (strstr(settings->criterio_file, csv) != 0)//se for ficheiro csv
+    if (strstr(settings->criterio_file, csv) != 0) //se for ficheiro csv
     {
         settings->tipo_ficheiro = "r";
     }
-    else if (strstr(settings->criterio_file, dat) != 0)//se for ficheiro dat
+    else if (strstr(settings->criterio_file, dat) != 0) //se for ficheiro dat
     {
         settings->tipo_ficheiro = "rb";
         (*binario) = 1;
     }
-    if (strstr(settings->criterio_write, csv) != 0)//se criar ficheiro csv
+    if (strstr(settings->criterio_write, csv) != 0) //se criar ficheiro csv
     {
         settings->tipo_escrita = "w";
     }
-    else if (strstr(settings->criterio_write, dat) != 0)//se criar ficheiro dat
+    else if (strstr(settings->criterio_write, dat) != 0) //se criar ficheiro dat
     {
         settings->tipo_escrita = "wb";
     }
     else
     {
-        fprintf(stderr, "extensao indisponivel"); // se nao for nenhuma destas, a extensao esta errada
+        fprintf(stderr, "extensao indisponivel\n"); // se nao for nenhuma destas, a extensao esta errada
         liberta_settings(settings);
         exit(EXIT_FAILURE);
     }

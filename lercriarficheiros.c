@@ -8,7 +8,7 @@ lista_t *ler_ficheiro(settings_t *settings)
     lista_t *lista = cria_lista(); //cria lista vazia
 
     ficheiro = fopen(settings->criterio_file, settings->tipo_ficheiro); // abre o ficheiro
-    if (ficheiro == NULL) // verifica se ouve algum erro na abertura do ficheiro
+    if (ficheiro == NULL)                                               // verifica se ouve algum erro na abertura do ficheiro
     {
         fprintf(stderr, "Erro a abrir ficheiro\n");
         exit(EXIT_FAILURE);
@@ -46,8 +46,10 @@ void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista)
 /** \brief le ficheiro .dat*/
 void ler_ficheiro_dat(FILE *file, lista_t *lista)
 {
+    // quantidade de paises
     int count_paises;
 
+    //ler do ficheiro o numero de paises guardados para facilitar a sua leitura posteriormente
     fread(&count_paises, sizeof(int), 1, file);
 
     for (; count_paises > 0; count_paises--)
@@ -100,7 +102,7 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra, FILE *file)
     dados_t *dados = malloc(sizeof(dados_t));
     if (dados == NULL)
     {
-        fprintf(stderr, "Erro a alocar memoria para dados");
+        fprintf(stderr, "Erro a alocar memoria para dados\n");
         exit(EXIT_FAILURE);
     }
 
@@ -109,9 +111,9 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra, FILE *file)
         if (*letra == ',') // troca as "," por "\0" para dividir a string em varias substrings
         {
             *letra = '\0';
-            if(!erro_letra_em_numero(inicio_coluna, contador)) // se existe letras em numeros
+            if (!erro_letra_em_numero(inicio_coluna, contador)) // se existe letras em numeros
             {
-                fprintf(stderr, "existem letras onde deviam existir apenas numeros");
+                fprintf(stderr, "existem letras onde deviam existir apenas numeros\n");
                 liberta_settings(settings);
                 destruir_pais(pais);
                 free(dados);
@@ -127,9 +129,9 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra, FILE *file)
         }
         letra++;
     }
-    if(contador != 9)//se tem falta de colunas
+    if (contador != 9) //se tem falta de colunas
     {
-        fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido");
+        fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido\n");
         liberta_settings(settings);
         destruir_pais(pais);
         destruir_dados(dados);
@@ -152,8 +154,6 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra, FILE *file)
         insere_pais_dados_lista(lista, pais, dados);
     }
 }
-
-
 
 /** \brief insere um determinado dado na variavel correta da lista*/
 void inserir_dados(pais_t *pais, dados_t *dados, char *inicio_coluna, int coluna)
@@ -202,10 +202,10 @@ void cria_ficheiro(lista_t *root, settings_t *settings)
     fp = fopen(settings->criterio_write, settings->tipo_escrita);
     if (fp == NULL)
     {
-        fprintf(stderr, "Erro a criar ficheiro");
+        fprintf(stderr, "Erro a criar ficheiro\n");
         exit(EXIT_FAILURE);
     }
-    if (strcmp(settings->tipo_escrita, "w") == 0)// se ficheiro e csv
+    if (strcmp(settings->tipo_escrita, "w") == 0) // se ficheiro e csv
     {
         escreve_ficheiro_csv(root, fp);
     }
@@ -250,6 +250,7 @@ void escreve_ficheiro_dat(lista_t *paises, FILE *file)
 
     int count_paises = tamanho_lista(paises); // quantidade de paises
 
+    //escrever no ficheiro o numero de paises guardados para facilitar a sua leitura posteriormente
     fwrite(&count_paises, sizeof(int), 1, file);
 
     while (curr != NULL)

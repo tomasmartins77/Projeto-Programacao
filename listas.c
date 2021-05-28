@@ -74,7 +74,7 @@ void inserir_elemento_final(lista_t *lista, void *item)
 
     if (node == NULL)
     {
-        fprintf(stderr, "Erro a alocar memoria a node");
+        fprintf(stderr, "Erro a alocar memoria a node\n");
         exit(EXIT_FAILURE);
     }
     node->next = NULL;        //inicia o next como null porque é o ultimo elemento
@@ -97,7 +97,7 @@ pais_t *cria_pais()
     pais_t *pais = (pais_t *)malloc(sizeof(pais_t));
     if (pais == NULL)
     {
-        fprintf(stderr, "Erro a alocar memoria a pais");
+        fprintf(stderr, "Erro a alocar memoria a pais\n");
         exit(EXIT_FAILURE);
     }
     pais->country = NULL; // inicializa o novo pais vazio
@@ -114,7 +114,7 @@ lista_t *cria_lista()
     lista_t *novaLista = (lista_t *)malloc(sizeof(lista_t));
     if (novaLista == NULL)
     {
-        fprintf(stderr, "Erro a alocar memoria para novalista");
+        fprintf(stderr, "Erro a alocar memoria para novalista\n");
         exit(EXIT_FAILURE);
     }
     novaLista->first = NULL; // inicializa a lista vazia
@@ -152,7 +152,7 @@ settings_t *init_settings()
     settings_t *settings = (settings_t *)malloc(sizeof(settings_t));
     if (settings == NULL)
     {
-        fprintf(stderr, "Erro a alocar memoria a settings");
+        fprintf(stderr, "Erro a alocar memoria a settings\n");
         exit(EXIT_FAILURE);
     }
     settings->criterio_leitura = L_ALL; //predefinicao all
@@ -179,10 +179,10 @@ yearWeek_t *parseYearWeek(char *dados)
     yearWeek_t *yearWeek = malloc(sizeof(yearWeek_t));
     if (yearWeek == NULL)
     {
-        fprintf(stderr, "Erro a alocar memoria a yearweek");
+        fprintf(stderr, "Erro a alocar memoria a yearweek\n");
         exit(EXIT_FAILURE);
     }
-    dados[4] = '\0'; // '-'
+    dados[4] = '\0';                  // '-'
     yearWeek->year = atoi(dados);     //int
     yearWeek->week = atoi(dados + 5); //int
 
@@ -193,22 +193,22 @@ yearWeek_t *parseYearWeek(char *dados)
 settings_t *troca_datas(settings_t *datas)
 {
     yearWeek_t *aux;
-    aux = datas->restricao_date1; // guarda a data num auxiliar
+    aux = datas->restricao_date1;                    // guarda a data num auxiliar
     datas->restricao_date1 = datas->restricao_date2; // mete a data do segundo no primeiro
-    datas->restricao_date2 = aux; // mete a data do aux(data 1) no data 2
+    datas->restricao_date2 = aux;                    // mete a data do aux(data 1) no data 2
     return datas;
 }
 
 /** \brief verifica se a data precisa ser trocada*/
 settings_t *verifica_datas(settings_t *datas)
 {
-    if (datas->restricao_date1->year > datas->restricao_date2->year)//ano 1 e maior que o 2
+    if (datas->restricao_date1->year > datas->restricao_date2->year) //ano 1 e maior que o 2
     {
         datas = troca_datas(datas);
     }
-    else if (datas->restricao_date1->year == datas->restricao_date2->year)//mesmo ano
+    else if (datas->restricao_date1->year == datas->restricao_date2->year) //mesmo ano
     {
-        if (datas->restricao_date1->week > datas->restricao_date2->week)//mas semana 1 maior que a 2
+        if (datas->restricao_date1->week > datas->restricao_date2->week) //mas semana 1 maior que a 2
         {
             datas = troca_datas(datas);
         }

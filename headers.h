@@ -100,7 +100,7 @@ typedef struct settings
     char *tipo_escrita;            //tipo de ficheiro a escrever(.csv ou .dat)
 } settings_t;
 
-typedef int (*compare_fn)(void *, void *);
+typedef int (*compare_fn)(void *, void *); //definir tipo de funcao que compara elementos
 
 //listas----------------------------------------------------------
 
@@ -539,7 +539,7 @@ int erro_letra_em_numero(char *numero, int contador);
  * \return void
  *
  */
-void verifica_L(char* continente, settings_t *settings);
+void verifica_L(char *continente, settings_t *settings);
 
 /** \brief verifica se a ordenacao escolhida e valida
  *
