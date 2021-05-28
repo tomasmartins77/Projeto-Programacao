@@ -114,9 +114,9 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra, FILE *file)
                 fprintf(stderr, "existem letras onde deviam existir apenas numeros\n");
                 liberta_settings(settings);
                 destruir_pais(pais);
-                if(coluna >= 5)
+                if (coluna >= 5)
                     free(dados->indicator);
-                if(coluna == 7)
+                if (coluna == 7)
                     free(dados->year_week);
                 free(dados);
                 liberta_lista(lista, destruir_pais);
@@ -130,24 +130,15 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra, FILE *file)
         }
         letra++;
     }
-    if (coluna != 8) //se tem falta de colunas da erro e deve-se dar free de tudo
+    if (coluna != 8 || !erro_letra_em_numero(inicio_coluna, coluna)) //se tem falta de colunas da erro e deve-se dar free de tudo
     {
-        fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido\n");
+        if (coluna != 8)
+            fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido\n");
+        else
+            fprintf(stderr, "existem letras onde deviam existir apenas numeros\n");
         liberta_settings(settings);
         destruir_pais(pais);
         destruir_dados(dados);
-        liberta_lista(lista, destruir_pais);
-        fclose(file);
-        exit(EXIT_FAILURE);
-    }
-    if (!erro_letra_em_numero(inicio_coluna, coluna)) // se existe letras em numeros na ultima coluna
-    {
-        fprintf(stderr, "existem letras onde deviam existir apenas numeros\n");
-        liberta_settings(settings);
-        destruir_pais(pais);
-        free(dados->indicator);
-        free(dados->year_week);
-        free(dados);
         liberta_lista(lista, destruir_pais);
         fclose(file);
         exit(EXIT_FAILURE);
