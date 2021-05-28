@@ -470,8 +470,8 @@ void ler_ficheiro_dat(FILE *file, lista_t *lista);
 
 /** \brief cria um ficheiro .dat
  *
- * \param paises lista_t*
- * \param file FILE*
+ * \param paises lista_t* lista completa
+ * \param file FILE* ficheiro
  * \return void
  *
  */
@@ -480,7 +480,7 @@ void escreve_ficheiro_dat(lista_t *paises, FILE *file);
 /** \brief cria um ficheiro .csv
  *
  * \param paises lista_t* lista que vai criar o ficheiro
- * \param file FILE* ficherio
+ * \param file FILE* ficheiro
  * \return void
  *
  */

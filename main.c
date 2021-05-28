@@ -198,7 +198,7 @@ void verifica_L(char *continente, settings_t *settings)
     }
     else
     {
-        fprintf(stderr, "continente invalido\n");
+        fprintf(stderr, "continente invalido\n"); // continente invalido
         liberta_settings(settings);
         exit(EXIT_FAILURE);
     }
@@ -221,21 +221,21 @@ void verifica_S(char *ordenacao, settings_t *settings, char *seguinte)
         else if (strcmp(ordenacao, "inf") == 0) // ordenacao por ordem decrescente de casos numa determinada data
         {
             settings->criterio_ord = S_INF;
-            strcpy(yearweek, seguinte);
+            strcpy(yearweek, seguinte); // data
             optind++;
             settings->ord_date = parseYearWeek(yearweek);
         }
         else if (strcmp(ordenacao, "dea") == 0) //ordenacao por ordem decrescente de mortes numa determinada data
         {
             settings->criterio_ord = S_DEA;
-            strcpy(yearweek, seguinte);
+            strcpy(yearweek, seguinte); // data
             optind++;
             settings->ord_date = parseYearWeek(yearweek);
         }
     }
     else
     {
-        fprintf(stderr, "ordenacao indisponivel\n");
+        fprintf(stderr, "ordenacao indisponivel\n"); // ordenacao invalida
         liberta_settings(settings);
         exit(EXIT_FAILURE);
     }
@@ -265,7 +265,7 @@ void verifica_D(char *selecao, settings_t *settings)
     }
     else
     {
-        fprintf(stderr, "selecao indisponivel\n");
+        fprintf(stderr, "selecao indisponivel\n"); // selecao invalida
         liberta_settings(settings);
         exit(EXIT_FAILURE);
     }
@@ -280,29 +280,29 @@ void verifica_P(char *restricao, settings_t *settings, char *argv[])
         if (strcmp(restricao, "min") == 0) // apenas dados de países com mais de n mil habitantes
         {
             settings->criterio_res = P_MIN;
-            settings->restricao_nmin = atoi(argv[optind]);
+            settings->restricao_nmin = atoi(argv[optind]); // n maximo
             optind++;
         }
         else if (strcmp(restricao, "max") == 0) // apenas dados de países com menos de n mil habitantes
         {
             settings->criterio_res = P_MAX;
-            settings->restricao_nmax = atoi(argv[optind]);
+            settings->restricao_nmax = atoi(argv[optind]); // n maximo
             optind++;
         }
         else if (strcmp(restricao, "date") == 0) // apenas dados relativos à semana indicada
         {
             settings->criterio_res = P_DATE;
-            strcpy(yearweek, argv[optind]);
+            strcpy(yearweek, argv[optind]); // data
             optind++;
             settings->restricao_date1 = parseYearWeek(yearweek);
         }
         else if (strcmp(restricao, "dates") == 0) // apenas dados entre as semanas indicadas
         {
             settings->criterio_res = P_DATES;
-            strcpy(yearweek, argv[optind]);
+            strcpy(yearweek, argv[optind]); // primeira data
             optind++;
 
-            strcpy(yearweek2, argv[optind]);
+            strcpy(yearweek2, argv[optind]); // segunda data
             optind++;
             settings->restricao_date1 = parseYearWeek(yearweek);
             settings->restricao_date2 = parseYearWeek(yearweek2);
@@ -310,7 +310,7 @@ void verifica_P(char *restricao, settings_t *settings, char *argv[])
     }
     else
     {
-        fprintf(stderr, "restricao indisponivel\n");
+        fprintf(stderr, "restricao indisponivel\n"); // restricao invalida
         liberta_settings(settings);
         exit(EXIT_FAILURE);
     }

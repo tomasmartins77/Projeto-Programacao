@@ -321,7 +321,7 @@ dados_t *obter_dados_semana(lista_t *lista, yearWeek_t *yearWeek, char *indicato
         aux_dados = aux->value;
 
         if (aux_dados->year_week->year == yearWeek->year && aux_dados->year_week->week == yearWeek->week && strcmp(aux_dados->indicator, indicator) == 0)
-            return aux_dados;
+            return aux_dados; // obtem os dados da semana pretendida
         aux = aux->next;
     }
     return NULL;

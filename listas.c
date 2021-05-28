@@ -182,7 +182,7 @@ yearWeek_t *parseYearWeek(char *dados)
         fprintf(stderr, "Erro a alocar memoria a yearweek\n");
         exit(EXIT_FAILURE);
     }
-    dados[4] = '\0';                  // '-'
+    dados[4] = '\0';                  //'-'
     yearWeek->year = atoi(dados);     //int
     yearWeek->week = atoi(dados + 5); //int
 

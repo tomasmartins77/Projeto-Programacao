@@ -22,7 +22,6 @@ lista_t *ler_ficheiro(settings_t *settings)
     {
         ler_ficheiro_dat(ficheiro, lista); // se e dat
     }
-
     fclose(ficheiro);
     return lista;
 }
@@ -48,7 +47,6 @@ void ler_ficheiro_dat(FILE *file, lista_t *lista)
 {
     // quantidade de paises
     int count_paises;
-
     //ler do ficheiro o numero de paises guardados para facilitar a sua leitura posteriormente
     fread(&count_paises, sizeof(int), 1, file);
 
@@ -57,7 +55,7 @@ void ler_ficheiro_dat(FILE *file, lista_t *lista)
         int count, count_dados;
 
         pais_t *pais = cria_pais();
-
+        // le os dados fixos e coloca na lista
         fread(&count, sizeof(int), 1, file);
         pais->country = malloc(sizeof(char) * count);
         fread(pais->country, sizeof(char), count, file);
@@ -74,7 +72,7 @@ void ler_ficheiro_dat(FILE *file, lista_t *lista)
         for (; count_dados > 0; count_dados--)
         {
             dados_t *dados = malloc(sizeof(dados_t));
-
+            // le os dados variaveis e coloca na lista
             fread(&count, sizeof(int), 1, file);
             dados->indicator = malloc(sizeof(char) * count);
             fread(dados->indicator, sizeof(char), count, file);
@@ -129,7 +127,7 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra, FILE *file)
         }
         letra++;
     }
-    if (contador != 9) //se tem falta de colunas
+    if (contador != 9) //se tem falta de colunas da erro e deve-se dar free de tudo
     {
         fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido\n");
         liberta_settings(settings);
@@ -145,7 +143,7 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra, FILE *file)
 
     if (settings->criterio_leitura == L_CONTINENTE && strcmp(pais->continent, settings->leitura_continente) != 0)
     {
-        //descartar linha
+        //descartar linha se nao for o contintente escolhido
         destruir_pais(pais);
         destruir_dados(dados);
     }
@@ -261,7 +259,7 @@ void escreve_ficheiro_dat(lista_t *paises, FILE *file)
 
         if (count_dados == 0)
             continue;
-        //escreve os dados no ficheiro
+        //escreve os dados fixos do pais no ficheiro
         count = strlen(pais->country) + 1;
         fwrite(&count, sizeof(int), 1, file);
         fwrite(pais->country, sizeof(char), count, file);
@@ -278,7 +276,7 @@ void escreve_ficheiro_dat(lista_t *paises, FILE *file)
         while (curr_dados != NULL)
         {
             dados_t *dados = curr_dados->value;
-
+            //escreve os dados variaveis do pais no ficheiro
             count = strlen(dados->indicator) + 1;
             fwrite(&count, sizeof(int), 1, file);
             fwrite(dados->indicator, sizeof(char), count, file);
