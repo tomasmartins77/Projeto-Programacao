@@ -535,14 +535,17 @@ int erro_letra_em_numero(char *numero, int contador);
 /** \brief verifica se o continente escolhido e valido
  *
  * \param continente char* continente escolhido
- * \return int 0 se nao for valido e 1 se for valido
+ * \param settings settings_t* onde vao ser guardadas as opcoes escolhidas
+ * \return void
  *
  */
-void verifica_L(char* continente, settings_t *settings, char *seguinte);
+void verifica_L(char* continente, settings_t *settings);
 
 /** \brief verifica se a ordenacao escolhida e valida
  *
  * \param ordenacao char* ordenacao escolhida
+ * \param settings settings_t* onde sao guardadas as opcoes escolhidas
+ * \param seguinte char* data ou valor seguinte a opcao de ordenacao escolhida
  * \return void
  *
  */
@@ -551,6 +554,7 @@ void verifica_S(char *ordenacao, settings_t *settings, char *seguinte);
 /** \brief verifica se a selecao escolhida e valida
  *
  * \param selecao char* selecao escolhida
+ * \param settings settings_t* onde sao guardadas as opcoes escolhidas
  * \return void
  *
  */
@@ -559,6 +563,8 @@ void verifica_D(char *selecao, settings_t *settings);
 /** \brief verifica se a restricao escolhida e valida
  *
  * \param restricao char* restricao escolhida
+ * \param settings settings_t* onde sao guardadas as opcoes escolhidas
+ * \param argv[] char* data ou datas que possam estar com espaços
  * \return void
  *
  */

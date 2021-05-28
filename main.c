@@ -50,7 +50,7 @@ void argumentos(int argc, char *argv[], settings_t *settings)
         {
         case 'L': // verifica se le o ficheiro inteiro ou apenas num certo continente
             sscanf(optarg, "%s", criterio_L);
-            verifica_L(criterio_L, settings, argv[optind]);// verifica se e uma opcao valida
+            verifica_L(criterio_L, settings);// verifica se e uma opcao valida
             break;
         case 'S'://ordenacao
             sscanf(optarg, "%s", criterio_S);
@@ -70,6 +70,7 @@ void argumentos(int argc, char *argv[], settings_t *settings)
             if (settings->criterio_file == NULL)
             {
                 fprintf(stderr, "Erro a alocar memoria para criterio file");
+                liberta_settings(settings);
                 exit(EXIT_FAILURE);
             }
             strcpy(settings->criterio_file, criterio_FILE);
@@ -80,12 +81,14 @@ void argumentos(int argc, char *argv[], settings_t *settings)
             if (settings->criterio_write == NULL)
             {
                 fprintf(stderr, "Erro a alocar memoria para criterio write");
+                liberta_settings(settings);
                 exit(EXIT_FAILURE);
             }
             strcpy(settings->criterio_write, criterio_WRITE);
             break;
         default:
             utilizacao(argv[0]);
+            liberta_settings(settings);
             exit(EXIT_FAILURE);
         }
     }
@@ -173,7 +176,7 @@ void erros_ficheiro(lista_t *lista, settings_t *settings)
 }
 
 /** \brief verifica se o continente escolhido e valido*/
-void verifica_L(char* continente, settings_t *settings, char *seguinte)
+void verifica_L(char* continente, settings_t *settings)
 {
     if(strcmp(continente, "all") == 0 || strcmp(continente, "Europe") == 0 || strcmp(continente, "Africa") == 0 || strcmp(continente, "Asia") == 0 || strcmp(continente, "America") == 0 || strcmp(continente, "Oceania") == 0)
     {
@@ -196,6 +199,7 @@ void verifica_L(char* continente, settings_t *settings, char *seguinte)
     else
     {
         fprintf(stderr, "continente invalido");
+        liberta_settings(settings);
         exit(EXIT_FAILURE);
     }
 }
@@ -232,6 +236,7 @@ void verifica_S(char *ordenacao, settings_t *settings, char *seguinte)
     else
     {
         fprintf(stderr, "ordenacao indisponivel");
+        liberta_settings(settings);
         exit(EXIT_FAILURE);
     }
 }
@@ -261,6 +266,7 @@ void verifica_D(char *selecao, settings_t *settings)
     else
     {
         fprintf(stderr, "selecao indisponivel");
+        liberta_settings(settings);
         exit(EXIT_FAILURE);
     }
 }
@@ -285,8 +291,6 @@ void verifica_P(char *restricao, settings_t *settings, char *argv[])
         }
         else if (strcmp(restricao, "date") == 0) // apenas dados relativos à semana indicada
         {
-
-
             settings->criterio_res = P_DATE;
             strcpy(yearweek, argv[optind]);
             optind++;
@@ -307,6 +311,7 @@ void verifica_P(char *restricao, settings_t *settings, char *argv[])
     else
     {
         fprintf(stderr, "restricao indisponivel");
+        liberta_settings(settings);
         exit(EXIT_FAILURE);
     }
 }
