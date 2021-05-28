@@ -99,7 +99,7 @@ int erro_letra_em_numero(char *numero, int contador)
 {
     char i;
 
-    if (contador == 4 || (contador >= 6 && contador <= 9)) // colunas onde existem numeros
+    if (contador == 3 || (contador >= 5 && contador <= 8)) // colunas onde existem numeros
     {
         for (i = 'A'; i <= 'z'; i++)
         {
@@ -152,7 +152,7 @@ void erros_ficheiro(lista_t *lista, settings_t *settings)
                 liberta_lista(lista, destruir_pais);
                 exit(EXIT_FAILURE);
             }
-            else if (dados->year_week->week <= 0 || dados->year_week->week > 53 || dados->year_week->year < 0)
+            else if (dados->year_week->week < 0 || dados->year_week->week > 53 || dados->year_week->year < 0)
             {
                 fprintf(stderr, "semanas impossiveis\n"); // semanas impossiveis
                 liberta_settings(settings);

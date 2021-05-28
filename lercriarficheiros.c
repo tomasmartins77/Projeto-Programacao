@@ -42,7 +42,7 @@ void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista)
     }
 }
 
-/** \brief le ficheiro .dat e coloca os seus dados na lista lista*/
+/** \brief le ficheiro .dat*/
 void ler_ficheiro_dat(FILE *file, lista_t *lista)
 {
     // quantidade de paises
@@ -94,7 +94,7 @@ void ler_ficheiro_dat(FILE *file, lista_t *lista)
 void ler_linha(settings_t *settings, lista_t *lista, char *letra, FILE *file)
 {
     char *inicio_coluna = letra;
-    int coluna = 0, contador = 1;
+    int coluna = 0;
     pais_t *pais = cria_pais();
 
     dados_t *dados = malloc(sizeof(dados_t));
@@ -109,11 +109,15 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra, FILE *file)
         if (*letra == ',') // troca as "," por "\0" para dividir a string em varias substrings
         {
             *letra = '\0';
-            if (!erro_letra_em_numero(inicio_coluna, contador)) // se existe letras em numeros
+            if (!erro_letra_em_numero(inicio_coluna, coluna)) // se existe letras em numeros
             {
                 fprintf(stderr, "existem letras onde deviam existir apenas numeros\n");
                 liberta_settings(settings);
                 destruir_pais(pais);
+                if(coluna >= 5)
+                    free(dados->indicator);
+                if(coluna == 7)
+                    free(dados->year_week);
                 free(dados);
                 liberta_lista(lista, destruir_pais);
                 fclose(file);
@@ -121,18 +125,29 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra, FILE *file)
             }
             inserir_dados(pais, dados, inicio_coluna, coluna);
 
-            contador++;
             coluna++;
             inicio_coluna = letra + 1;
         }
         letra++;
     }
-    if (contador != 9) //se tem falta de colunas da erro e deve-se dar free de tudo
+    if (coluna != 8) //se tem falta de colunas da erro e deve-se dar free de tudo
     {
         fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido\n");
         liberta_settings(settings);
         destruir_pais(pais);
         destruir_dados(dados);
+        liberta_lista(lista, destruir_pais);
+        fclose(file);
+        exit(EXIT_FAILURE);
+    }
+    if (!erro_letra_em_numero(inicio_coluna, coluna)) // se existe letras em numeros na ultima coluna
+    {
+        fprintf(stderr, "existem letras onde deviam existir apenas numeros\n");
+        liberta_settings(settings);
+        destruir_pais(pais);
+        free(dados->indicator);
+        free(dados->year_week);
+        free(dados);
         liberta_lista(lista, destruir_pais);
         fclose(file);
         exit(EXIT_FAILURE);
@@ -241,7 +256,7 @@ void escreve_ficheiro_csv(lista_t *paises, FILE *file)
     }
 }
 
-/** \brief cria um ficheiro .dat e escreve para la os dados*/
+/** \brief cria um ficheiro .dat*/
 void escreve_ficheiro_dat(lista_t *paises, FILE *file)
 {
     node_t *curr = paises->first;
@@ -257,10 +272,8 @@ void escreve_ficheiro_dat(lista_t *paises, FILE *file)
         int count_dados = tamanho_lista(pais->dados); // quantidade de dados em cada pais
         int count;
 
-        //nao se escreve um pais que nao tenha dados dentro
         if (count_dados == 0)
             continue;
-
         //escreve os dados fixos do pais no ficheiro
         count = strlen(pais->country) + 1;
         fwrite(&count, sizeof(int), 1, file);
@@ -278,7 +291,6 @@ void escreve_ficheiro_dat(lista_t *paises, FILE *file)
         while (curr_dados != NULL)
         {
             dados_t *dados = curr_dados->value;
-
             //escreve os dados variaveis do pais no ficheiro
             count = strlen(dados->indicator) + 1;
             fwrite(&count, sizeof(int), 1, file);
