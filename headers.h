@@ -424,10 +424,11 @@ lista_t *ler_ficheiro(settings_t *settings);
  * \param settings settings_t* saber o continente a ler
  * \param lista lista_t* insere na lista principal
  * \param letra char* linha lida do ficheiro
+ * \param file FILE* se precisar dar close do ficheiro
  * \return void
  *
  */
-void ler_linha(settings_t *settings, lista_t *lista, char *letra);
+void ler_linha(settings_t *settings, lista_t *lista, char *letra, FILE *file);
 
 /** \brief insere um determinado dado na variavel correta da lista
  *
@@ -495,7 +496,7 @@ void escreve_ficheiro_csv(lista_t *paises, FILE *file);
  * \return void
  *
  */
-settings_t *argumentos(int argc, char *argv[], settings_t *settings);
+void argumentos(int argc, char *argv[], settings_t *settings);
 
 /** \brief verifica se existe algum erro de escrita no ficheiro lido
  *
@@ -537,7 +538,7 @@ int erro_letra_em_numero(char *numero, int contador);
  * \return int 0 se nao for valido e 1 se for valido
  *
  */
-settings_t *verifica_L(char* continente, settings_t *settings, char *seguinte);
+void verifica_L(char* continente, settings_t *settings, char *seguinte);
 
 /** \brief verifica se a ordenacao escolhida e valida
  *
@@ -545,7 +546,7 @@ settings_t *verifica_L(char* continente, settings_t *settings, char *seguinte);
  * \return void
  *
  */
-settings_t * verifica_S(char *ordenacao, settings_t *settings, char *seguinte);
+void verifica_S(char *ordenacao, settings_t *settings, char *seguinte);
 
 /** \brief verifica se a selecao escolhida e valida
  *
@@ -553,7 +554,7 @@ settings_t * verifica_S(char *ordenacao, settings_t *settings, char *seguinte);
  * \return void
  *
  */
-settings_t * verifica_D(char *selecao, settings_t *settings, char *seguinte);
+void verifica_D(char *selecao, settings_t *settings);
 
 /** \brief verifica se a restricao escolhida e valida
  *
@@ -561,23 +562,7 @@ settings_t * verifica_D(char *selecao, settings_t *settings, char *seguinte);
  * \return void
  *
  */
-void verifica_P(char *restricao);
-
-/** \brief verifica se existe alguma falta de valores num argumento da linha de comando
- *
- * \param word char* argv[optind]
- * \return void
- *
- */
-void erro_argumento(char *word);
-
-/** \brief verifica se possui algum valor em lugares onde nao devia haver
- *
- * \param word char* argv[optind]
- * \return void
- *
- */
-void verifica_argumento(char *word);
+void verifica_P(char *restricao, settings_t *settings, char *argv[]);
 
 /** \brief verifica se a linha de argumentos possui -i ou -o
  *

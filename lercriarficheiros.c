@@ -39,7 +39,7 @@ void ler_ficheiro_csv(settings_t *settings, FILE *file, lista_t *lista)
             linhas++;
             continue; // primeira linha queremos ignorar
         }
-        ler_linha(settings, lista, buffer);
+        ler_linha(settings, lista, buffer, file);
     }
 }
 
@@ -91,7 +91,7 @@ void ler_ficheiro_dat(FILE *file, lista_t *lista)
 }
 
 /** \brief le a linha, divide-a em varias strings e coloca-as nas diferentes variaveis de um node*/
-void ler_linha(settings_t *settings, lista_t *lista, char *letra)
+void ler_linha(settings_t *settings, lista_t *lista, char *letra, FILE *file)
 {
     char *inicio_coluna = letra;
     int coluna = 0, contador = 1;
@@ -109,16 +109,18 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra)
         if (*letra == ',') // troca as "," por "\0" para dividir a string em varias substrings
         {
             *letra = '\0';
-
-            inserir_dados(pais, dados, inicio_coluna, coluna);
-
             if(!erro_letra_em_numero(inicio_coluna, contador)) // se existe letras em numeros
             {
                 fprintf(stderr, "existem letras onde deviam existir apenas numeros");
                 liberta_settings(settings);
+                destruir_pais(pais);
+                free(dados);
                 liberta_lista(lista, destruir_pais);
+                fclose(file);
                 exit(EXIT_FAILURE);
             }
+            inserir_dados(pais, dados, inicio_coluna, coluna);
+
             contador++;
             coluna++;
             inicio_coluna = letra + 1;
@@ -129,7 +131,10 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra)
     {
         fprintf(stderr, "nao existem colunas suficientes para um ficheiro valido");
         liberta_settings(settings);
+        destruir_pais(pais);
+        destruir_dados(dados);
         liberta_lista(lista, destruir_pais);
+        fclose(file);
         exit(EXIT_FAILURE);
     }
 
@@ -147,6 +152,8 @@ void ler_linha(settings_t *settings, lista_t *lista, char *letra)
         insere_pais_dados_lista(lista, pais, dados);
     }
 }
+
+
 
 /** \brief insere um determinado dado na variavel correta da lista*/
 void inserir_dados(pais_t *pais, dados_t *dados, char *inicio_coluna, int coluna)
